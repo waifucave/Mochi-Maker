@@ -1,0 +1,57 @@
+{
+  "kind": "warp",
+  "uid": "warp_0004",
+  "exportId": "Warp_Body",
+  "name": "Warp_Body",
+  "part": "part_0003",
+  "parent": null,
+  "enabled": true,
+  "rows": 2,
+  "cols": 2,
+  "cellMode": "bilinear",
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0002",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "grid": [
+          [100, 50],
+          [200, 50],
+          [300, 50],
+          [100, 150],
+          [200, 150],
+          [300, 150],
+          [100, 250],
+          [200, 250],
+          [300, 250]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "grid": [
+          [120, 50],
+          [220, 50],
+          [320, 50],
+          [120, 150],
+          [220, 150],
+          [320, 150],
+          [120, 250],
+          [220, 250],
+          [320, 250]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

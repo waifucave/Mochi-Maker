@@ -1,0 +1,45 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0017",
+  "exportId": "Follower",
+  "name": "Follower",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0008",
+  "uv": [
+    [0, 0],
+    [90, 0],
+    [90, 10],
+    [0, 10]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": {
+    "masks": ["mesh_0016"],
+    "invert": false
+  },
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [100, 135],
+          [190, 135],
+          [190, 145],
+          [100, 145]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

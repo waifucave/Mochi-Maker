@@ -1,0 +1,26 @@
+{
+  "name": "@mochi-maker/core",
+  "version": "0.0.0",
+  "description": "Mochi Maker's headless document core: model, commands, transactions, history and the project format",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "default": "./dist/node.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.52",
+    "@mochi-maker/geometry": "0.0.0"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@mochi-maker/core": ["./packages/core/src/index.ts"],
+      "@mochi-maker/core/node": ["./packages/core/src/node.ts"],
+      "@mochi-maker/geometry": ["./packages/geometry/src/index.ts"],
+      "@mochi-maker/art": ["./packages/art/src/index.ts"],
+      "@mochi-maker/export": ["./packages/export/src/index.ts"],
+      "@mochi-maker/api": ["./packages/api/src/index.ts"],
+      "@mochi-maker/mcp": ["./packages/mcp/src/index.ts"],
+      "@mochi-maker/api/browser": ["./packages/api/src/browser.ts"],
+      "@mochi-maker/bridge": ["./packages/bridge/src/index.ts"]
+    },
+    "allowImportingTsExtensions": false
+  },
+  "include": ["packages/*/test", "packages/*/src", "vitest.config.ts"]
+}

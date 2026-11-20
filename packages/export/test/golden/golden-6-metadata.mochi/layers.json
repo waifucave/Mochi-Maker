@@ -1,0 +1,68 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0010",
+      "name": "head",
+      "asset": "6a6f8a0d383746c9c59dc99c9b2996c6948d903f2e99fc1500983250fae4123b",
+      "x": 150,
+      "y": 60,
+      "width": 100,
+      "height": 100,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0011",
+      "name": "body",
+      "asset": "47fac1429bb0b69208568803a20046d838f7605a64ada1e121af542fdceb0da4",
+      "x": 120,
+      "y": 200,
+      "width": 160,
+      "height": 140,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0012",
+      "name": "eye",
+      "asset": "ff953ecadd1bed21d7e5406bdcb2acc06e1ca11228df532e8fa4543ca5951e70",
+      "x": 170,
+      "y": 100,
+      "width": 20,
+      "height": 10,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0013",
+      "name": "mouth",
+      "asset": "5deda5fd79e8836aa6d9ada56bc2a7c13acd8fa32d7326a40048badd443b6abf",
+      "x": 185,
+      "y": 135,
+      "width": 30,
+      "height": 10,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

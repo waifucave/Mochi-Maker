@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0016",
+  "exportId": "Mask_3",
+  "name": "Mask_3",
+  "part": null,
+  "deformer": "warp_0015",
+  "layer": "layer_0007",
+  "uv": [
+    [0, 0],
+    [40, 0],
+    [40, 40],
+    [0, 40]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [0.25, 0.25],
+          [0.75, 0.25],
+          [0.75, 0.75],
+          [0.25, 0.75]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

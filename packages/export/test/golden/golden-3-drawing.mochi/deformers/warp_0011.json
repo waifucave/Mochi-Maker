@@ -1,0 +1,30 @@
+{
+  "kind": "warp",
+  "uid": "warp_0011",
+  "exportId": "Warp_Tint",
+  "name": "Warp_Tint",
+  "part": null,
+  "parent": null,
+  "enabled": true,
+  "rows": 1,
+  "cols": 1,
+  "cellMode": "bilinear",
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "grid": [
+          [110, 110],
+          [160, 110],
+          [110, 160],
+          [160, 160]
+        ],
+        "opacity": 1,
+        "multiply": [1, 0.5, 1],
+        "screen": [0.2, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

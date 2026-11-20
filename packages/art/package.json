@@ -1,0 +1,26 @@
+{
+  "name": "@mochi-maker/art",
+  "version": "0.0.0",
+  "description": "Mochi Maker's art import (PSD, OpenRaster, PNG folders) and image-based operations such as mesh generation",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@mochi-maker/core": "0.0.0",
+    "@mochi-maker/geometry": "0.0.0",
+    "@sinclair/typebox": "^0.34.52",
+    "ag-psd": "31.0.3",
+    "fast-png": "8.0.0",
+    "fflate": "0.8.3"
+  }
+}

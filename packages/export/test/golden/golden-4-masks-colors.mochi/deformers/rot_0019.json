@@ -1,0 +1,28 @@
+{
+  "kind": "rotation",
+  "uid": "rot_0019",
+  "exportId": "Rotation_Color",
+  "name": "Rotation_Color",
+  "part": null,
+  "parent": "warp_0018",
+  "enabled": true,
+  "baseAngle": 0,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "angle": 0,
+        "originX": 0.5,
+        "originY": 0.5,
+        "scale": 1,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [0.8, 0.5, 1],
+        "screen": [0.5, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

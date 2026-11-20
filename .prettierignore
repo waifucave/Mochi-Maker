@@ -1,0 +1,12 @@
+vendor/
+package-lock.json
+cleanroom/
+*.md
+node_modules/
+dist/
+packages/*/test/golden/
+packages/api/src/generated.ts
+conformance/
+samples/
+packages/desktop/app/
+packages/desktop/out/

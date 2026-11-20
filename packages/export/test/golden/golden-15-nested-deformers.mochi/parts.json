@@ -1,0 +1,26 @@
+{
+  "parts": [
+    {
+      "kind": "part",
+      "uid": "part_0003",
+      "exportId": "PartBody",
+      "name": "PartBody",
+      "parent": null,
+      "children": ["mesh_0009", "mesh_0011", "mesh_0013", "mesh_0016"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "inherit",
+      "guide": false,
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500
+          }
+        ]
+      },
+      "blendShapes": []
+    }
+  ]
+}

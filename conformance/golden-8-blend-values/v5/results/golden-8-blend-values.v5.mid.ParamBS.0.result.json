@@ -1,0 +1,77 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-8-blend-values.v5.mid.ParamBS.0",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 200,
+    "height": 200,
+    "originX": 100,
+    "originY": 100,
+    "pixelsPerUnit": 200
+  },
+  "parameters": [
+    {
+      "id": "ParamBS",
+      "value": 0.5
+    },
+    {
+      "id": "ParamC",
+      "value": 0
+    },
+    {
+      "id": "ParamC2",
+      "value": 0
+    }
+  ],
+  "parts": [
+    {
+      "id": "Part_BS",
+      "opacity": 1
+    }
+  ],
+  "drawables": [
+    {
+      "id": "Face",
+      "visible": true,
+      "opacity": 0.75,
+      "drawOrder": 510,
+      "renderOrder": 3,
+      "multiplyColor": [0.75, 1, 1, 1],
+      "screenColor": [0, 0.125, 0, 1],
+      "vertices": [-0.4000000059604645, 0.4000000059604645, -0.20000000298023224, 0.4000000059604645, -0.20000000298023224, 0.20000000298023224, -0.4000000059604645, 0.20000000298023224]
+    },
+    {
+      "id": "Inner",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.10000000149011612, 0.4000000059604645, 0.30000001192092896, 0.4000000059604645, 0.30000001192092896, 0.20000000298023224, 0.10000000149011612, 0.20000000298023224]
+    },
+    {
+      "id": "Arm",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.17271775007247925, 0.2463613748550415, 0.2934584617614746, 0.21400898694992065, 0.2772822678089142, 0.15363863110542297, 0.15654155611991882, 0.18599101901054382]
+    },
+    {
+      "id": "Tinted",
+      "visible": true,
+      "opacity": 0.75,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 0.75, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.17500001192092896, -0.17500001192092896, 0.32499998807907104, -0.17500001192092896, 0.32500001788139343, -0.32500001788139343, 0.17500001192092896, -0.32499998807907104]
+    }
+  ],
+  "warnings": []
+}
+

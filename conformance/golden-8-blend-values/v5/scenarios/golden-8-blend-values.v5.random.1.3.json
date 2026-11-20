@@ -1,0 +1,13 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-8-blend-values.v5.random.1.3",
+  "model": "golden-8-blend-values/v5/model/golden8.model3.json",
+  "parameters": {
+    "ParamBS": -0.0416,
+    "ParamC": 0.355617,
+    "ParamC2": 0.121286
+  },
+  "partOpacities": {
+    "Part_BS": 0.154493
+  }
+}

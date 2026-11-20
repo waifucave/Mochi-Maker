@@ -1,0 +1,10 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-12-motions.v4.parts.half",
+  "model": "golden-12-motions/v4/model/golden12.model3.json",
+  "parameters": {},
+  "partOpacities": {
+    "Part_Open": 0.5,
+    "Part_Closed": 0.5
+  }
+}

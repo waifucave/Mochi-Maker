@@ -1,0 +1,75 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0005",
+  "exportId": "Up",
+  "name": "Up",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0002",
+  "uv": [
+    [0, 0],
+    [10, 0],
+    [10, 10],
+    [0, 10]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [50, 10],
+          [60, 10],
+          [60, 20],
+          [50, 20]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": [
+    {
+      "parameter": "param_0001",
+      "keys": [0, 1],
+      "base": 0,
+      "deltas": [
+        {
+          "positions": [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]
+          ],
+          "opacity": 0,
+          "drawOrder": 0,
+          "multiply": [0, 0, 0],
+          "screen": [0, 0, 0]
+        },
+        {
+          "positions": [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]
+          ],
+          "opacity": 0,
+          "drawOrder": 0.9995,
+          "multiply": [0, 0, 0],
+          "screen": [0, 0, 0]
+        }
+      ],
+      "constraints": []
+    }
+  ]
+}

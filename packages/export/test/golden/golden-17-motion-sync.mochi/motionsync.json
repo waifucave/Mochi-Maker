@@ -1,0 +1,119 @@
+{
+  "settings": [
+    {
+      "kind": "motionSyncSetting",
+      "uid": "msync_0005",
+      "name": "Mouth",
+      "useCase": "Mouth",
+      "analysisType": "CRI",
+      "sampleRate": 30,
+      "smoothing": 10,
+      "blendRatio": 0,
+      "parameters": [
+        {
+          "parameter": "param_0002",
+          "damper": 0,
+          "smooth": 0
+        },
+        {
+          "parameter": "param_0003",
+          "damper": 0,
+          "smooth": 0
+        }
+      ],
+      "elements": [
+        {
+          "id": "Silence",
+          "name": "Silence",
+          "enabled": true,
+          "scale": 1
+        },
+        {
+          "id": "A",
+          "name": "A",
+          "enabled": true,
+          "scale": 1
+        },
+        {
+          "id": "I",
+          "name": "I",
+          "enabled": true,
+          "scale": 1
+        },
+        {
+          "id": "U",
+          "name": "U",
+          "enabled": true,
+          "scale": 1
+        },
+        {
+          "id": "E",
+          "name": "E",
+          "enabled": true,
+          "scale": 1
+        },
+        {
+          "id": "O",
+          "name": "O",
+          "enabled": true,
+          "scale": 1
+        }
+      ],
+      "shapes": [
+        [0, 0],
+        [1, 0],
+        [0.3, 1],
+        [0.4, -1],
+        [0.6, 0.5],
+        [0.8, -0.6]
+      ]
+    },
+    {
+      "kind": "motionSyncSetting",
+      "uid": "msync_0006",
+      "name": "Soft",
+      "useCase": "Mouth",
+      "analysisType": "CRI",
+      "sampleRate": 60,
+      "smoothing": 40,
+      "blendRatio": 1,
+      "parameters": [
+        {
+          "parameter": "param_0002",
+          "damper": 0.05,
+          "smooth": 30
+        },
+        {
+          "parameter": "param_0003",
+          "damper": 0,
+          "smooth": 60
+        }
+      ],
+      "elements": [
+        {
+          "id": "Silence",
+          "name": "Silence",
+          "enabled": true,
+          "scale": 1
+        },
+        {
+          "id": "A",
+          "name": "A",
+          "enabled": true,
+          "scale": 1.5
+        },
+        {
+          "id": "O",
+          "name": "O",
+          "enabled": false,
+          "scale": 1
+        }
+      ],
+      "shapes": [
+        [0, 0],
+        [0.9, 0.2],
+        [0.7, -0.8]
+      ]
+    }
+  ]
+}

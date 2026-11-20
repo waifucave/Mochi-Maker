@@ -1,0 +1,73 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-15-nested-deformers.v4.random.1.5",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "originX": 200,
+    "originY": 200,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamBend",
+      "value": 0
+    },
+    {
+      "id": "ParamAngle",
+      "value": -0.9770489931106567
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartBody",
+      "opacity": 0.06736999750137329
+    }
+  ],
+  "drawables": [
+    {
+      "id": "ArtMesh_Face",
+      "visible": true,
+      "opacity": 0.06736999750137329,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.158952996134758, 0.2967444658279419, 0.19659222662448883, 0.24028563499450684, 0.18416251242160797, -0.008816386573016644, -0.19659221172332764, 0.059714339673519135]
+    },
+    {
+      "id": "ArtMesh_Eye",
+      "visible": true,
+      "opacity": 0.06736999750137329,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.0946214348077774, 0.20451407134532928, -0.035363905131816864, 0.19510424137115479, -0.040068820118904114, 0.16547547280788422, -0.09932634979486465, 0.17488530278205872]
+    },
+    {
+      "id": "ArtMesh_Badge",
+      "visible": true,
+      "opacity": 0.06736999750137329,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.030673768371343613, -0.2505812644958496, 0.04431534186005592, -0.24930240213871002, 0.045594222843647, -0.324291467666626, -0.029394857585430145, -0.32557037472724915]
+    },
+    {
+      "id": "ArtMesh_Hat",
+      "visible": true,
+      "opacity": 0.06736999750137329,
+      "drawOrder": 500,
+      "renderOrder": 3,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.0773337334394455, 0.2862011194229126, 0.07264447212219238, 0.28875890374183655, 0.07392336428165436, 0.213769793510437, -0.07605484127998352, 0.21121200919151306]
+    }
+  ],
+  "warnings": []
+}
+

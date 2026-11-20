@@ -1,0 +1,10 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-16-writer-edges.v4.cell.ArtMesh_Grid.5",
+  "model": "golden-16-writer-edges/v4/model/golden16.model3.json",
+  "parameters": {
+    "ParamX": 1,
+    "ParamY": 1
+  },
+  "partOpacities": {}
+}

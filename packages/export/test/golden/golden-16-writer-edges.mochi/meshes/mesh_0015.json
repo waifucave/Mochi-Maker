@@ -1,0 +1,45 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0015",
+  "exportId": "ArtMesh_Masked",
+  "name": "ArtMesh_Masked",
+  "part": "part_0005",
+  "deformer": null,
+  "layer": "layer_0014",
+  "uv": [
+    [0, 0],
+    [60, 0],
+    [60, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": {
+    "masks": ["mesh_0013"],
+    "invert": false
+  },
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [150, 200],
+          [210, 200],
+          [210, 230],
+          [150, 230]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

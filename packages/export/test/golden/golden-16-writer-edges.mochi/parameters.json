@@ -1,0 +1,60 @@
+{
+  "parameters": [
+    {
+      "kind": "parameter",
+      "uid": "param_0001",
+      "exportId": "ParamX",
+      "name": "ParamX",
+      "group": null,
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-1, 0, 1]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0002",
+      "exportId": "ParamY",
+      "name": "ParamY",
+      "group": null,
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0003",
+      "exportId": "ParamSpin",
+      "name": "ParamSpin",
+      "group": null,
+      "min": -180,
+      "max": 180,
+      "default": 0,
+      "repeat": true,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-180, 0, 180]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0004",
+      "exportId": "ParamFlip",
+      "name": "ParamFlip",
+      "group": null,
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    }
+  ]
+}

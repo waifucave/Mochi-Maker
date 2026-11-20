@@ -1,0 +1,30 @@
+{
+  "format": "mochi2d-anim-scenario/0",
+  "id": "golden-11-animation.v5.expression.smile",
+  "model": "golden-11-animation/v5/model/golden11.model3.json",
+  "random": [],
+  "dt": 0.03333333333333333,
+  "frames": 45,
+  "effects": {
+    "idle": false,
+    "blink": false,
+    "breath": false,
+    "look": false,
+    "lipsync": false,
+    "expressions": true,
+    "physics": true,
+    "pose": true
+  },
+  "commands": [
+    {
+      "frame": 0,
+      "do": "expression",
+      "name": "smile"
+    }
+  ],
+  "record": {
+    "parameters": "all",
+    "parts": "all",
+    "every": 1
+  }
+}

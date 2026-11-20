@@ -1,0 +1,27 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamOpen",
+      "GroupId": "",
+      "Name": "ParamOpen"
+    },
+    {
+      "Id": "ParamSmile",
+      "GroupId": "",
+      "Name": "ParamSmile"
+    },
+    {
+      "Id": "ParamWide",
+      "GroupId": "",
+      "Name": "ParamWide"
+    },
+    {
+      "Id": "ParamLift",
+      "GroupId": "",
+      "Name": "ParamLift"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": []
+}

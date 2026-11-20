@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-1-keyforms.v5.parts.half",
+  "model": "golden-1-keyforms/v5/model/golden1.model3.json",
+  "parameters": {},
+  "partOpacities": {
+    "PartBody": 0.5
+  }
+}

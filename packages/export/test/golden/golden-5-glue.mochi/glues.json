@@ -1,0 +1,56 @@
+{
+  "glues": [
+    {
+      "kind": "glue",
+      "uid": "glue_0008",
+      "exportId": "Glue_AB",
+      "name": "Glue_AB",
+      "meshA": "mesh_0005",
+      "meshB": "mesh_0006",
+      "pairs": [
+        [1, 0.25, 0, 0.75]
+      ],
+      "rig": {
+        "bindings": [
+          {
+            "parameter": "param_0001",
+            "keys": [0, 1]
+          }
+        ],
+        "keyforms": [
+          {
+            "authored": true,
+            "intensity": 0
+          },
+          {
+            "authored": true,
+            "intensity": 1
+          }
+        ]
+      },
+      "blendShapes": []
+    },
+    {
+      "kind": "glue",
+      "uid": "glue_0009",
+      "exportId": "Glue_BC",
+      "name": "Glue_BC",
+      "meshA": "mesh_0006",
+      "meshB": "mesh_0007",
+      "pairs": [
+        [0, 0.5, 3, 0.5],
+        [1, 0.5, 0, 0.5]
+      ],
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "intensity": 1
+          }
+        ]
+      },
+      "blendShapes": []
+    }
+  ]
+}

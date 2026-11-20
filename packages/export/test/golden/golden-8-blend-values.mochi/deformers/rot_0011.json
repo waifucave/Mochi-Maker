@@ -1,0 +1,55 @@
+{
+  "kind": "rotation",
+  "uid": "rot_0011",
+  "exportId": "Rotation_BS",
+  "name": "Rotation_BS",
+  "part": null,
+  "parent": null,
+  "enabled": true,
+  "baseAngle": 0,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "angle": 0,
+        "originX": 140,
+        "originY": 60,
+        "scale": 1,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": [
+    {
+      "parameter": "param_0001",
+      "keys": [0, 1],
+      "base": 0,
+      "deltas": [
+        {
+          "angle": 0,
+          "originX": 0,
+          "originY": 0,
+          "scale": 0,
+          "opacity": 0,
+          "multiply": [0, 0, 0],
+          "screen": [0, 0, 0]
+        },
+        {
+          "angle": 30,
+          "originX": 10,
+          "originY": 0,
+          "scale": 0.5,
+          "opacity": 0,
+          "multiply": [0, 0, 0],
+          "screen": [0, 0, 0]
+        }
+      ],
+      "constraints": []
+    }
+  ]
+}

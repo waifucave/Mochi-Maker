@@ -1,0 +1,48 @@
+{
+  "parts": [
+    {
+      "kind": "part",
+      "uid": "part_0008",
+      "exportId": "Part_Open",
+      "name": "Part_Open",
+      "parent": null,
+      "children": ["mesh_0009"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "inherit",
+      "guide": false,
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500
+          }
+        ]
+      },
+      "blendShapes": []
+    },
+    {
+      "kind": "part",
+      "uid": "part_0010",
+      "exportId": "Part_Closed",
+      "name": "Part_Closed",
+      "parent": null,
+      "children": ["mesh_0011"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "inherit",
+      "guide": false,
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500
+          }
+        ]
+      },
+      "blendShapes": []
+    }
+  ]
+}

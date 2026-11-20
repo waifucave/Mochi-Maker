@@ -1,0 +1,49 @@
+{
+  "format": "mochi2d-anim-scenario/0",
+  "id": "golden-11-animation.v3.pose.switch",
+  "model": "golden-11-animation/v3/model/golden11.model3.json",
+  "random": [],
+  "dt": 0.03333333333333333,
+  "frames": 45,
+  "effects": {
+    "idle": false,
+    "blink": false,
+    "breath": false,
+    "look": false,
+    "lipsync": false,
+    "expressions": false,
+    "physics": true,
+    "pose": true
+  },
+  "commands": [
+    {
+      "frame": 0,
+      "do": "partOpacity",
+      "id": "PartArmA",
+      "value": 1
+    },
+    {
+      "frame": 0,
+      "do": "partOpacity",
+      "id": "PartArmB",
+      "value": 0
+    },
+    {
+      "frame": 15,
+      "do": "partOpacity",
+      "id": "PartArmA",
+      "value": 0
+    },
+    {
+      "frame": 15,
+      "do": "partOpacity",
+      "id": "PartArmB",
+      "value": 1
+    }
+  ],
+  "record": {
+    "parameters": "all",
+    "parts": "all",
+    "every": 1
+  }
+}

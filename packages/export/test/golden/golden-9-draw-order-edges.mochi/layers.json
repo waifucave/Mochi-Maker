@@ -1,0 +1,20 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0002",
+      "name": "dot",
+      "asset": "d0e345a4ab0b1eb7bfdc9a88174c156d8c84c7c8784bcca198ff5341175788e9",
+      "x": 0,
+      "y": 0,
+      "width": 10,
+      "height": 10,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

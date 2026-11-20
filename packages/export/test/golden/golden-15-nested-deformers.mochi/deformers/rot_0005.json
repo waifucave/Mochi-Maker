@@ -1,0 +1,57 @@
+{
+  "kind": "rotation",
+  "uid": "rot_0005",
+  "exportId": "Rotation_Head",
+  "name": "Rotation_Head",
+  "part": "part_0003",
+  "parent": "warp_0004",
+  "enabled": true,
+  "baseAngle": 0,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0002",
+        "keys": [-30, 0, 30]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "angle": -20,
+        "originX": 0.5,
+        "originY": 0.3,
+        "scale": 1.2,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "angle": 10,
+        "originX": 0.5,
+        "originY": 0.3,
+        "scale": 1.2,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "angle": 40,
+        "originX": 0.5,
+        "originY": 0.3,
+        "scale": 1.2,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

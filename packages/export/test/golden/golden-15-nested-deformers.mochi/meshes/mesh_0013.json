@@ -1,0 +1,60 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0013",
+  "exportId": "ArtMesh_Badge",
+  "name": "ArtMesh_Badge",
+  "part": "part_0003",
+  "deformer": "warp_0006",
+  "layer": "layer_0012",
+  "uv": [
+    [0, 0],
+    [30, 0],
+    [30, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0001",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [0.5903584, 2.1684787],
+          [0.7955267, 2.1142137],
+          [0.83170336, 2.421966],
+          [0.6265351, 2.476231]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [0.72713727, 2.132302],
+          [0.9323055, 2.078037],
+          [0.96848226, 2.3857894],
+          [0.76331395, 2.4400544]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

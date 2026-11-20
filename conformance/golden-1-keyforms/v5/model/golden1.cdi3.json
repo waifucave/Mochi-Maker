@@ -1,0 +1,17 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamA",
+      "GroupId": "",
+      "Name": "A"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "PartBody",
+      "Name": "Body"
+    }
+  ]
+}

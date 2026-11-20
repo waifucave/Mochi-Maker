@@ -1,0 +1,61 @@
+{
+  "kind": "warp",
+  "uid": "warp_0008",
+  "exportId": "Warp_Brow",
+  "name": "Warp_Brow",
+  "part": null,
+  "parent": null,
+  "enabled": true,
+  "rows": 1,
+  "cols": 1,
+  "cellMode": "bilinear",
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "grid": [
+          [100, 50],
+          [300, 50],
+          [100, 150],
+          [300, 150]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": [
+    {
+      "parameter": "param_0004",
+      "keys": [0, 1],
+      "base": 0,
+      "deltas": [
+        {
+          "grid": [
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0]
+          ],
+          "opacity": 0,
+          "multiply": [0, 0, 0],
+          "screen": [0, 0, 0]
+        },
+        {
+          "grid": [
+            [0, -20],
+            [0, -20],
+            [0, -20],
+            [0, -20]
+          ],
+          "opacity": 0,
+          "multiply": [0, 0, 0],
+          "screen": [0, 0, 0]
+        }
+      ],
+      "constraints": []
+    }
+  ]
+}

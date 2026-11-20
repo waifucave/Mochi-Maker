@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-6-metadata.v5.high.ParamEyeLOpen",
+  "model": "golden-6-metadata/v5/model/golden6.model3.json",
+  "parameters": {
+    "ParamEyeLOpen": 1.5
+  },
+  "partOpacities": {}
+}

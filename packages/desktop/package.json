@@ -1,0 +1,24 @@
+{
+  "name": "@mochi-maker/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Mochi Maker's desktop build: the editor in Electron, with files on disk and the bridge in the main process",
+  "license": "MIT",
+  "type": "module",
+  "main": "app/main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "electron app",
+    "package:linux": "node build.mjs && node package.mjs linux",
+    "package": "node build.mjs && node package.mjs",
+    "smoke": "node smoke.mjs"
+  },
+  "dependencies": {
+    "@mochi-maker/bridge": "0.0.0"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "44.9.2",
+    "playwright-core": "1.63.0"
+  }
+}

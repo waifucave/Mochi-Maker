@@ -1,0 +1,55 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamA",
+      "GroupId": "",
+      "Name": "ParamA"
+    },
+    {
+      "Id": "ParamB",
+      "GroupId": "",
+      "Name": "ParamB"
+    },
+    {
+      "Id": "ParamC",
+      "GroupId": "",
+      "Name": "ParamC"
+    },
+    {
+      "Id": "ParamIn",
+      "GroupId": "",
+      "Name": "ParamIn"
+    },
+    {
+      "Id": "ParamOut",
+      "GroupId": "",
+      "Name": "ParamOut"
+    },
+    {
+      "Id": "PartArmA",
+      "GroupId": "",
+      "Name": "PartArmA"
+    },
+    {
+      "Id": "PartArmB",
+      "GroupId": "",
+      "Name": "PartArmB"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "PartArmA",
+      "Name": "PartArmA"
+    },
+    {
+      "Id": "PartArmB",
+      "Name": "PartArmB"
+    },
+    {
+      "Id": "PartArmLink",
+      "Name": "PartArmLink"
+    }
+  ]
+}

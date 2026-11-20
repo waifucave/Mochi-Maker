@@ -1,0 +1,57 @@
+{
+  "kind": "warp",
+  "uid": "warp_0004",
+  "exportId": "Warp_Outer",
+  "name": "Warp_Outer",
+  "part": "part_0003",
+  "parent": null,
+  "enabled": true,
+  "rows": 2,
+  "cols": 2,
+  "cellMode": "bilinear",
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0001",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "grid": [
+          [50, 50],
+          [200, 50],
+          [350, 50],
+          [50, 200],
+          [200, 200],
+          [350, 200],
+          [50, 350],
+          [200, 350],
+          [350, 350]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "grid": [
+          [50, 50],
+          [200, 60],
+          [350, 50],
+          [50, 200],
+          [230, 200],
+          [350, 200],
+          [50, 350],
+          [200, 350],
+          [350, 350]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

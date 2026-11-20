@@ -1,0 +1,37 @@
+{
+  "kind": "motion",
+  "uid": "motion_0013",
+  "name": "close",
+  "group": "TapHead",
+  "duration": 2,
+  "fps": 8,
+  "loop": false,
+  "restrictedBeziers": false,
+  "fadeIn": 0,
+  "fadeOut": 0,
+  "curves": [
+    {
+      "target": "partOpacity",
+      "model": null,
+      "object": "part_0008",
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 1, 2, 1, 0],
+      "auto": []
+    },
+    {
+      "target": "partOpacity",
+      "model": null,
+      "object": "part_0010",
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 0, 2, 1, 1],
+      "auto": []
+    }
+  ],
+  "events": [],
+  "sound": null,
+  "motionSync": null,
+  "workArea": null,
+  "markers": []
+}

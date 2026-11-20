@@ -1,0 +1,11 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-4-masks-colors.v4.render.default",
+  "model": "golden-4-masks-colors/v4/model/golden4.model3.json",
+  "parameters": {},
+  "partOpacities": {},
+  "render": {
+    "width": 512,
+    "height": 512
+  }
+}

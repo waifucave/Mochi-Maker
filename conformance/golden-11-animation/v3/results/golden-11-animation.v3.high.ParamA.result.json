@@ -1,0 +1,91 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-11-animation.v3.high.ParamA",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 200,
+    "height": 200,
+    "originX": 100,
+    "originY": 100,
+    "pixelsPerUnit": 200
+  },
+  "parameters": [
+    {
+      "id": "ParamA",
+      "value": 10
+    },
+    {
+      "id": "ParamB",
+      "value": 1
+    },
+    {
+      "id": "ParamC",
+      "value": 0
+    },
+    {
+      "id": "ParamIn",
+      "value": 5
+    },
+    {
+      "id": "ParamOut",
+      "value": 0
+    },
+    {
+      "id": "PartArmA",
+      "value": 0
+    },
+    {
+      "id": "PartArmB",
+      "value": 1
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartArmA",
+      "opacity": 1
+    },
+    {
+      "id": "PartArmB",
+      "opacity": 1
+    },
+    {
+      "id": "PartArmLink",
+      "opacity": 1
+    }
+  ],
+  "drawables": [
+    {
+      "id": "Mesh_PartArmA",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.4000000059604645, 0.4000000059604645, -0.30000001192092896, 0.4000000059604645, -0.30000001192092896, 0.30000001192092896, -0.4000000059604645, 0.30000001192092896]
+    },
+    {
+      "id": "Mesh_PartArmB",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.20000000298023224, 0.4000000059604645, -0.10000000149011612, 0.4000000059604645, -0.10000000149011612, 0.30000001192092896, -0.20000000298023224, 0.30000001192092896]
+    },
+    {
+      "id": "Mesh_PartArmLink",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0, 0.4000000059604645, 0.10000000149011612, 0.4000000059604645, 0.10000000149011612, 0.30000001192092896, 0, 0.30000001192092896]
+    }
+  ],
+  "warnings": []
+}
+

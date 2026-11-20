@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0012",
+  "exportId": "Arm",
+  "name": "Arm",
+  "part": null,
+  "deformer": "rot_0011",
+  "layer": "layer_0006",
+  "uv": [
+    [0, 0],
+    [20, 0],
+    [20, 10],
+    [0, 10]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [-10, -5],
+          [10, -5],
+          [10, 5],
+          [-10, 5]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

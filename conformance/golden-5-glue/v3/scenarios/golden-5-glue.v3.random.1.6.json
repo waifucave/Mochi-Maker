@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-5-glue.v3.random.1.6",
+  "model": "golden-5-glue/v3/model/golden5.model3.json",
+  "parameters": {
+    "ParamGlue": 0.669258
+  },
+  "partOpacities": {}
+}

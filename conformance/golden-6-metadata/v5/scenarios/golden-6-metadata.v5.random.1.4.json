@@ -1,0 +1,16 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-6-metadata.v5.random.1.4",
+  "model": "golden-6-metadata/v5/model/golden6.model3.json",
+  "parameters": {
+    "ParamEyeLOpen": 0.737194,
+    "ParamEyeROpen": 0.569124,
+    "ParamMouthOpenY": 0.887664,
+    "ParamAngleX": -27.646737,
+    "ParamAngleY": 19.885296
+  },
+  "partOpacities": {
+    "PartHead": 0.454136,
+    "PartBody": 0.770414
+  }
+}

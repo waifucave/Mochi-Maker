@@ -1,0 +1,32 @@
+{
+  "format": "mochi2d-anim-scenario/0",
+  "id": "golden-12-motions.v4.motion.TapBody.0",
+  "model": "golden-12-motions/v4/model/golden12.model3.json",
+  "random": [],
+  "dt": 0.03333333333333333,
+  "frames": 75,
+  "effects": {
+    "idle": false,
+    "blink": false,
+    "breath": false,
+    "look": false,
+    "lipsync": false,
+    "expressions": false,
+    "physics": false,
+    "pose": true
+  },
+  "commands": [
+    {
+      "frame": 0,
+      "do": "motion",
+      "group": "TapBody",
+      "index": 0,
+      "priority": 2
+    }
+  ],
+  "record": {
+    "parameters": "all",
+    "parts": "all",
+    "every": 1
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0005",
+      "name": "mouth",
+      "asset": "7d459a6a640d41782d9a067adfbe9f8ab74f9f575b062de90069eedf7860c1ca",
+      "x": 150,
+      "y": 200,
+      "width": 100,
+      "height": 40,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0006",
+      "name": "brow",
+      "asset": "1e9b2828480a82a02b2a20037d680756c93e71e8c521eb1c69541c47c8423b6d",
+      "x": 0,
+      "y": 0,
+      "width": 100,
+      "height": 50,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0004",
+      "name": "face",
+      "asset": "04f75ebdbf3364630a751a29b01d5eb0fbf57a4a778596831ef9309527797a15",
+      "x": 20,
+      "y": 20,
+      "width": 40,
+      "height": 40,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0005",
+      "name": "inner",
+      "asset": "ce79f295376d51e22a18822e7365e9392bf5bd1b5e036c6189691cacd44e8a42",
+      "x": 120,
+      "y": 20,
+      "width": 40,
+      "height": 40,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0006",
+      "name": "arm",
+      "asset": "82ee5c1e23e186df1a5044ac4e426020c523b447a947859a7a8d627e2a7c0fa3",
+      "x": 0,
+      "y": 0,
+      "width": 20,
+      "height": 10,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0007",
+      "name": "tinted",
+      "asset": "70e7533b582f5a5c75a1e4e900b063230152038a9d6e1ee275823050730a085b",
+      "x": 0,
+      "y": 0,
+      "width": 30,
+      "height": 30,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

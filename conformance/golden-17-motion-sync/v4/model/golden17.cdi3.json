@@ -1,0 +1,17 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamMouthOpenY",
+      "GroupId": "",
+      "Name": "ParamMouthOpenY"
+    },
+    {
+      "Id": "ParamMouthForm",
+      "GroupId": "",
+      "Name": "ParamMouthForm"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": []
+}

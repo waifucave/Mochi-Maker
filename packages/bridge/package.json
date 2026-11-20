@@ -1,0 +1,24 @@
+{
+  "name": "@mochi-maker/bridge",
+  "version": "0.0.0",
+  "description": "Mochi Maker's live bridge: Mochi Studio's bridge protocol (version 1) between the editor and agents",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "8.18.1"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-13-sound.v4.random.1.7",
+  "model": "golden-13-sound/v4/model/golden13.model3.json",
+  "parameters": {
+    "ParamMouthOpenY": 0.831115
+  },
+  "partOpacities": {}
+}

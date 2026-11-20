@@ -1,0 +1,30 @@
+{
+  "name": "@mochi-maker/api",
+  "version": "0.0.0",
+  "description": "Mochi Maker's typed agent API: projects, transactions, generated command methods, describe, diff, evaluate, import and export",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@mochi-maker/art": "0.0.0",
+    "@mochi-maker/core": "0.0.0",
+    "@mochi-maker/export": "0.0.0",
+    "@mochi-maker/geometry": "0.0.0",
+    "fflate": "0.8.3",
+    "mochi2d": "file:../../vendor/mochi2d-0.21.0.tgz"
+  }
+}

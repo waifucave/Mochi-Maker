@@ -1,0 +1,7 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-16-writer-edges.v3.default",
+  "model": "golden-16-writer-edges/v3/model/golden16.model3.json",
+  "parameters": {},
+  "partOpacities": {}
+}

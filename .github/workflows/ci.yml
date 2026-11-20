@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check
+      - run: npm run build:editor
+
+  # The pixel check (packages/export/test/rig.test.ts) and the agent API's rendering tests render
+  # with Mochi2D's `mochi2d render` and NodeRenderer, and the editor's browser tests drive the
+  # editor (built with Vite), all in headless Chromium through Playwright. Playwright comes from
+  # npm's global packages, where Mochi2D (and the editor's test harness) find it.
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm install -g playwright@1.63.0
+      - run: npx -y playwright@1.63.0 install --with-deps chromium
+      - run: npx vitest run packages/export/test/rig.test.ts packages/api/test/render.test.ts packages/mcp/test/render.test.ts
+        env:
+          MOCHI_MAKER_REQUIRE_RENDER: '1'
+      # The editor's browser tests, one file at a time: several software-rendered browsers at once
+      # starve each other's pages of time.
+      - run: npx vitest run packages/editor/test --no-file-parallelism
+        env:
+          MOCHI_MAKER_REQUIRE_RENDER: '1'

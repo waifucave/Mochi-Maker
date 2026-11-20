@@ -1,0 +1,30 @@
+{
+  "kind": "warp",
+  "uid": "warp_0006",
+  "exportId": "Warp_Face",
+  "name": "Warp_Face",
+  "part": "part_0003",
+  "parent": "rot_0005",
+  "enabled": true,
+  "rows": 1,
+  "cols": 1,
+  "cellMode": "bilinear",
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "grid": [
+          [-60, -40],
+          [60, -40],
+          [-60, 40],
+          [60, 40]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

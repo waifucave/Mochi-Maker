@@ -1,0 +1,18 @@
+{
+  "parameters": [
+    {
+      "kind": "parameter",
+      "uid": "param_0001",
+      "exportId": "ParamEdge",
+      "name": "ParamEdge",
+      "group": null,
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "blendShape",
+      "keys": [0, 1]
+    }
+  ]
+}

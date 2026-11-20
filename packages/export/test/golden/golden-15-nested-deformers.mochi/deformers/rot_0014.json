@@ -1,0 +1,28 @@
+{
+  "kind": "rotation",
+  "uid": "rot_0014",
+  "exportId": "Rotation_Hat",
+  "name": "Rotation_Hat",
+  "part": "part_0003",
+  "parent": "rot_0005",
+  "enabled": true,
+  "baseAngle": 0,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "angle": -10.000006,
+        "originX": -5.7882733,
+        "originY": -32.826927,
+        "scale": 1.25,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

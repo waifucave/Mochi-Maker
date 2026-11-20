@@ -1,0 +1,40 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "golden12.moc3",
+    "Textures": [
+      "golden12.1024/texture_00.png"
+    ],
+    "Pose": "golden12.pose3.json",
+    "DisplayInfo": "golden12.cdi3.json",
+    "Motions": {
+      "TapBody": [
+        {
+          "File": "motions/curves.motion3.json"
+        }
+      ],
+      "TapHead": [
+        {
+          "File": "motions/close.motion3.json"
+        }
+      ],
+      "Idle": [
+        {
+          "File": "motions/loop.motion3.json"
+        }
+      ]
+    }
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": []
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": []
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-12-motions.v4.render.default",
+  "model": "golden-12-motions/v4/model/golden12.model3.json",
+  "parameters": {},
+  "partOpacities": {},
+  "render": {
+    "width": 512,
+    "height": 512
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0004",
+  "exportId": "Below",
+  "name": "Below",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0002",
+  "uv": [
+    [0, 0],
+    [10, 0],
+    [10, 10],
+    [0, 10]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [30, 10],
+          [40, 10],
+          [40, 20],
+          [30, 20]
+        ],
+        "opacity": 1,
+        "drawOrder": 499.99896,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

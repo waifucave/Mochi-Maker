@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-16-writer-edges.v4.low.ParamSpin",
+  "model": "golden-16-writer-edges/v4/model/golden16.model3.json",
+  "parameters": {
+    "ParamSpin": -360
+  },
+  "partOpacities": {}
+}

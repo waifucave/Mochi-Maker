@@ -1,0 +1,43 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-2-deformers.v5.render.random.1.0",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "originX": 200,
+    "originY": 200,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamAngle",
+      "value": 11.436655044555664
+    },
+    {
+      "id": "ParamShift",
+      "value": 0
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartBody",
+      "opacity": 0.527446985244751
+    }
+  ],
+  "drawables": [
+    {
+      "id": "ArtMesh_Head",
+      "visible": true,
+      "opacity": 0.527446985244751,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.04405011236667633, 0.2844178378582001, 0.05396433174610138, 0.26458939909935, 0.04405011236667633, 0.21558216214179993, -0.05396433174610138, 0.23541061580181122]
+    }
+  ],
+  "warnings": []
+}
+

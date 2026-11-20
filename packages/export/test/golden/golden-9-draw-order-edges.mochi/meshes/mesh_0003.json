@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0003",
+  "exportId": "Near",
+  "name": "Near",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0002",
+  "uv": [
+    [0, 0],
+    [10, 0],
+    [10, 10],
+    [0, 10]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [10, 10],
+          [20, 10],
+          [20, 20],
+          [10, 20]
+        ],
+        "opacity": 1,
+        "drawOrder": 499.9995,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

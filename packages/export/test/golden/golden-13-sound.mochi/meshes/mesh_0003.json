@@ -1,0 +1,60 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0003",
+  "exportId": "Mouth",
+  "name": "Mouth",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0001",
+  "uv": [
+    [0, 0],
+    [30, 0],
+    [30, 10],
+    [0, 10]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0002",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [85, 95],
+          [115, 95],
+          [115, 105],
+          [85, 105]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [85, 95],
+          [115, 95],
+          [115, 115],
+          [85, 115]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

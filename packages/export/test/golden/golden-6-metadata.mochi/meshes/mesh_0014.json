@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0014",
+  "exportId": "Head",
+  "name": "Head",
+  "part": "part_0008",
+  "deformer": null,
+  "layer": "layer_0010",
+  "uv": [
+    [0, 0],
+    [100, 0],
+    [100, 100],
+    [0, 100]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [150, 60],
+          [250, 60],
+          [250, 160],
+          [150, 160]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

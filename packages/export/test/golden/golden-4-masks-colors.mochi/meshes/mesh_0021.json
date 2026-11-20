@@ -1,0 +1,60 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0021",
+  "exportId": "Fade",
+  "name": "Fade",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0010",
+  "uv": [
+    [0, 0],
+    [30, 0],
+    [30, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0001",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [160, 20],
+          [190, 20],
+          [190, 50],
+          [160, 50]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [160, 20],
+          [190, 20],
+          [190, 50],
+          [160, 50]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [0, 0.5, 1],
+        "screen": [0.4, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

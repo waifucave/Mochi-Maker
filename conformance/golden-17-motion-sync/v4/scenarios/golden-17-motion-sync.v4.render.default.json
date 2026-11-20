@@ -1,0 +1,11 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-17-motion-sync.v4.render.default",
+  "model": "golden-17-motion-sync/v4/model/golden17.model3.json",
+  "parameters": {},
+  "partOpacities": {},
+  "render": {
+    "width": 512,
+    "height": 512
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "parameters": [
+    {
+      "kind": "parameter",
+      "uid": "param_0001",
+      "exportId": "ParamA",
+      "name": "ParamA",
+      "group": null,
+      "min": -10,
+      "max": 10,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-10, 0, 10]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0002",
+      "exportId": "ParamB",
+      "name": "ParamB",
+      "group": null,
+      "min": 0,
+      "max": 2,
+      "default": 1,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1, 2]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0003",
+      "exportId": "ParamC",
+      "name": "ParamC",
+      "group": null,
+      "min": -10,
+      "max": 10,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-10, 0, 10]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0004",
+      "exportId": "ParamIn",
+      "name": "ParamIn",
+      "group": null,
+      "min": -10,
+      "max": 10,
+      "default": 5,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-10, 5, 10]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0005",
+      "exportId": "ParamOut",
+      "name": "ParamOut",
+      "group": null,
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-30, 0, 30]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0006",
+      "exportId": "PartArmA",
+      "name": "PartArmA",
+      "group": null,
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0007",
+      "exportId": "PartArmB",
+      "name": "PartArmB",
+      "group": null,
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    }
+  ]
+}

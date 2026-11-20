@@ -1,0 +1,41 @@
+{
+  "parts": [
+    {
+      "kind": "part",
+      "uid": "part_0010",
+      "exportId": "Part_Edge",
+      "name": "Part_Edge",
+      "parent": null,
+      "children": ["mesh_0011"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "own",
+      "guide": false,
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500.7
+          }
+        ]
+      },
+      "blendShapes": [
+        {
+          "parameter": "param_0001",
+          "keys": [0, 1],
+          "base": 0,
+          "deltas": [
+            {
+              "drawOrder": 0
+            },
+            {
+              "drawOrder": -0.6
+            }
+          ],
+          "constraints": []
+        }
+      ]
+    }
+  ]
+}

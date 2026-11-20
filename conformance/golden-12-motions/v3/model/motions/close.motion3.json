@@ -1,0 +1,40 @@
+{
+  "Version": 3,
+  "Meta": {
+    "Duration": 2,
+    "Fps": 8,
+    "Loop": false,
+    "AreBeziersRestricted": false,
+    "CurveCount": 2,
+    "TotalSegmentCount": 2,
+    "TotalPointCount": 4,
+    "UserDataCount": 0,
+    "TotalUserDataSize": 0,
+    "FadeInTime": 0,
+    "FadeOutTime": 0
+  },
+  "Curves": [
+    {
+      "Target": "PartOpacity",
+      "Id": "Part_Open",
+      "Segments": [
+        0,
+        1,
+        2,
+        1,
+        0
+      ]
+    },
+    {
+      "Target": "PartOpacity",
+      "Id": "Part_Closed",
+      "Segments": [
+        0,
+        0,
+        2,
+        1,
+        1
+      ]
+    }
+  ]
+}

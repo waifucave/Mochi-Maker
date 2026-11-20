@@ -1,0 +1,28 @@
+{
+  "kind": "rotation",
+  "uid": "rot_0007",
+  "exportId": "Rotation_Eye",
+  "name": "Rotation_Eye",
+  "part": "part_0003",
+  "parent": "warp_0006",
+  "enabled": true,
+  "baseAngle": 0,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "angle": 0,
+        "originX": 0.3,
+        "originY": 0.4,
+        "scale": 1,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

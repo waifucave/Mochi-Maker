@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.mochi-cache/
+# Locally supplied models. Never commit model data.
+assets/models/
+packages/desktop/app/
+packages/desktop/out/

@@ -1,0 +1,45 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0014",
+  "exportId": "Inverted",
+  "name": "Inverted",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0006",
+  "uv": [
+    [0, 0],
+    [140, 0],
+    [140, 15],
+    [0, 15]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": {
+    "masks": ["mesh_0011", "mesh_0012"],
+    "invert": true
+  },
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [10, 42],
+          [150, 42],
+          [150, 57],
+          [10, 57]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

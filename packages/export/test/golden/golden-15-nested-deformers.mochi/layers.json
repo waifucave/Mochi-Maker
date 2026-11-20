@@ -1,0 +1,68 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0008",
+      "name": "face",
+      "asset": "a9672cd197a7e18b11558875328229ff4d37c73d67235948bda588660238a02a",
+      "x": 0,
+      "y": 0,
+      "width": 120,
+      "height": 80,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0010",
+      "name": "eye",
+      "asset": "00211506959b7441c13d23379063ea9b1f751f8f3e04be25073b45292720c8b7",
+      "x": 0,
+      "y": 0,
+      "width": 20,
+      "height": 10,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0012",
+      "name": "badge",
+      "asset": "9d391a8dbded715a2e86d45330cb8eca1e47339da938c4f5fdc6e8a91abef70d",
+      "x": 185,
+      "y": 300,
+      "width": 30,
+      "height": 30,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0015",
+      "name": "hat",
+      "asset": "b3fc2df3dddeae3314b674ea09e9b86d2d9bd243a8ab3f6dbd4c9ecb1b520b29",
+      "x": 0,
+      "y": 0,
+      "width": 40,
+      "height": 20,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

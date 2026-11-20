@@ -1,0 +1,18 @@
+{
+  "parameters": [
+    {
+      "kind": "parameter",
+      "uid": "param_0002",
+      "exportId": "ParamMouthOpenY",
+      "name": "ParamMouthOpenY",
+      "group": null,
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    }
+  ]
+}

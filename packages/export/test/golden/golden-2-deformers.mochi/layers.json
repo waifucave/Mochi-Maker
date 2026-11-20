@@ -1,0 +1,20 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0006",
+      "name": "head",
+      "asset": "d64cd58bf14895ad0a99e73b4457bd6a843bf27553c339f983c2a28a15aecdd3",
+      "x": 0,
+      "y": 0,
+      "width": 40,
+      "height": 20,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

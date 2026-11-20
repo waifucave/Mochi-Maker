@@ -1,0 +1,14 @@
+{
+  "kind": "expression",
+  "uid": "expr_0016",
+  "name": "frown",
+  "fadeIn": 0,
+  "fadeOut": 0,
+  "entries": [
+    {
+      "parameter": "param_0001",
+      "value": -2,
+      "blend": "Add"
+    }
+  ]
+}

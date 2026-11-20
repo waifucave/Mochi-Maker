@@ -1,0 +1,9 @@
+{
+  "mocVersion": 3,
+  "files": {
+    "golden16.1024/texture_00.png": "b4dd941d3da866255e645cb4a05f2833ed665b8393d31a538ffec0ee7e9795b5",
+    "golden16.cdi3.json": "1581ef303afb10cab3153881898e43cbf474127cc48fb3baff5aa90760e4eada",
+    "golden16.moc3": "8627a1999685a3cc256b1ba7157d1af7920f00001ed228f71b9c9083ea02af5b",
+    "golden16.model3.json": "7885aa0bc09411f69fe071b40cad87beb4c29ac2578f5c10d4f07e4088e71c87"
+  }
+}

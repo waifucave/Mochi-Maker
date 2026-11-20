@@ -1,0 +1,60 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0004",
+  "exportId": "ArtMesh_Square",
+  "name": "Square",
+  "part": "part_0002",
+  "deformer": null,
+  "layer": "layer_0003",
+  "uv": [
+    [0, 0],
+    [100, 0],
+    [100, 100],
+    [0, 100]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0001",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [50, 50],
+          [150, 50],
+          [150, 150],
+          [50, 150]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [90, 50],
+          [190, 50],
+          [190, 150],
+          [90, 150]
+        ],
+        "opacity": 0.5,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

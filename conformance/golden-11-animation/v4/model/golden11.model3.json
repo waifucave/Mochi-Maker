@@ -1,0 +1,34 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "golden11.moc3",
+    "Textures": [
+      "golden11.1024/texture_00.png"
+    ],
+    "Physics": "golden11.physics3.json",
+    "Pose": "golden11.pose3.json",
+    "DisplayInfo": "golden11.cdi3.json",
+    "Expressions": [
+      {
+        "Name": "smile",
+        "File": "expressions/smile.exp3.json"
+      },
+      {
+        "Name": "frown",
+        "File": "expressions/frown.exp3.json"
+      }
+    ]
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": []
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": []
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0009",
+  "exportId": "Brow",
+  "name": "Brow",
+  "part": null,
+  "deformer": "warp_0008",
+  "layer": "layer_0006",
+  "uv": [
+    [0, 0],
+    [100, 0],
+    [100, 50],
+    [0, 50]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [0.25, 0.25],
+          [0.75, 0.25],
+          [0.75, 0.75],
+          [0.25, 0.75]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

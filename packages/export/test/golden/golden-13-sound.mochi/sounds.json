@@ -1,0 +1,13 @@
+{
+  "sounds": [
+    {
+      "kind": "sound",
+      "uid": "sound_0004",
+      "name": "voice",
+      "asset": "24b587b8951a5edda56cf3079065582b642ee12a26beccbbe08442c84e1e6c8f",
+      "sampleRate": 16000,
+      "channels": 1,
+      "frames": 16000
+    }
+  ]
+}

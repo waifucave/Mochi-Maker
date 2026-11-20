@@ -1,0 +1,13 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-14-reimport.v5.render.random.1.2",
+  "model": "golden-14-reimport/v5/model/golden14.model3.json",
+  "parameters": {},
+  "partOpacities": {
+    "Part_Head": 0.527447
+  },
+  "render": {
+    "width": 512,
+    "height": 512
+  }
+}

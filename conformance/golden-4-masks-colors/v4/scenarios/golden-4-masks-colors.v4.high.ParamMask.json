@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-4-masks-colors.v4.high.ParamMask",
+  "model": "golden-4-masks-colors/v4/model/golden4.model3.json",
+  "parameters": {
+    "ParamMask": 1.5
+  },
+  "partOpacities": {}
+}

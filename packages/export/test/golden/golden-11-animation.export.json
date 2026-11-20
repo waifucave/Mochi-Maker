@@ -1,0 +1,13 @@
+{
+  "mocVersion": 5,
+  "files": {
+    "expressions/frown.exp3.json": "4482182d47291788723013d9d481ab7aa89364aa5b990623ce51b661d5b41d3d",
+    "expressions/smile.exp3.json": "7339f4f916802f37cf7be61004483e35b81bff6f30995fe504fda6c33344136a",
+    "golden11.1024/texture_00.png": "8dbb5601c00d34d7c71ac5653b22ace19c5356e1e2384589cfa9ca1c71dc9099",
+    "golden11.cdi3.json": "538c1c1c80ac043f9eb15ca6138e4b0346f7128f52c9b2ae35f04bbb56b1b2c2",
+    "golden11.moc3": "a3405849e575f3a0a73d7584735f2c6318f9cb89520f1ac809d92947f0de5c8b",
+    "golden11.model3.json": "ed152b0f0605eea0a098879ef8b0306c3ff66afd988bec5e9e404750d4b78cfd",
+    "golden11.physics3.json": "9c6c643abf56ac263fd3d5ff40a84c2e1a52b724901b9eaa6107ee0447a0e42c",
+    "golden11.pose3.json": "014f7dccc20cad4645f24f741aa03da933f5918822094cc52cf968f134ae827b"
+  }
+}

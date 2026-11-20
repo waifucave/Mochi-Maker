@@ -1,0 +1,20 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0011",
+      "name": "tile",
+      "asset": "6cca9805f0ae0520b41aa23bcb8e352c3b80020a912f5a0331baf9d24848d35e",
+      "x": 0,
+      "y": 0,
+      "width": 20,
+      "height": 20,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

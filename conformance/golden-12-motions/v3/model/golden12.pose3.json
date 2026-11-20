@@ -1,0 +1,16 @@
+{
+  "Type": "Live2D Pose",
+  "FadeInTime": 0,
+  "Groups": [
+    [
+      {
+        "Id": "Part_Open",
+        "Link": []
+      },
+      {
+        "Id": "Part_Closed",
+        "Link": []
+      }
+    ]
+  ]
+}

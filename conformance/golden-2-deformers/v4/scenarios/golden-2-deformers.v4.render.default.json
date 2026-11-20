@@ -1,0 +1,11 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-2-deformers.v4.render.default",
+  "model": "golden-2-deformers/v4/model/golden2.model3.json",
+  "parameters": {},
+  "partOpacities": {},
+  "render": {
+    "width": 512,
+    "height": 512
+  }
+}

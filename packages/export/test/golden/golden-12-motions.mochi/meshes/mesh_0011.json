@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0011",
+  "exportId": "Mesh_Part_Closed",
+  "name": "Mesh_Part_Closed",
+  "part": "part_0010",
+  "deformer": null,
+  "layer": "layer_0001",
+  "uv": [
+    [0, 0],
+    [20, 0],
+    [20, 20],
+    [0, 20]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [60, 20],
+          [80, 20],
+          [80, 40],
+          [60, 40]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

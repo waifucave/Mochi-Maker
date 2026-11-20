@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0020",
+  "exportId": "Chain",
+  "name": "Chain",
+  "part": null,
+  "deformer": "rot_0019",
+  "layer": "layer_0009",
+  "uv": [
+    [0, 0],
+    [30, 0],
+    [30, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [-15, -15],
+          [15, -15],
+          [15, 15],
+          [-15, 15]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1.5, 1, 0.2],
+        "screen": [0, 0.4, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

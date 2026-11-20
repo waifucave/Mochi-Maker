@@ -1,0 +1,27 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamBS",
+      "GroupId": "",
+      "Name": "ParamBS"
+    },
+    {
+      "Id": "ParamC",
+      "GroupId": "",
+      "Name": "ParamC"
+    },
+    {
+      "Id": "ParamC2",
+      "GroupId": "",
+      "Name": "ParamC2"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "Part_BS",
+      "Name": "Part_BS"
+    }
+  ]
+}

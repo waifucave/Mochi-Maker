@@ -1,0 +1,54 @@
+{
+  "format": "mochi-maker-project",
+  "version": 12,
+  "writer": "@mochi-maker/core 0.0.0",
+  "seq": 5,
+  "project": {
+    "kind": "project",
+    "uid": "project",
+    "canvas": {
+      "width": 400,
+      "height": 300,
+      "pixelsPerUnit": 400,
+      "originX": 200,
+      "originY": 150
+    },
+    "parameterOrder": ["param_0001"],
+    "parameterGroupOrder": [],
+    "root": ["part_0002"],
+    "deformerOrder": [],
+    "layerOrder": ["layer_0003"],
+    "glueOrder": [],
+    "expressionOrder": [],
+    "motionOrder": [],
+    "soundOrder": [],
+    "physicsOrder": [],
+    "motionSyncOrder": [],
+    "physicsFps": 0,
+    "deformPaths": [],
+    "animationTemplates": [],
+    "hitAreas": [
+      {
+        "mesh": "mesh_0004",
+        "name": "Body"
+      }
+    ],
+    "standardGroups": {
+      "eyeBlink": [],
+      "lipSync": []
+    },
+    "combinedParameters": [],
+    "userData": [],
+    "pose": {
+      "fadeIn": null,
+      "groups": []
+    },
+    "exportSettings": {
+      "mocVersion": 5,
+      "minimumVersion": 5,
+      "atlasSize": 1024,
+      "fileStem": "golden1",
+      "includeGuideImages": false
+    }
+  }
+}

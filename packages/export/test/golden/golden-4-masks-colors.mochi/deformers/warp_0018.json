@@ -1,0 +1,30 @@
+{
+  "kind": "warp",
+  "uid": "warp_0018",
+  "exportId": "Warp_Color",
+  "name": "Warp_Color",
+  "part": null,
+  "parent": null,
+  "enabled": true,
+  "rows": 1,
+  "cols": 1,
+  "cellMode": "bilinear",
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "grid": [
+          [10, 110],
+          [80, 110],
+          [10, 180],
+          [80, 180]
+        ],
+        "opacity": 1,
+        "multiply": [0.5, 1, 1],
+        "screen": [0.2, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

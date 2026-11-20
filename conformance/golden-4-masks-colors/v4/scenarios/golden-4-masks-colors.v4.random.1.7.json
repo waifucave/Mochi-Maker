@@ -1,0 +1,10 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-4-masks-colors.v4.random.1.7",
+  "model": "golden-4-masks-colors/v4/model/golden4.model3.json",
+  "parameters": {
+    "ParamTint": 0.121286,
+    "ParamMask": -0.01826
+  },
+  "partOpacities": {}
+}

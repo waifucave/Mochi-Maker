@@ -1,0 +1,88 @@
+{
+  "parameters": [
+    {
+      "kind": "parameter",
+      "uid": "param_0002",
+      "exportId": "P_Linear",
+      "name": "P_Linear",
+      "group": null,
+      "min": -100,
+      "max": 100,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-100, 0, 100]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0003",
+      "exportId": "P_Step",
+      "name": "P_Step",
+      "group": null,
+      "min": -100,
+      "max": 100,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-100, 0, 100]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0004",
+      "exportId": "P_Bez",
+      "name": "P_Bez",
+      "group": null,
+      "min": -100,
+      "max": 100,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-100, 0, 100]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0005",
+      "exportId": "P_Fade",
+      "name": "P_Fade",
+      "group": null,
+      "min": -100,
+      "max": 100,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-100, 0, 100]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0006",
+      "exportId": "P_Loop",
+      "name": "P_Loop",
+      "group": null,
+      "min": -100,
+      "max": 100,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-100, 0, 100]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0007",
+      "exportId": "P_BezR",
+      "name": "P_BezR",
+      "group": null,
+      "min": -100,
+      "max": 100,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-100, 0, 100]
+    }
+  ]
+}

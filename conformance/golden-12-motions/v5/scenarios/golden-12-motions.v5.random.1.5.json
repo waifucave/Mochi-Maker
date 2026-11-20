@@ -1,0 +1,17 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-12-motions.v5.random.1.5",
+  "model": "golden-12-motions/v5/model/golden12.model3.json",
+  "parameters": {
+    "P_Linear": -26.040907,
+    "P_Step": -75.236202,
+    "P_Bez": -104.373518,
+    "P_Fade": 67.831449,
+    "P_Loop": 22.902435,
+    "P_BezR": -111.836738
+  },
+  "partOpacities": {
+    "Part_Open": 0.264658,
+    "Part_Closed": 0.048723
+  }
+}

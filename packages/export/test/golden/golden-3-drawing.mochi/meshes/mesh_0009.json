@@ -1,0 +1,45 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0009",
+  "exportId": "Back_B",
+  "name": "Back_B",
+  "part": "part_0002",
+  "deformer": null,
+  "layer": "layer_0005",
+  "uv": [
+    [0, 0],
+    [40, 0],
+    [40, 40],
+    [0, 40]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": {
+    "masks": ["mesh_0008"],
+    "invert": false
+  },
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [70, 20],
+          [110, 20],
+          [110, 60],
+          [70, 60]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

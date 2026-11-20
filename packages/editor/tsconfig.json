@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@mochi-maker/core": ["../core/src/index.ts"],
+      "@mochi-maker/geometry": ["../geometry/src/index.ts"],
+      "@mochi-maker/art": ["../art/src/index.ts"],
+      "@mochi-maker/export": ["../export/src/index.ts"],
+      "@mochi-maker/api/browser": ["../api/src/browser.ts"]
+    }
+  },
+  "include": ["src"]
+}

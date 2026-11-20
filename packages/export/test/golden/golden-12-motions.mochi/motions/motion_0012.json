@@ -1,0 +1,73 @@
+{
+  "kind": "motion",
+  "uid": "motion_0012",
+  "name": "curves",
+  "group": "TapBody",
+  "duration": 2,
+  "fps": 8,
+  "loop": false,
+  "restrictedBeziers": false,
+  "fadeIn": 0,
+  "fadeOut": 0,
+  "curves": [
+    {
+      "target": "model",
+      "model": "Opacity",
+      "object": null,
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 1, 0, 2, 0.5],
+      "auto": []
+    },
+    {
+      "target": "parameter",
+      "model": null,
+      "object": "param_0002",
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 0, 0, 1, 20, 0, 2, -10],
+      "auto": []
+    },
+    {
+      "target": "parameter",
+      "model": null,
+      "object": "param_0003",
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 0, 2, 0.5, 5, 3, 1.5, 8],
+      "auto": []
+    },
+    {
+      "target": "parameter",
+      "model": null,
+      "object": "param_0004",
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 0, 1, 0.25, 10, 0.75, 30, 1, 40, 0, 2, 40],
+      "auto": []
+    },
+    {
+      "target": "parameter",
+      "model": null,
+      "object": "param_0005",
+      "fadeIn": 1,
+      "fadeOut": null,
+      "segments": [0, 50, 0, 2, 50],
+      "auto": []
+    }
+  ],
+  "events": [
+    {
+      "time": 0.5,
+      "value": "half"
+    },
+    {
+      "time": 1.5,
+      "value": "late"
+    }
+  ],
+  "sound": null,
+  "motionSync": null,
+  "workArea": null,
+  "markers": []
+}

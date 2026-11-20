@@ -1,0 +1,19 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-11-animation.v4.random.1.7",
+  "model": "golden-11-animation/v4/model/golden11.model3.json",
+  "parameters": {
+    "ParamA": -10.012285,
+    "ParamB": 1.530427,
+    "ParamC": 13.466436,
+    "ParamIn": -11.042383,
+    "ParamOut": 43.009432,
+    "PartArmA": -0.005481,
+    "PartArmB": 0.332533
+  },
+  "partOpacities": {
+    "PartArmA": 0.117598,
+    "PartArmB": 0.401243,
+    "PartArmLink": 0.324325
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "format": "mochi2d-render/0",
+  "scenario": "golden-14-reimport.v4.render.default",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "png": "golden-14-reimport.v4.render.default.png",
+  "alpha": "premultiplied",
+  "width": 512,
+  "height": 512,
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "pixelsPerUnit": 512,
+  "center": [
+    0,
+    0
+  ],
+  "masks": {
+    "mode": "per-drawable",
+    "size": 4096,
+    "offscreenSize": 256,
+    "meshes": "all"
+  },
+  "notes": []
+}

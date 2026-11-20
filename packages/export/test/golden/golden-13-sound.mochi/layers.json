@@ -1,0 +1,20 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0001",
+      "name": "mouth",
+      "asset": "5deda5fd79e8836aa6d9ada56bc2a7c13acd8fa32d7326a40048badd443b6abf",
+      "x": 85,
+      "y": 95,
+      "width": 30,
+      "height": 10,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

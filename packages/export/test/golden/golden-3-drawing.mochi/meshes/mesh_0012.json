@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0012",
+  "exportId": "Tinted",
+  "name": "Tinted",
+  "part": null,
+  "deformer": "warp_0011",
+  "layer": "layer_0007",
+  "uv": [
+    [0, 0],
+    [30, 0],
+    [30, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [0.2, 0.2],
+          [0.8, 0.2],
+          [0.8, 0.8],
+          [0.2, 0.8]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [0.5, 1, 1],
+        "screen": [0, 0.5, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

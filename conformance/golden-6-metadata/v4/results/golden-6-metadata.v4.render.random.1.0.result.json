@@ -1,0 +1,89 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-6-metadata.v4.render.random.1.0",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "originX": 200,
+    "originY": 200,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamEyeLOpen",
+      "value": 0.6906110048294067
+    },
+    {
+      "id": "ParamEyeROpen",
+      "value": 0
+    },
+    {
+      "id": "ParamMouthOpenY",
+      "value": 0.5411710143089294
+    },
+    {
+      "id": "ParamAngleX",
+      "value": 30
+    },
+    {
+      "id": "ParamAngleY",
+      "value": 30
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartHead",
+      "opacity": 0.2811039984226227
+    },
+    {
+      "id": "PartBody",
+      "opacity": 0.6128389835357666
+    }
+  ],
+  "drawables": [
+    {
+      "id": "Head",
+      "visible": true,
+      "opacity": 0.2811039984226227,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.125, 0.3499999940395355, 0.125, 0.3499999940395355, 0.125, 0.10000000149011612, -0.125, 0.10000000149011612]
+    },
+    {
+      "id": "EyeL",
+      "visible": true,
+      "opacity": 0.2811039984226227,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.07500000298023224, 0.24613264203071594, -0.02500000037252903, 0.24613264203071594, -0.02500000037252903, 0.22886735200881958, -0.07500000298023224, 0.22886735200881958]
+    },
+    {
+      "id": "Mouth",
+      "visible": true,
+      "opacity": 0.2811039984226227,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.03750000149011612, 0.16249999403953552, 0.03750000149011612, 0.16249999403953552, 0.03750000149011612, 0.12397071719169617, -0.03750000149011612, 0.12397071719169617]
+    },
+    {
+      "id": "Body",
+      "visible": true,
+      "opacity": 0.6128389835357666,
+      "drawOrder": 500,
+      "renderOrder": 3,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.20000000298023224, 0, 0.20000000298023224, 0, 0.20000000298023224, -0.3499999940395355, -0.20000000298023224, -0.3499999940395355]
+    }
+  ],
+  "warnings": []
+}
+

@@ -1,0 +1,42 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0021",
+  "exportId": "ArtMesh_Shade",
+  "name": "ArtMesh_Shade",
+  "part": "part_0006",
+  "deformer": null,
+  "layer": "layer_0020",
+  "uv": [
+    [0, 0],
+    [30, 0],
+    [30, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": false,
+  "enabled": true,
+  "legacyBlend": "multiplicative",
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [60, 220],
+          [90, 220],
+          [90, 250],
+          [60, 250]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

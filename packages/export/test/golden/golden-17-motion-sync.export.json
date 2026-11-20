@@ -1,0 +1,10 @@
+{
+  "mocVersion": 5,
+  "files": {
+    "golden17.1024/texture_00.png": "21840e3f776207ab3bd179aa35700f634eef7e1fdf3cd43f20659d143274125e",
+    "golden17.cdi3.json": "46a6a22b5f8f14cbf8a247ca3e7604e9254f68b33b3fbfe6828c126eb353d00c",
+    "golden17.moc3": "0e7ded70de465ad9e4c7dc86a6d55382fa5f47582c68ff3dcdfd96c6672de2af",
+    "golden17.model3.json": "a375d228b5338cd50d872c302d7f42d7c1a907fef2af96b35880c0853e7a8b8e",
+    "golden17.motionsync3.json": "5c4601884e6db6a3ebfbc47f995dba2e530b32350478bf0149e4d26ab84b71b4"
+  }
+}

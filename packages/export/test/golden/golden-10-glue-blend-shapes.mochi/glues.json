@@ -1,0 +1,112 @@
+{
+  "glues": [
+    {
+      "kind": "glue",
+      "uid": "glue_0005",
+      "exportId": "Glue_Up",
+      "name": "Glue_Up",
+      "meshA": "mesh_0003",
+      "meshB": "mesh_0004",
+      "pairs": [
+        [1, 0.5, 0, 0.5]
+      ],
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "intensity": 0.5
+          }
+        ]
+      },
+      "blendShapes": [
+        {
+          "parameter": "param_0001",
+          "keys": [0, 1],
+          "base": 0,
+          "deltas": [
+            {
+              "intensity": 0
+            },
+            {
+              "intensity": 0.3
+            }
+          ],
+          "constraints": []
+        }
+      ]
+    },
+    {
+      "kind": "glue",
+      "uid": "glue_0008",
+      "exportId": "Glue_Down",
+      "name": "Glue_Down",
+      "meshA": "mesh_0006",
+      "meshB": "mesh_0007",
+      "pairs": [
+        [1, 0.5, 0, 0.5]
+      ],
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "intensity": 0.5
+          }
+        ]
+      },
+      "blendShapes": [
+        {
+          "parameter": "param_0001",
+          "keys": [0, 1],
+          "base": 0,
+          "deltas": [
+            {
+              "intensity": 0
+            },
+            {
+              "intensity": -0.5
+            }
+          ],
+          "constraints": []
+        }
+      ]
+    },
+    {
+      "kind": "glue",
+      "uid": "glue_0011",
+      "exportId": "Glue_Clamp",
+      "name": "Glue_Clamp",
+      "meshA": "mesh_0009",
+      "meshB": "mesh_0010",
+      "pairs": [
+        [1, 0.5, 0, 0.5]
+      ],
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "intensity": 0.5
+          }
+        ]
+      },
+      "blendShapes": [
+        {
+          "parameter": "param_0001",
+          "keys": [0, 1],
+          "base": 0,
+          "deltas": [
+            {
+              "intensity": 0
+            },
+            {
+              "intensity": 0.8
+            }
+          ],
+          "constraints": []
+        }
+      ]
+    }
+  ]
+}

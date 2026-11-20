@@ -1,0 +1,12 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-3-drawing.v4.random.1.6",
+  "model": "golden-3-drawing/v4/model/golden3.model3.json",
+  "parameters": {
+    "ParamOrder": 0.341929
+  },
+  "partOpacities": {
+    "Part_Back": 0.767108,
+    "Part_Front": 0.285862
+  }
+}

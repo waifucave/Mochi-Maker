@@ -1,0 +1,46 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "P_Linear",
+      "GroupId": "",
+      "Name": "P_Linear"
+    },
+    {
+      "Id": "P_Step",
+      "GroupId": "",
+      "Name": "P_Step"
+    },
+    {
+      "Id": "P_Bez",
+      "GroupId": "",
+      "Name": "P_Bez"
+    },
+    {
+      "Id": "P_Fade",
+      "GroupId": "",
+      "Name": "P_Fade"
+    },
+    {
+      "Id": "P_Loop",
+      "GroupId": "",
+      "Name": "P_Loop"
+    },
+    {
+      "Id": "P_BezR",
+      "GroupId": "",
+      "Name": "P_BezR"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "Part_Open",
+      "Name": "Part_Open"
+    },
+    {
+      "Id": "Part_Closed",
+      "Name": "Part_Closed"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-15-nested-deformers.v3.random.1.7",
+  "model": "golden-15-nested-deformers/v3/model/golden15.model3.json",
+  "parameters": {
+    "ParamBend": 0.03631,
+    "ParamAngle": -41.154326
+  },
+  "partOpacities": {
+    "PartBody": 0.427382
+  }
+}

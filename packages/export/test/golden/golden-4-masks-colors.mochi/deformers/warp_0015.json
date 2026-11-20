@@ -1,0 +1,47 @@
+{
+  "kind": "warp",
+  "uid": "warp_0015",
+  "exportId": "Warp_Mask",
+  "name": "Warp_Mask",
+  "part": null,
+  "parent": null,
+  "enabled": true,
+  "rows": 1,
+  "cols": 1,
+  "cellMode": "bilinear",
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0002",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "grid": [
+          [100, 100],
+          [180, 100],
+          [100, 180],
+          [180, 180]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "grid": [
+          [120, 100],
+          [200, 100],
+          [120, 180],
+          [200, 180]
+        ],
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

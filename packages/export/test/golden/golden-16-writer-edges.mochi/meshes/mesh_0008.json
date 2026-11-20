@@ -1,0 +1,116 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0008",
+  "exportId": "ArtMesh_Grid",
+  "name": "ArtMesh_Grid",
+  "part": "part_0006",
+  "deformer": null,
+  "layer": "layer_0007",
+  "uv": [
+    [0, 0],
+    [40, 0],
+    [40, 40],
+    [0, 40]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0001",
+        "keys": [-1, 0, 1]
+      },
+      {
+        "parameter": "param_0002",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [-10, 20],
+          [30, 20],
+          [30, 60],
+          [-10, 60]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [20, 20],
+          [60, 20],
+          [60, 60],
+          [20, 60]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [50, 20],
+          [90, 20],
+          [90, 60],
+          [50, 60]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [-10, 60],
+          [40, 60],
+          [40, 100],
+          [-10, 100]
+        ],
+        "opacity": 0.7,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [20, 60],
+          [70, 60],
+          [70, 100],
+          [20, 100]
+        ],
+        "opacity": 0.7,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [50, 60],
+          [100, 60],
+          [100, 100],
+          [50, 100]
+        ],
+        "opacity": 0.7,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

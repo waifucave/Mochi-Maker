@@ -1,0 +1,24 @@
+{
+  "kind": "expression",
+  "uid": "expr_0015",
+  "name": "smile",
+  "fadeIn": 0.5,
+  "fadeOut": 0.5,
+  "entries": [
+    {
+      "parameter": "param_0001",
+      "value": 4,
+      "blend": "Add"
+    },
+    {
+      "parameter": "param_0002",
+      "value": 1.5,
+      "blend": "Multiply"
+    },
+    {
+      "parameter": "param_0003",
+      "value": 7,
+      "blend": "Overwrite"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-5-glue.v3.random.1.5",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 200,
+    "height": 200,
+    "originX": 100,
+    "originY": 100,
+    "pixelsPerUnit": 200
+  },
+  "parameters": [
+    {
+      "id": "ParamGlue",
+      "value": 0.17165499925613403
+    }
+  ],
+  "parts": [],
+  "drawables": [
+    {
+      "id": "A",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.4000000059604645, 0.4000000059604645, -0.19570863246917725, 0.3957086205482483, -0.20000000298023224, 0.20000000298023224, -0.4000000059604645, 0.20000000298023224]
+    },
+    {
+      "id": "B",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.04356294125318527, 0.2564370632171631, 0.15000000596046448, 0.3500000238418579, 0.10000000149011612, 0.10000000149011612, -0.10000000149011612, 0.10000000149011612]
+    },
+    {
+      "id": "C",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.15000000596046448, 0.3500000238418579, 0.4000000059604645, 0.4000000059604645, 0.4000000059604645, 0.20000000298023224, 0.043562933802604675, 0.2564370632171631]
+    }
+  ],
+  "warnings": []
+}
+

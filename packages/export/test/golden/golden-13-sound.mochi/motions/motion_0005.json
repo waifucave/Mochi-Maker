@@ -1,0 +1,18 @@
+{
+  "kind": "motion",
+  "uid": "motion_0005",
+  "name": "talk",
+  "group": "TapBody",
+  "duration": 1,
+  "fps": 30,
+  "loop": false,
+  "restrictedBeziers": false,
+  "fadeIn": 0,
+  "fadeOut": 0,
+  "curves": [],
+  "events": [],
+  "sound": "sound_0004",
+  "motionSync": null,
+  "workArea": null,
+  "markers": []
+}

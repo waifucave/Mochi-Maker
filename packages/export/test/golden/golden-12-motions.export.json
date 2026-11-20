@@ -1,0 +1,13 @@
+{
+  "mocVersion": 5,
+  "files": {
+    "golden12.1024/texture_00.png": "4a5c78a891cd6d20eafba98a1d82ca4662e1acdbbf5d203c11a9e2252c41741a",
+    "golden12.cdi3.json": "42e3bac44633d5b0cdd53e22c6bdb234e25ff62c7e34acec094e6abe055f1a5f",
+    "golden12.moc3": "b92d827534ee7f29c02b01f4fc352e818525ac0f8c6927884ede87b833affdd0",
+    "golden12.model3.json": "593d5a6a49496e8cc6f4fca0b4b4ffa3f80ca5cf4ce94030815bb4c407afa904",
+    "golden12.pose3.json": "2c3e9a54205b63939db930f4f17af56f52a4aafae8555df99b208a52cee2560e",
+    "motions/close.motion3.json": "1cf629b7e704103371fe178eb769be6617a6db1df836178eebc12f7e10199bd7",
+    "motions/curves.motion3.json": "fa4839ee7e15bd0d51ae2f6fceba1127ad8d1a820856a43d081db30f7fd54cf9",
+    "motions/loop.motion3.json": "bbe28b1c657f56cc0b556f56b59df4ef0940099d149fa360827e834e1dd5deff"
+  }
+}

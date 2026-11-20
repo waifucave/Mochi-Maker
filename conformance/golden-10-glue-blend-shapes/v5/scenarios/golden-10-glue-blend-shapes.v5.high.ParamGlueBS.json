@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-10-glue-blend-shapes.v5.high.ParamGlueBS",
+  "model": "golden-10-glue-blend-shapes/v5/model/golden10.model3.json",
+  "parameters": {
+    "ParamGlueBS": 1.5
+  },
+  "partOpacities": {}
+}

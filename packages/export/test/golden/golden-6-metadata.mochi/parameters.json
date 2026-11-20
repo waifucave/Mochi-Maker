@@ -1,0 +1,88 @@
+{
+  "parameters": [
+    {
+      "kind": "parameter",
+      "uid": "param_0003",
+      "exportId": "ParamEyeLOpen",
+      "name": "Eye L Open",
+      "group": "pgroup_0002",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0004",
+      "exportId": "ParamEyeROpen",
+      "name": "Eye R Open",
+      "group": "pgroup_0002",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0005",
+      "exportId": "ParamMouthOpenY",
+      "name": "Mouth Open",
+      "group": "pgroup_0001",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [0, 1]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0006",
+      "exportId": "ParamAngleX",
+      "name": "Angle X",
+      "group": null,
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-30, 0, 30]
+    },
+    {
+      "kind": "parameter",
+      "uid": "param_0007",
+      "exportId": "ParamAngleY",
+      "name": "Angle Y",
+      "group": null,
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "repeat": false,
+      "decimals": 3,
+      "type": "normal",
+      "keys": [-30, 0, 30]
+    },
+    {
+      "kind": "parameterGroup",
+      "uid": "pgroup_0001",
+      "exportId": "ParamGroupFace",
+      "name": "Face",
+      "parent": null
+    },
+    {
+      "kind": "parameterGroup",
+      "uid": "pgroup_0002",
+      "exportId": "ParamGroupEyes",
+      "name": "Eyes",
+      "parent": "pgroup_0001"
+    }
+  ]
+}

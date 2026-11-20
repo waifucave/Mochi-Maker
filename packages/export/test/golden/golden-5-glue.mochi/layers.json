@@ -1,0 +1,52 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0002",
+      "name": "a",
+      "asset": "4f840074f91f18817049fc6c5f7198f3b93eaf8fcb10a8132da9610eb46cbe9e",
+      "x": 20,
+      "y": 20,
+      "width": 40,
+      "height": 40,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0003",
+      "name": "b",
+      "asset": "acccaff6d2263b72c1733102d1f3c300d090401c93bf5feb9800f82a2b314acb",
+      "x": 80,
+      "y": 40,
+      "width": 40,
+      "height": 40,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    },
+    {
+      "kind": "layer",
+      "uid": "layer_0004",
+      "name": "c",
+      "asset": "200ac4f376b157a78ebb70a5a526c5413d5721ffd0be97058844b68c26a6f83f",
+      "x": 140,
+      "y": 20,
+      "width": 40,
+      "height": 40,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

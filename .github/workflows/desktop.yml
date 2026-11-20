@@ -1,0 +1,164 @@
+# The desktop app, packaged on each system's own runner: Windows x64, macOS arm64 and
+# x64, and Linux x64. Each job builds the packages, the editor and the app, packages it with
+# packages/desktop/package.mjs, runs the smoke test (packages/desktop/smoke.mjs: the packaged app
+# starts, opens golden 1, exports it and quits), and keeps the zipped app as the run's artifact.
+#
+# Unsigned by default. Signing and notarization are a place left for later: run by hand with
+# «sign» checked once the secrets named below are added to the repository; without them the signing steps
+# fail with a message saying which secret is missing.
+name: Desktop
+
+on:
+  workflow_dispatch:
+    inputs:
+      sign:
+        description: 'Sign (and on macOS notarize) the apps; needs the signing secrets'
+        type: boolean
+        default: false
+      macos_x64:
+        description: 'Also build the macOS x64 app (always on tags; macOS minutes cost ten times)'
+        type: boolean
+        default: false
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: ${{ matrix.platform }}-${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      # The macOS x64 app (built and smoke-tested on Apple silicon, under Rosetta 2: the Intel runner
+      # has no GPU, and the editor's view needs WebGL2) only on tags, or by hand with «macos_x64»
+      #: macOS minutes cost ten times a Linux minute. `exclude` cannot drop an `include`
+      # entry, so the list itself is chosen.
+      matrix:
+        include: >-
+          ${{ fromJSON((startsWith(github.ref, 'refs/tags/v') || inputs.macos_x64)
+          && '[{"os":"windows-latest","platform":"win32","arch":"x64"},{"os":"macos-15","platform":"darwin","arch":"arm64"},{"os":"macos-15","platform":"darwin","arch":"x64"},{"os":"ubuntu-latest","platform":"linux","arch":"x64"}]'
+          || '[{"os":"windows-latest","platform":"win32","arch":"x64"},{"os":"macos-15","platform":"darwin","arch":"arm64"},{"os":"ubuntu-latest","platform":"linux","arch":"x64"}]') }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      # On a version tag, the app's version (the tag v0.1.0; the scripts drop the v); otherwise 0.0.0.
+      MOCHI_APP_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+      APP_DIR: packages/desktop/out/Mochi Maker-${{ matrix.platform }}-${{ matrix.arch }}
+      ARCHIVE: mochi-maker-${{ matrix.platform }}-${{ matrix.arch }}.zip
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run build:editor
+      - name: Rosetta 2 (the x64 app on Apple silicon)
+        if: matrix.platform == 'darwin' && matrix.arch == 'x64'
+        run: softwareupdate --install-rosetta --agree-to-license || true
+      - name: Package the app
+        working-directory: packages/desktop
+        run: node build.mjs && node package.mjs ${{ matrix.platform }} ${{ matrix.arch }}
+
+      # macOS on Apple silicon runs only signed code: without a Developer ID, the bundle gets an
+      # ad-hoc signature, so that it is whole after packaging (it is still not notarized).
+      - name: Ad-hoc signature (macOS, unsigned builds)
+        if: matrix.platform == 'darwin' && inputs.sign != true
+        run: codesign --force --deep --sign - "$APP_DIR/Mochi Maker.app"
+
+      # ---- Signing: a place for later, off by default. -----------------------------------------
+      - name: Sign and notarize (macOS)
+        if: matrix.platform == 'darwin' && inputs.sign == true
+        env:
+          MAC_CERTIFICATE_P12_BASE64: ${{ secrets.MAC_CERTIFICATE_P12_BASE64 }}
+          MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          MAC_SIGNING_IDENTITY: ${{ secrets.MAC_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          for s in MAC_CERTIFICATE_P12_BASE64 MAC_CERTIFICATE_PASSWORD MAC_SIGNING_IDENTITY APPLE_ID APPLE_TEAM_ID APPLE_APP_PASSWORD; do
+            if [ -z "${!s}" ]; then echo "::error::Signing needs the secret $s"; exit 1; fi
+          done
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          echo "$MAC_CERTIFICATE_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MAC_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN"
+          codesign --force --deep --options runtime --timestamp \
+            --entitlements packages/desktop/entitlements.mac.plist \
+            --sign "$MAC_SIGNING_IDENTITY" "$APP_DIR/Mochi Maker.app"
+          ditto -c -k --keepParent "$APP_DIR/Mochi Maker.app" "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" --wait \
+            --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD"
+          xcrun stapler staple "$APP_DIR/Mochi Maker.app"
+      - name: Sign (Windows)
+        if: matrix.platform == 'win32' && inputs.sign == true
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE_PFX_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          foreach ($s in 'WINDOWS_CERTIFICATE_PFX_BASE64', 'WINDOWS_CERTIFICATE_PASSWORD') {
+            if (-not [Environment]::GetEnvironmentVariable($s)) { Write-Error "Signing needs the secret $s"; exit 1 }
+          }
+          $pfx = Join-Path $env:RUNNER_TEMP 'cert.pfx'
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_PFX_BASE64))
+          $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe' | Select-Object -Last 1
+          & $signtool.FullName sign /f $pfx /p $env:WINDOWS_CERTIFICATE_PASSWORD /fd sha256 `
+            /tr http://timestamp.digicert.com /td sha256 "$env:APP_DIR\mochi-maker.exe"
+      # ------------------------------------------------------------------------------------------
+
+      - name: Smoke test (start, open golden 1, export, quit)
+        working-directory: packages/desktop
+        run: node smoke.mjs ${{ matrix.platform }} ${{ matrix.arch }}
+
+      # Zipped on the runner, so that the macOS bundle keeps its symlinks and permissions.
+      - name: Zip (macOS)
+        if: matrix.platform == 'darwin'
+        run: ditto -c -k --keepParent "$APP_DIR" "$ARCHIVE"
+      - name: Zip (Windows)
+        if: matrix.platform == 'win32'
+        shell: pwsh
+        run: Compress-Archive -Path "$env:APP_DIR" -DestinationPath "$env:ARCHIVE"
+      - name: Zip (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          (cd packages/desktop/out && zip -qry "../../../$ARCHIVE" "Mochi Maker-linux-x64")
+          ls -l "$ARCHIVE"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mochi-maker-${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ env.ARCHIVE }}
+          if-no-files-found: error
+          retention-days: 30
+
+  # On a version tag: a GitHub release (a pre-release, while the apps are unsigned) with the four
+  # zipped apps and the notes in packages/desktop/release-notes.md.
+  release:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mochi-maker-*
+          path: dist
+          merge-multiple: true
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          ls -l dist
+          sed "s/{{version}}/${TAG#v}/g" packages/desktop/release-notes.md > notes.md
+          gh release create "$TAG" dist/*.zip --prerelease --verify-tag \
+            --title "Mochi Maker ${TAG#v}" --notes-file notes.md

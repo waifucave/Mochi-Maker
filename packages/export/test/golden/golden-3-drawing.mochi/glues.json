@@ -1,0 +1,25 @@
+{
+  "glues": [
+    {
+      "kind": "glue",
+      "uid": "glue_0013",
+      "exportId": "Glue_AB",
+      "name": "Glue_AB",
+      "meshA": "mesh_0008",
+      "meshB": "mesh_0009",
+      "pairs": [
+        [1, 0.5, 0, 0.5]
+      ],
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "intensity": 1
+          }
+        ]
+      },
+      "blendShapes": []
+    }
+  ]
+}

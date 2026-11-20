@@ -1,0 +1,15 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-16-writer-edges.v3.random.1.0",
+  "model": "golden-16-writer-edges/v3/model/golden16.model3.json",
+  "parameters": {
+    "ParamX": 0.381222,
+    "ParamY": -0.245896,
+    "ParamSpin": 14.821402,
+    "ParamFlip": 1.221576
+  },
+  "partOpacities": {
+    "Part_Root": 0.968378,
+    "Part_Child": 0.281104
+  }
+}

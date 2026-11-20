@@ -1,0 +1,37 @@
+{
+  "kind": "motion",
+  "uid": "motion_0014",
+  "name": "loop",
+  "group": "Idle",
+  "duration": 1,
+  "fps": 8,
+  "loop": true,
+  "restrictedBeziers": true,
+  "fadeIn": 0,
+  "fadeOut": 0,
+  "curves": [
+    {
+      "target": "parameter",
+      "model": null,
+      "object": "param_0006",
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 0, 0, 1, 10],
+      "auto": []
+    },
+    {
+      "target": "parameter",
+      "model": null,
+      "object": "param_0007",
+      "fadeIn": null,
+      "fadeOut": null,
+      "segments": [0, 0, 1, 0.2, 30, 0.8, -10, 1, 10],
+      "auto": []
+    }
+  ],
+  "events": [],
+  "sound": null,
+  "motionSync": null,
+  "workArea": null,
+  "markers": []
+}

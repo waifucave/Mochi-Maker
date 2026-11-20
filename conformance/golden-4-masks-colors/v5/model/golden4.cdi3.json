@@ -1,0 +1,17 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamTint",
+      "GroupId": "",
+      "Name": "ParamTint"
+    },
+    {
+      "Id": "ParamMask",
+      "GroupId": "",
+      "Name": "ParamMask"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": []
+}

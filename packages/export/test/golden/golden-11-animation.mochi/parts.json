@@ -1,0 +1,70 @@
+{
+  "parts": [
+    {
+      "kind": "part",
+      "uid": "part_0008",
+      "exportId": "PartArmA",
+      "name": "PartArmA",
+      "parent": null,
+      "children": ["mesh_0012"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "inherit",
+      "guide": false,
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500
+          }
+        ]
+      },
+      "blendShapes": []
+    },
+    {
+      "kind": "part",
+      "uid": "part_0009",
+      "exportId": "PartArmB",
+      "name": "PartArmB",
+      "parent": null,
+      "children": ["mesh_0013"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "inherit",
+      "guide": false,
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500
+          }
+        ]
+      },
+      "blendShapes": []
+    },
+    {
+      "kind": "part",
+      "uid": "part_0010",
+      "exportId": "PartArmLink",
+      "name": "PartArmLink",
+      "parent": null,
+      "children": ["mesh_0014"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "inherit",
+      "guide": false,
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500
+          }
+        ]
+      },
+      "blendShapes": []
+    }
+  ]
+}

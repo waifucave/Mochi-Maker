@@ -1,0 +1,73 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-15-nested-deformers.v5.mid.ParamBend.0",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "originX": 200,
+    "originY": 200,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamBend",
+      "value": 0.5
+    },
+    {
+      "id": "ParamAngle",
+      "value": 0
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartBody",
+      "opacity": 1
+    }
+  ],
+  "drawables": [
+    {
+      "id": "ArtMesh_Face",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.1484738290309906, 0.27754414081573486, 0.2106075882911682, 0.25184348225593567, 0.21962735056877136, 0.0025946935638785362, -0.16560763120651245, 0.03815650939941406]
+    },
+    {
+      "id": "ArtMesh_Eye",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.0764554962515831, 0.19118234515190125, -0.016608593985438347, 0.18689890205860138, -0.01875031553208828, 0.15697544813156128, -0.07859721779823303, 0.16125889122486115]
+    },
+    {
+      "id": "ArtMesh_Badge",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.05122596025466919, -0.25416290760040283, 0.1258278489112854, -0.24644549190998077, 0.13354529440402985, -0.3210473656654358, 0.05894339829683304, -0.32876479625701904]
+    },
+    {
+      "id": "ArtMesh_Hat",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 3,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.0662505030632019, 0.2740527093410492, 0.08295327425003052, 0.2894875407218933, 0.09067070484161377, 0.2148856669664383, -0.05853307619690895, 0.1994508057832718]
+    }
+  ],
+  "warnings": []
+}
+

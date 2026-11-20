@@ -1,0 +1,97 @@
+{
+  "kind": "rotation",
+  "uid": "rot_0009",
+  "exportId": "Rotation_Spin",
+  "name": "Rotation_Spin",
+  "part": "part_0005",
+  "parent": null,
+  "enabled": true,
+  "baseAngle": 0,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0003",
+        "keys": [-180, 0, 180]
+      },
+      {
+        "parameter": "param_0004",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "angle": -180,
+        "originX": 200,
+        "originY": 100,
+        "scale": 1,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "angle": 0,
+        "originX": 200,
+        "originY": 100,
+        "scale": 1,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "angle": 180,
+        "originX": 200,
+        "originY": 100,
+        "scale": 1,
+        "mirrorX": false,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "angle": -180,
+        "originX": 200,
+        "originY": 100,
+        "scale": 1,
+        "mirrorX": true,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "angle": 0,
+        "originX": 200,
+        "originY": 100,
+        "scale": 1,
+        "mirrorX": true,
+        "mirrorY": false,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "angle": 180,
+        "originX": 200,
+        "originY": 100,
+        "scale": 1,
+        "mirrorX": true,
+        "mirrorY": true,
+        "opacity": 1,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

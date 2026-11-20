@@ -1,0 +1,45 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0010",
+  "exportId": "Front",
+  "name": "Front",
+  "part": "part_0003",
+  "deformer": null,
+  "layer": "layer_0006",
+  "uv": [
+    [0, 0],
+    [60, 0],
+    [60, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": {
+    "masks": ["mesh_0008"],
+    "invert": true
+  },
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [30, 50],
+          [90, 50],
+          [90, 80],
+          [30, 80]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

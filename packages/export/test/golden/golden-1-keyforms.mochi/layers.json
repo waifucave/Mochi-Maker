@@ -1,0 +1,20 @@
+{
+  "layers": [
+    {
+      "kind": "layer",
+      "uid": "layer_0003",
+      "name": "square",
+      "asset": "e6f07a876599726c94e3e7f6ca3cea3d21d4b4e54fc3f31207c069bc5c259a40",
+      "x": 50,
+      "y": 50,
+      "width": 100,
+      "height": 100,
+      "visible": true,
+      "opacity": 1,
+      "blendMode": "normal",
+      "clipped": false,
+      "notes": [],
+      "source": null
+    }
+  ]
+}

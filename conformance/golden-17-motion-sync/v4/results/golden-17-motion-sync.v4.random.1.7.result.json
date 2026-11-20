@@ -1,0 +1,38 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-17-motion-sync.v4.random.1.7",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 200,
+    "height": 200,
+    "originX": 100,
+    "originY": 100,
+    "pixelsPerUnit": 200
+  },
+  "parameters": [
+    {
+      "id": "ParamMouthOpenY",
+      "value": 0.12128599733114243
+    },
+    {
+      "id": "ParamMouthForm",
+      "value": -1
+    }
+  ],
+  "parts": [],
+  "drawables": [
+    {
+      "id": "Mouth",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.07363858073949814, 0.030000001192092896, 0.07363858073949814, 0.030000001192092896, 0.07363858073949814, -0.030000001192092896, -0.07363858073949814, -0.030000001192092896]
+    }
+  ],
+  "warnings": []
+}
+

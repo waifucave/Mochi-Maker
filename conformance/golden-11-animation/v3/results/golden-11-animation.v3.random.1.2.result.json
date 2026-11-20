@@ -1,0 +1,91 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-11-animation.v3.random.1.2",
+  "producer": "mochi2d@0.21.0",
+  "error": null,
+  "canvas": {
+    "width": 200,
+    "height": 200,
+    "originX": 100,
+    "originY": 100,
+    "pixelsPerUnit": 200
+  },
+  "parameters": [
+    {
+      "id": "ParamA",
+      "value": -6.424149990081787
+    },
+    {
+      "id": "ParamB",
+      "value": 0.07262100279331207
+    },
+    {
+      "id": "ParamC",
+      "value": -10
+    },
+    {
+      "id": "ParamIn",
+      "value": -2.1785409450531006
+    },
+    {
+      "id": "ParamOut",
+      "value": 8.134424209594727
+    },
+    {
+      "id": "PartArmA",
+      "value": 0.9480260014533997
+    },
+    {
+      "id": "PartArmB",
+      "value": 0.19230499863624573
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartArmA",
+      "opacity": 0.2054699957370758
+    },
+    {
+      "id": "PartArmB",
+      "opacity": 0.6581299901008606
+    },
+    {
+      "id": "PartArmLink",
+      "opacity": 0.5460820198059082
+    }
+  ],
+  "drawables": [
+    {
+      "id": "Mesh_PartArmA",
+      "visible": true,
+      "opacity": 0.2054699957370758,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.4000000059604645, 0.4000000059604645, -0.30000001192092896, 0.4000000059604645, -0.30000001192092896, 0.30000001192092896, -0.4000000059604645, 0.30000001192092896]
+    },
+    {
+      "id": "Mesh_PartArmB",
+      "visible": true,
+      "opacity": 0.6581299901008606,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.20000000298023224, 0.4000000059604645, -0.10000000149011612, 0.4000000059604645, -0.10000000149011612, 0.30000001192092896, -0.20000000298023224, 0.30000001192092896]
+    },
+    {
+      "id": "Mesh_PartArmLink",
+      "visible": true,
+      "opacity": 0.5460820198059082,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0, 0.4000000059604645, 0.10000000149011612, 0.4000000059604645, 0.10000000149011612, 0.30000001192092896, 0, 0.30000001192092896]
+    }
+  ],
+  "warnings": []
+}
+

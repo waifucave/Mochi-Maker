@@ -1,0 +1,11 @@
+{
+  "mocVersion": 5,
+  "files": {
+    "golden13.1024/texture_00.png": "e30b4babb0b8f072905d262bd1653ec10bcde7fb67e29f278d0392118649f2b8",
+    "golden13.cdi3.json": "9cfd4c756ffc477ca48dbb5bb128fb3bc018e958ed0a457e601ab613b0241e10",
+    "golden13.moc3": "1461a7183ae161832d556f89df43ac500787c03a41a48a885914c4c6008d869d",
+    "golden13.model3.json": "897d97f97c08a328956589b7cf8d63861b453ea9a10a2ee8cd15e69b0a1bfaef",
+    "motions/talk.motion3.json": "a46cdada6839abfa478125067ca046b953b0285c0b22e31d87267d5bc57348ea",
+    "sounds/voice.wav": "24b587b8951a5edda56cf3079065582b642ee12a26beccbbe08442c84e1e6c8f"
+  }
+}

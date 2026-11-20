@@ -1,0 +1,57 @@
+{
+  "settings": [
+    {
+      "kind": "physicsSetting",
+      "uid": "phys_0017",
+      "name": "Swing",
+      "inputs": [
+        {
+          "parameter": "param_0004",
+          "weight": 100,
+          "type": "X",
+          "reflect": false
+        }
+      ],
+      "outputs": [
+        {
+          "parameter": "param_0005",
+          "weight": 100,
+          "type": "Angle",
+          "reflect": false,
+          "particle": 1,
+          "scale": 1
+        }
+      ],
+      "particles": [
+        {
+          "x": 0,
+          "y": 0,
+          "mobility": 1,
+          "delay": 1,
+          "acceleration": 1,
+          "radius": 0
+        },
+        {
+          "x": 0,
+          "y": 10,
+          "mobility": 0.95,
+          "delay": 0.9,
+          "acceleration": 1.5,
+          "radius": 10
+        }
+      ],
+      "normalization": {
+        "position": {
+          "min": -10,
+          "default": 0,
+          "max": 10
+        },
+        "angle": {
+          "min": -10,
+          "default": 0,
+          "max": 10
+        }
+      }
+    }
+  ]
+}

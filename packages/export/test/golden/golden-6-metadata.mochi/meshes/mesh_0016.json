@@ -1,0 +1,60 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0016",
+  "exportId": "EyeL",
+  "name": "EyeL",
+  "part": "part_0008",
+  "deformer": null,
+  "layer": "layer_0012",
+  "uv": [
+    [0, 0],
+    [20, 0],
+    [20, 10],
+    [0, 10]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "clip": null,
+  "rig": {
+    "bindings": [
+      {
+        "parameter": "param_0003",
+        "keys": [0, 1]
+      }
+    ],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [170, 105],
+          [190, 105],
+          [190, 105],
+          [170, 105]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      },
+      {
+        "authored": true,
+        "positions": [
+          [170, 100],
+          [190, 100],
+          [190, 110],
+          [170, 110]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

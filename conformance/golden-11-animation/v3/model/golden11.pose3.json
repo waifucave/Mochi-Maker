@@ -1,0 +1,18 @@
+{
+  "Type": "Live2D Pose",
+  "FadeInTime": 0.5,
+  "Groups": [
+    [
+      {
+        "Id": "PartArmA",
+        "Link": [
+          "PartArmLink"
+        ]
+      },
+      {
+        "Id": "PartArmB",
+        "Link": []
+      }
+    ]
+  ]
+}
