@@ -162,7 +162,9 @@ describe('recording and templates', () => {
     await p.getByTestId('template-name').fill('Rise');
     await p.getByTestId('template-ok').click();
     await poll(() => p.getByTestId('template-message').textContent()).toContain('exists already');
+    expect(await p.locator('body > .backdrop').count()).toBe(1);
     await p.keyboard.press('Escape');
+    expect(await p.locator('body > .backdrop').count()).toBe(0);
     // Insert into the «close» motion at 0.5 s: P_Linear gets 0 at 0.5 and 20 at 1.5.
     await p.locator('[data-motion="close"]').click();
     await seek(p, 0.5);

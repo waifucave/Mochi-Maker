@@ -1,6 +1,6 @@
 {
   "format": "mochi2d-anim-result/0",
-  "producer": "mochi2d@0.21.0",
+  "producer": "mochi2d@0.22.0",
   "error": null,
   "warnings": [],
   "scenario": "golden-12-motions.v3.pose.switch",

@@ -204,6 +204,19 @@ const SAMPLES: Record<string, CommandCall[]> = {
       },
     },
   ],
+  'part.setOffscreen': [
+    {
+      name: 'part.setOffscreen',
+      args: {
+        target: '@part:PartHead',
+        offscreen: true,
+        blend: { color: 'overlay', alpha: 'atop' },
+        masks: ['@mesh:ArtMesh_Face'],
+        invert: true,
+      },
+    },
+    { name: 'part.setOffscreen', args: { target: '@part:PartBody', offscreen: true } },
+  ],
   'tree.move': [
     {
       name: 'tree.move',
@@ -232,6 +245,10 @@ const SAMPLES: Record<string, CommandCall[]> = {
         legacyBlend: 'multiplicative',
         layer: null,
       },
+    },
+    {
+      name: 'mesh.update',
+      args: { target: '@mesh:ArtMesh_Face', blend: { color: 'softLight', alpha: 'over' } },
     },
   ],
   'mesh.setClip': [

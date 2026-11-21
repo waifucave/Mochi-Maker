@@ -10,6 +10,7 @@ import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { APP_ID, MAC_CATEGORY } from './identity.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -32,6 +33,9 @@ const paths = await packager({
   electronVersion,
   platform,
   arch,
+  // macOS: the bundle ID; the helpers' IDs derive from it (<id>.helper…, <id>.loginhelper).
+  appBundleId: APP_ID,
+  appCategoryType: MAC_CATEGORY,
   asar: true,
   overwrite: true,
   prune: false,

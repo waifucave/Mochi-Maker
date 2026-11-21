@@ -61,13 +61,13 @@ states what Mochi Maker needs from Mochi2D as capabilities.
 | Glue | vertex pairs with weights, keyformed intensity | |
 | Clipping masks | normal and inverted | mask previews per drawable |
 | Colors | per-keyform multiply and screen colors on meshes and deformers | |
-| Offscreens and blend modes (`.moc3` v6) | — | part offscreens, the 18 color and 5 alpha blend codes |
+| Offscreens and blend modes (`.moc3` v6) | part offscreens, the 18 color and 5 alpha blend codes (M15) | |
 | Physics | pendulum settings: inputs, outputs, particles, normalization; live simulation in the preview | rig templates (hair, accessories) |
 | Expressions | `Add`, `Multiply`, `Overwrite` entries, fades | |
 | Motions | a timeline with linear, Bézier, stepped and inverse-stepped segments, events, fades, model curves (eye blink, lip sync, opacity) | audio track for reference, recording from live input |
 | Pose | mutually exclusive part groups with links | |
 | Hit areas and display names | `HitAreas` in the settings file; display names, parameter groups and combined parameters (`.cdi3.json`); user data (`.userdata3.json`) | |
-| Export | model folder or zip; `.moc3` v5 (default), v4 and v3 as compatibility targets | v6 |
+| Export | model folder or zip; `.moc3` v5 (default), v4 and v3 as compatibility targets; v6 for offscreens and blend modes (M15) | |
 
 Machine-learning features are out of scope (section 8).
 
@@ -99,11 +99,11 @@ which features each version can carry.
    version-3 export, or a blend shape on opacity for version 4. Each
    diagnostic names the object, the values (and for blend shapes the
    parameter), and a fix. Version 4 is a regular target (M13).
-3. **Version 6 comes later.** Only offscreens and blend modes need it. It
-   becomes an export target after two things: a native version-6 test model
-   is announced and the parts that matter for writing are confirmed (offscreen
-   flags, §1b.5; the count-37 group). Until then the document can hold no
-   offscreens or blend modes, so nothing can be lost.
+3. **Version 6 is written for what needs it** (M15): only offscreens and
+   blend modes do, and `auto` chooses it for them. Mochi2D 0.22.0 writes it,
+   and its documented table of blend codes and offscreen flags is the
+   authority. No native version 6 test model is at hand, so it is tested on
+   the project's own models.
 4. **Versions 1 and 2 are not targets.** Version 3 is a strict superset for
    exporting, and no app is known to need the older ones.
 5. **Automatic choice.** `export --moc-version auto` picks the lowest version
@@ -569,11 +569,9 @@ Document ──lint──► Lowering ──► model data (Mochi2D type) ──
 The same document and settings always give byte-identical output. Tests check
 this on golden projects (section 7).
 
-**moc3 import.** Reading an existing `.moc3` model into a document is not in
-the brief's scope. It would be very useful for testing (round trips on real
-models, section 7.3) and for users who want to edit existing models. It needs
-Mochi2D's reader to expose model data (M2) plus an inverse of the lowering.
-It is planned as roadmap M16.
+**moc3 import** (roadmap M16). A `.moc3` model folder opens as a project
+through Mochi2D's reader (M2) and an inverse of the lowering; the texture pages
+are kept as they are. [`import.md`](import.md) describes it.
 
 ### 4.4 Live preview through Mochi2D
 
@@ -732,12 +730,12 @@ segment type. Each has:
    and compare with the lowering's expectations: active flags, draw orders and
    render orders exactly; vertices within tolerance.
 2. **Export → load → render → compare** with the golden PNGs.
-3. **moc3 → document → moc3** (needs moc3 import, Q3). Import DeepSeek-chan,
-   export it, and require Mochi2D's evaluation of both files to be
-   **bit-identical** over a few hundred random poses, and the renders
-   byte-identical. That is the strongest test of the lowering, and it runs on
-   a real rig. It runs only where the model is available locally, and nothing
-   derived from it is committed (round report, Q2).
+3. **moc3 → document → moc3** ([`import.md`](import.md)). Every golden
+   project exported at versions 3–5 is imported and exported again, and
+   Mochi2D's evaluation of both files is **bit-identical** over a few hundred
+   seeded random poses; the re-exported files are byte-identical, so the
+   renders are too. Where an announced test model is available locally, the
+   same check runs on it, and nothing derived from it is committed.
 
 ### 7.4 Fuzzing the export
 
@@ -787,8 +785,7 @@ models.
 
 ## 9. Open points
 
-- moc3 import (4.3, roadmap M16);
-- version 6: offscreens and blend modes (2.1, roadmap M15), once a version-6 test model is
-  available;
+- version 6: tested on the project's own models only; a version 6 file from other software would
+  be the next test (roadmap M15);
 - glue and blend-shape authoring, built and tested but not available in this build (feature
   flags `glue` and `blendShapes`).

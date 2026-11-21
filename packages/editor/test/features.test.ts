@@ -82,7 +82,9 @@ describe('feature flags in the editor', () => {
     // New Parameter: no blend-shape parameter.
     await p.getByTestId('param-create').click();
     expect(await p.getByText('Blend Shape (its keys add a shape on top)').count()).toBe(0);
+    expect(await p.locator('body > .backdrop').count()).toBe(1);
     await p.keyboard.press('Escape');
+    expect(await p.locator('body > .backdrop').count()).toBe(0);
     // The export is refused, with the same message.
     await p.evaluate(() => window.mochiEditor.keymap.run('file.exportMoc'));
     await expect
@@ -92,7 +94,9 @@ describe('feature flags in the editor', () => {
     await p.evaluate(() => window.mochiEditor.keymap.run('file.settings'));
     await p.locator('[data-setting="featureGlue"]').check();
     expect(await p.evaluate(() => window.mochiEditor.editor.features.glue)).toBe(true);
+    expect(await p.locator('body > .backdrop').count()).toBe(1);
     await p.keyboard.press('Escape');
+    expect(await p.locator('body > .backdrop').count()).toBe(0);
     await p.evaluate((u) => window.mochiEditor.editor.select(u), glue);
     await expect.poll(() => p.getByTestId('kf-intensity').count()).toBe(1);
     expect(await p.getByTestId('feature-off').count()).toBe(0);

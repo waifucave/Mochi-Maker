@@ -1832,6 +1832,7 @@
   "doubleSided": true,
   "enabled": true,
   "legacyBlend": "normal",
+  "blend": null,
   "clip": null,
   "rig": {
     "bindings": [],

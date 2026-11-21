@@ -127,3 +127,5 @@ checks that the hair swings.
 - The resources `mochi://docs/getting-started` and `mochi://docs/spaces`: how positions work inside
   deformers.
 - [agent-api.md](../agent-api.md): every tool, resource and prompt.
+- `mochi_project { "action": "importModel", "model": "…", "path": "…" }`: a `.moc3` model folder
+  as a new project ([import.md](../import.md)).

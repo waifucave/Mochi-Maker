@@ -36,7 +36,7 @@ await cp(`${here}../editor/dist`, `${app}/renderer`, { recursive: true });
 const root = `${here}../../`;
 const licenses = `${app}/licenses`;
 await mkdir(licenses, { recursive: true });
-for (const f of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'ASSETS.md'])
+for (const f of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'ASSETS.md', 'TERMS.md'])
   await cp(`${root}${f}`, `${licenses}/${f}`);
 const BUNDLED = [
   '@sinclair/typebox',

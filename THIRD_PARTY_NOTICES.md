@@ -14,7 +14,7 @@ as published on npm, unmodified. Their full license texts are in their packages
 | [iobuffer](https://github.com/image-js/iobuffer) | 6.0.1 | MIT | Copyright (c) 2015 Michaël Zasso | art (through fast-png) | binary buffers |
 | [fflate](https://github.com/101arrowz/fflate) | 0.8.3 | MIT | Copyright (c) 2026 Arjun Barrett | art, export, cli, editor | unzipping OpenRaster files; deflate for PNG; zipped exports; opening and saving zipped projects in the editor |
 | [ws](https://github.com/websockets/ws) | 8.22.0 | MIT | Copyright (c) 2011 Einar Otto Stangvik, (c) 2013 Arnout Kazemier and contributors, (c) 2016 Luigi Pinca and contributors | bridge, mcp, cli | the live bridge's WebSocket server and Node client |
-| Mochi2D | 0.21.0 | MIT | Copyright (c) 2026 Mochi2D contributors | export, api, cli, editor | model data, writer, validator, loading and evaluation; the editor's view (its browser bundle) |
+| Mochi2D | 0.22.0 | MIT | Copyright (c) 2026 Mochi2D contributors | export, api, cli, editor | model data, writer, validator, loading and evaluation; the editor's view (its browser bundle) |
 | [mp4-muxer](https://github.com/Vanilagy/mp4-muxer) | 5.2.2 | MIT | Copyright (c) 2023 Vanilagy | editor | MP4 files for the video export |
 | [Electron](https://github.com/electron/electron) | 44.9.2 | MIT | Copyright (c) Electron contributors, Copyright (c) 2013-2020 GitHub Inc. | desktop | the desktop app's shell |
 
@@ -45,7 +45,7 @@ The desktop build (`packages/desktop`) is Electron with the editor's build and t
 bundled main process inside. A packaged app carries Electron's own `LICENSE` and
 `LICENSES.chromium.html` (the licenses of Chromium and the components Electron ships) next to its
 executable, as @electron/packager puts them there; they are distributed unchanged.
-Next to them, and inside the app, the `licenses/` folder holds Mochi Maker's `LICENSE`, this file,
+Next to them, and inside the app, the `licenses/` folder holds Mochi Maker's `LICENSE`, this file, `TERMS.md`,
 `ASSETS.md`, the license text of every package in the table above
 (`<package>.LICENSE.txt`) and Mochi2D's notices. `packages/desktop/build.mjs` puts them there, and
 the desktop tests and the packaged app's smoke test check them.

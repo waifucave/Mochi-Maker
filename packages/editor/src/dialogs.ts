@@ -60,14 +60,34 @@ export function dialog(
       d.close();
     }
   });
+  // A modal dialog answers Escape wherever the focus is (it need not be inside the dialog, for
+  // example after a file dialog), before the editor's shortcuts; only the topmost one closes.
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key !== 'Escape' || !el.isConnected) return;
+    const top = [...document.querySelectorAll('body > .backdrop')].at(-1);
+    if (top !== el) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    d.close();
+  };
+  let closed = false;
   const d: Dialog = {
     el,
     close() {
+      if (closed) return;
+      closed = true;
+      if (modal) document.removeEventListener('keydown', onKey, true);
       el.remove();
       options.onClose?.();
     },
   };
   document.body.append(el);
+  if (modal) {
+    document.addEventListener('keydown', onKey, true);
+    // The focus moves into the dialog (callers may then focus a field in it).
+    box.tabIndex = -1;
+    box.focus({ preventScroll: true });
+  }
   return d;
 }
 

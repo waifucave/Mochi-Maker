@@ -1,0 +1,13 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-v6-offscreens.v6.random.1.4",
+  "model": "golden-v6-offscreens/v6/model/offscreens.model3.json",
+  "parameters": {
+    "ParamFade": 0.483716,
+    "ParamBS": -0.148945
+  },
+  "partOpacities": {
+    "Part_Glass": 0.394619,
+    "Part_Light": 0.767108
+  }
+}

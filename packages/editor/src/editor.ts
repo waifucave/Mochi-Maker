@@ -26,7 +26,7 @@ import {
   type Uid,
   type Features,
 } from '@mochi-maker/core';
-import { OPERATIONS } from '@mochi-maker/export';
+import { OPERATIONS, importModel, type ImportReport } from '@mochi-maker/export';
 
 export interface Selection {
   /** The primary selected object (the last one picked). */
@@ -254,6 +254,45 @@ export class Editor extends Emitter<Events> {
     const projectName =
       name ?? (prefix.replace(/\/$/, '').split('/').pop() || 'project').replace(/\.mochi$/, '');
     this.openSession(Session.open(doc, { features: this.features }), assets, projectName, fs);
+  }
+
+  /**
+   * Imports a `.moc3` model folder (path → bytes, as read from a chosen folder) as a new project,
+   * not yet saved. The folder must hold one `.model3.json` at its top; files outside the folder of
+   * that file are ignored. Returns the import report and the notice (see docs/import.md).
+   */
+  async importModel(
+    files: Map<string, Uint8Array>,
+    date = new Date().toISOString(),
+  ): Promise<{ report: ImportReport; notices: string[] }> {
+    const depth = (p: string) => p.split('/').length;
+    const settings = [...files.keys()]
+      .filter((p) => p.toLowerCase().endsWith('.model3.json'))
+      .sort((a, b) => depth(a) - depth(b) || (a < b ? -1 : 1));
+    if (settings.length === 0)
+      throw new MochiError(
+        'E_MODEL_IMPORT',
+        'These files hold no .model3.json; choose the folder of a .moc3 model.',
+      );
+    const top = settings.filter((p) => depth(p) === depth(settings[0]!));
+    if (top.length > 1)
+      throw new MochiError(
+        'E_MODEL_IMPORT',
+        `The folder holds ${top.length} .model3.json files (${top.join(', ')}); choose the folder of one model.`,
+      );
+    const path = settings[0]!;
+    const prefix = path.includes('/') ? path.slice(0, path.lastIndexOf('/') + 1) : '';
+    const inner = new Map<string, Uint8Array>();
+    for (const [p, b] of files) if (p.startsWith(prefix)) inner.set(p.slice(prefix.length), b);
+    const name = path.slice(prefix.length);
+    const assets = new MemoryAssetStore();
+    const r = await importModel(inner, name, assets, { date, features: this.features });
+    this.openSession(
+      Session.open(r.document, { features: this.features }),
+      assets,
+      name.replace(/\.model3\.json$/i, ''),
+    );
+    return { report: r.report, notices: r.notices };
   }
 
   /** Writes the project into its in-memory folder and returns its files (path → bytes). */

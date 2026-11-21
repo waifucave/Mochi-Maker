@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-11-animation.v6.mid.ParamC.0",
+  "model": "golden-11-animation/v6/model/golden11.model3.json",
+  "parameters": {
+    "ParamC": -5
+  },
+  "partOpacities": {}
+}

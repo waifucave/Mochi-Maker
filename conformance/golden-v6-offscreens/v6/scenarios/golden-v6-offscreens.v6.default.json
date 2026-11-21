@@ -1,0 +1,7 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-v6-offscreens.v6.default",
+  "model": "golden-v6-offscreens/v6/model/offscreens.model3.json",
+  "parameters": {},
+  "partOpacities": {}
+}

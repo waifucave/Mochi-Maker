@@ -7,7 +7,7 @@
  */
 import { unzipSync, zipSync } from 'fflate';
 import type { ArtMesh, Rotation, Uid, Warp } from '@mochi-maker/core';
-import { exportModel } from '@mochi-maker/export';
+import { exportModel, importReportText, MODEL_IMPORT_NOTICE } from '@mochi-maker/export';
 import { Editor, type EditLevel } from './editor.js';
 import { Viewport, type Tool } from './viewport.js';
 import {
@@ -91,6 +91,7 @@ declare global {
     mochiEditor: {
       editor: Editor;
       viewport: Viewport;
+      offscreen: Offscreen;
       host: BridgeHost;
       access: AgentAccess;
       link: LiveLink;
@@ -235,6 +236,91 @@ async function openFileList(files: File[]): Promise<void> {
   }
 }
 folderInput.addEventListener('change', () => void openFileList([...(folderInput.files ?? [])]));
+
+// ---------------------------------------------------------------- model import
+
+const modelInput = h('input', {
+  type: 'file',
+  hidden: true,
+  webkitdirectory: true,
+  multiple: true,
+  dataset: { testid: 'import-model' },
+});
+const NOTICE_SEEN = 'mochi-maker.modelImportNotice';
+/** The notice, the first time a model is imported in this editor; then the folder dialog. */
+function importModelCommand(): void {
+  const pickFolder = () =>
+    desktop
+      ? void desktop
+          .pickModel()
+          .then((files) => files && importModelFiles(files, true))
+          .catch((e) => editor.report(e))
+      : modelInput.click();
+  if (store.get<boolean>(NOTICE_SEEN)) return pickFolder();
+  const d = dialog(
+    'Import Model',
+    [
+      h('p.notice', { dataset: { testid: 'model-notice' } }, MODEL_IMPORT_NOTICE),
+      h(
+        'div.buttons',
+        h(
+          'button.primary',
+          {
+            dataset: { testid: 'model-notice-ok' },
+            on: {
+              click: () => {
+                store.set(NOTICE_SEEN, true);
+                d.close();
+                pickFolder();
+              },
+            },
+          },
+          'Got it',
+        ),
+      ),
+    ],
+    { testid: 'model-notice-dialog' },
+  );
+}
+let importReport: Dialog | null = null;
+/** Opens a model folder's files as a new project, and shows the import report. */
+async function importModelFiles(
+  files: Map<string, Uint8Array>,
+  fromDesktop = false,
+): Promise<void> {
+  try {
+    const r = await editor.importModel(files);
+    if (fromDesktop) desktop?.imported();
+    closeHomeOnOpen();
+    editor.emit('message', { level: 'info', text: `Imported ${editor.name}.` });
+    // One report at a time: a new import's report replaces the last one if it is still open.
+    importReport?.close();
+    importReport = dialog(
+      'Import Report',
+      [
+        h(
+          'pre.import-report',
+          { dataset: { testid: 'import-report' } },
+          importReportText(r.report),
+        ),
+        h(
+          'p.dim',
+          'The project is a reconstruction of the model and is not saved yet. Keep the original files.',
+        ),
+      ],
+      { testid: 'import-report-dialog', wide: true },
+    );
+  } catch (e) {
+    editor.report(e);
+  }
+}
+modelInput.addEventListener('change', async () => {
+  const map = new Map<string, Uint8Array>();
+  for (const f of [...(modelInput.files ?? [])])
+    map.set(f.webkitRelativePath || f.name, new Uint8Array(await f.arrayBuffer()));
+  modelInput.value = '';
+  await importModelFiles(map);
+});
 zipInput.addEventListener('change', () => void openFileList([...(zipInput.files ?? [])]));
 
 /** Imports an art file into the open model (a new mesh per layer). */
@@ -1000,6 +1086,12 @@ const actions: Action[] = [
     category: 'Menus',
     label: 'File › Open Project Folder…',
     run: () => (desktop ? void desktop.open().catch((e) => editor.report(e)) : folderInput.click()),
+  },
+  {
+    id: 'file.importModel',
+    category: 'Menus',
+    label: 'File › Import Model…',
+    run: () => importModelCommand(),
   },
   {
     id: 'file.recent',
@@ -2001,6 +2093,7 @@ const MENUS: { id: string; title: () => string; items: () => MenuEntry[]; when?:
         'file.open',
         'file.openFolder',
         'file.recent',
+        'file.importModel',
         null,
         'file.importArt',
         'file.importPhysics',
@@ -2334,7 +2427,7 @@ function renderToolbar(): void {
           },
         },
       },
-      (['auto', 5, 4, 3] as const).map((v) =>
+      (['auto', 6, 5, 4, 3] as const).map((v) =>
         h(
           'option',
           { value: String(v), selected: v === version },
@@ -2484,6 +2577,7 @@ app.append(
   access.el,
   folderInput,
   zipInput,
+  modelInput,
   artInput,
   reimportInput,
 );
@@ -2679,6 +2773,7 @@ window.mochi = agent;
 window.mochiEditor = {
   editor,
   viewport,
+  offscreen,
   host,
   access,
   link,

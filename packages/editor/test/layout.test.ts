@@ -226,7 +226,9 @@ describe.skipIf(!required && !available)('the familiar layout', () => {
     await p.locator('.ctx-menu button', { hasText: 'Workspace ▸' }).click();
     await p.locator('.ctx-menu.submenu button', { hasText: 'Workspace Settings' }).click();
     await p.getByTestId('workspace-add').click();
+    expect(await p.locator('body > .backdrop').count()).toBe(1);
     await p.keyboard.press('Escape');
+    expect(await p.locator('body > .backdrop').count()).toBe(0);
     expect(await p.locator('[data-testid="workspace-switcher"] option').allTextContents()).toEqual([
       'Modeling',
       'Animation',
@@ -286,7 +288,9 @@ describe.skipIf(!required && !available)('the familiar layout', () => {
       'more than one command',
     );
     expect(await p.locator('.key.conflict').count()).toBeGreaterThan(0);
+    expect(await p.locator('body > .backdrop').count()).toBe(1);
     await p.keyboard.press('Escape');
+    expect(await p.locator('body > .backdrop').count()).toBe(0);
     await p.getByTestId('overlay').focus();
     await p.keyboard.press('Numpad3');
     expect(await p.evaluate(() => window.mochiEditor.editor.level)).toBe(3);
@@ -640,7 +644,9 @@ describe.skipIf(!required && !available)('the familiar layout', () => {
     await p.getByTestId('param-create').click();
     await p.getByTestId('param-id').fill('Param@X');
     expect(await p.getByTestId('param-warning').textContent()).toContain('"@"');
+    expect(await p.locator('body > .backdrop').count()).toBe(1);
     await p.keyboard.press('Escape');
+    expect(await p.locator('body > .backdrop').count()).toBe(0);
     // A child outside its parent warp (golden 15's bent warp after moving a vertex far out).
     await openGolden(p, 'golden-15-nested-deformers');
     await settled(p);

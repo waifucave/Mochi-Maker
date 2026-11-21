@@ -22,7 +22,7 @@ The model in these pictures is «Mochi», the getting-started guide's example. I
   and stroke meshing;
 - deformers: nested warps and rotations, reparenting that keeps things in place, and canvas-space
   editing through Mochi2D's forward mapping;
-- export of `.moc3` (versions 3–5, with `--moc-version auto`), textures and the runtime files
+- export of `.moc3` (versions 3–6, with `--moc-version auto`), textures and the runtime files
   through Mochi2D, with clipping masks, multiply and screen colors, hit areas, display info, user
   data, physics, expressions, pose, motions, sounds and motion sync;
 - the agent API and the MCP server, with headless renders, sweeps and visual diffs;
@@ -36,15 +36,23 @@ The model in these pictures is «Mochi», the getting-started guide's example. I
 - the desktop app: the editor in Electron, with project folders saved straight to disk, auto-saved
   copies with recovery, the live link on a file watcher and the bridge built in; unsigned builds
   for Windows, macOS and Linux;
-- the conformance pack (`conformance/`): every golden project exported at versions 3–5, with
+- the conformance pack (`conformance/`): every golden project exported at versions 3–6, with
   scenarios, results and reference renders, for checks by other implementations;
+- version 6: offscreens and the version 6 blend modes, in the document, the editor's Inspector and
+  view, the export and renders ([`docs/export.md`](docs/export.md#version-6)), tested on the
+  project's own models;
+- model import: a `.moc3` model folder (versions 3 to 6) opens as an editable project, from the
+  File menu, the command line (`mochi-maker import-model`), the API and the MCP server; exported
+  again without an edit, it evaluates as the file did in the cases the tests cover: the project's
+  own exports, synthetic models from other writers, and a real model checked locally
+  ([`docs/import.md`](docs/import.md));
 - a command-line tool.
 
 Glue and blend-shape authoring are not available in this build. Their code and tests are in the
 repository behind the feature flags `glue` and `blendShapes`, which are off by default
 ([`docs/core.md`](docs/core.md#feature-flags)). Projects that hold glue or blend shapes still open,
-but they do not export while the flags are off. Version 6 (offscreens and blend modes) and `.moc3`
-import are not started.
+but they do not export while the flags are off. Version 6 (offscreens and blend modes) is not
+started.
 
 See [`docs/roadmap.md`](docs/roadmap.md) for each milestone.
 
@@ -116,6 +124,7 @@ npm run start -w @mochi-maker/desktop           # or package:linux for an unsign
 - [`docs/core.md`](docs/core.md): the core and the CLI as they are built today
 - [`docs/art.md`](docs/art.md): art import, mesh generation and mesh editing
 - [`docs/export.md`](docs/export.md): export, golden projects and fuzzing
+- [`docs/import.md`](docs/import.md): opening a `.moc3` model folder as a project
 - [`docs/agent-api.md`](docs/agent-api.md): the typed API and the MCP server (`mochi-maker mcp`)
 - [`docs/editor.md`](docs/editor.md): the editor and `window.mochi`
 - [`docs/desktop.md`](docs/desktop.md): the desktop app, its files, auto-saves, bridge and security
@@ -127,6 +136,7 @@ npm run start -w @mochi-maker/desktop           # or package:linux for an unsign
 - [`SECURITY.md`](SECURITY.md): reporting vulnerabilities, and what the app opens to the network
   and the file system
 - [`ASSETS.md`](ASSETS.md): where the repository's images, models and sounds come from
+- [`TERMS.md`](TERMS.md): the terms of use
 
 ## Development
 
@@ -150,7 +160,7 @@ Packages live in `packages/`:
 - `editor`: the web app (Vite);
 - `desktop`: the desktop app (Electron).
 
-Mochi2D is pinned as `vendor/mochi2d-0.21.0.tgz`. Third-party packages are
+Mochi2D is pinned as `vendor/mochi2d-0.22.0.tgz`. Third-party packages are
 listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 **How it was made.** Most of this code was written by AI coding agents (Anthropic's Claude) under the direction of the project's maintainer, through the clean-room process in [CLEANROOM.md](CLEANROOM.md). Copyright may not subsist in every part of it. To the extent it does, it is licensed under the MIT License. Either way, it is provided as is, without warranty. Third-party code keeps its own licenses ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
@@ -158,9 +168,9 @@ listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 ## Models and their terms
 
 Mochi Maker ships no model but its own sample (`samples/mochi/`, made by this project's code). `assets/models/` is ignored by git and is
-meant for models you supply locally; never commit model data. When Mochi Maker
-can import existing models (a planned feature), remember that editing or
-redistributing someone else's model is subject to that model's terms of use.
+meant for models you supply locally; never commit model data. Mochi Maker can open a `.moc3` model folder as an editable project. Open only models that you made or that their author allows you to edit. A model's terms of use still apply after import, and many forbid editing a model or passing it on. If a model was made with other software, that software's licence may also limit how its files are used. That is for you to check. An imported project is a reconstruction: names, source artwork and other editor data are not in a `.moc3` file.
+
+The [terms of use](TERMS.md) say what you are responsible for when you use Mochi Maker.
 
 ## Patents
 

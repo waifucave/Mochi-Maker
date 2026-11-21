@@ -5,7 +5,7 @@
  * The preview is the export: after each change the document is lowered and written by the
  * exporter's own code (`PreviewBuilder`) and loaded into the view from memory. Mochi2D 0.4.0's view
  * loads models from files only, so the preview goes through the .moc3 bytes; the timings of every
- * step are kept for the round report and `window.mochi.stats()`.
+ * step are kept for `window.mochi.stats()`.
  */
 import {
   MochiView,
@@ -574,11 +574,14 @@ export class Viewport {
       return 'replace';
     }
     // Loading fits the view; keep the person's zoom and pan unless a new project opened.
-    const files = new Map(build.files);
-    files.set(build.mocPath, writeMoc(build.lowered.data, { version: build.version }));
+    // The view takes the model data in place of the .moc3 (Mochi2D 0.22.0's `moc` option).
     const loaded = await this.view.load(
-      { files },
-      { settings: build.settings, keepView: this.view.model !== null && !this.fitNext },
+      { files: build.files },
+      {
+        settings: build.settings,
+        keepView: this.view.model !== null && !this.fitNext,
+        moc: { data: build.lowered.data, version: build.version },
+      },
     );
     this.fitNext = false;
     this.effectsOff(loaded);

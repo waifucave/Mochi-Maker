@@ -1,0 +1,12 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-7-blend-positions.v6.random.1.5",
+  "model": "golden-7-blend-positions/v6/model/golden7.model3.json",
+  "parameters": {
+    "ParamOpen": 0.178793,
+    "ParamSmile": -0.927379,
+    "ParamWide": -0.185905,
+    "ParamLift": 0.391073
+  },
+  "partOpacities": {}
+}

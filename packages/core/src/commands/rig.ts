@@ -292,7 +292,7 @@ const FIELDS: Record<Riggable['kind'], string[]> = {
     'multiply',
     'screen',
   ],
-  part: ['drawOrder'],
+  part: ['drawOrder', 'opacity', 'multiply', 'screen'],
   glue: ['intensity'],
 };
 
@@ -309,7 +309,7 @@ Fields by kind:
 - mesh: positions ([x, y] per vertex, in the parent deformer space), opacity, drawOrder, multiply, screen
 - warp: grid ([x, y] per grid point, row-major), opacity, multiply, screen
 - rotation: angle (degrees), originX, originY, scale, mirrorX, mirrorY, opacity, multiply, screen
-- part: drawOrder
+- part: drawOrder; opacity, multiply, screen (the offscreen's, used while the part draws offscreen)
 - glue: intensity
 
 Values are rounded to float32. Editing in canvas space comes with the deformer milestone.`,

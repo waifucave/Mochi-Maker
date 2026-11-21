@@ -38,6 +38,7 @@ Golden tests pin the hashes.
      positions or grid points need version 4.
    - Blend shapes on rotations, parts or glues, or that change opacity, draw
      order or colors, need version 5. Version 4 ignores those values (§1c.4).
+   - Offscreens and version 6 blend modes need version 6 ([below](#version-6)).
    - An explicit version that cannot carry the model is refused, with every
      object that needs more (M13). Each problem names the feature (for blend
      shapes, the parameter and the values) and carries a `fix`: export at a
@@ -55,7 +56,8 @@ Golden tests pin the hashes.
    - **Object order:** parts and meshes depth-first through the part tree, in
      children order (so draw-order ties keep the document's back-to-front
      order); deformers in the project's deformer order; parameters and glues
-     in project order.
+     in project order. An imported model keeps its file's orders instead
+     ([import.md](import.md#what-is-kept-from-the-file)), new objects after.
    - **Spaces:** top-level positions, warp grids and rotation origins go from
      canvas pixels to model units, `(p − origin)/ppu`. Anything inside a
      deformer is stored in that deformer's space unchanged. A rotation with no
@@ -66,8 +68,11 @@ Golden tests pin the hashes.
      bindings; band 0 is the empty band.
    - **Draw-order groups** come from sorting scopes. A part with its own scope
      is an object in its parent's group, with a nested group. A part that
-     inherits contributes its children directly. Group minimum and maximum are
-     exactly the range of keys the members can reach. A member's key is
+     inherits contributes its children directly. Members stack in tree order,
+     or in the project's explicit order for the group (`project.stacks`,
+     kept by an import). Group minimum and maximum are
+     exactly the range of keys the members can reach (an imported model's own
+     wider range is kept while that range is unchanged). A member's key is
      n = trunc(f32(D + 0.001)), and for a blend-shape
      target max(0, trunc(f32(f32(n + B) + 0.001))). The lowest key takes the
      lowest normal draw order with every blend shape at its most negative
@@ -136,6 +141,38 @@ Golden tests pin the hashes.
    - the atlas layout;
    - the load-check summary;
    - all problems (lint warnings, validator warnings, runtime warnings).
+
+## Version 6
+
+Offscreens and version 6 blend modes ([`core.md`](core.md)) need version 6. `auto` chooses it
+when a project uses them, and `--moc-version 6` asks for it; an earlier version is refused with
+each object that needs version 6 named, and the fix that would let it export at that version.
+
+`lowerDocument` at version 6 writes what the format holds, and Mochi2D's `writeMoc` writes it:
+
+- each part's `offscreen` index, and the offscreens in part order (or an imported file's order):
+  the part, the flags (bit 2 set, as files usually have it, and bit 3 for an inverted mask), the
+  blend code and the masks;
+- one offscreen keyform per keyform of the part, which the part keyforms name, with its opacity and
+  consecutive color entries (multiply and screen from the same entry);
+- the offscreen blend shapes (a part's blend shapes that change its offscreen opacity or colors),
+  whose keyforms follow the normal ones with their own color entries;
+- each art mesh's blend code, with flag bits 0–1 still set from the legacy blending (version 6
+  reads the code);
+- one more draw-order entry per offscreen, in the group its part is drawn in.
+
+A blend code is the color function's number plus 256 times the alpha mode's, as in Mochi2D's table
+(`docs/moc-data.md`, "Blend codes and offscreen flags"), which is the authority: `COLOR_BLENDS` and
+`ALPHA_BLENDS` list them in code order, and a test checks the codes the goldens write.
+
+The preview, the agent API (evaluate, render) and the MCP server work at version 6 like at any
+other version: the editor's view takes the model data in place of a `.moc3` (Mochi2D's `moc` load
+option), and the API renders the export.
+
+**What is tested.** No version 6 file from other software is at hand: version 6 export is tested on
+the project's own models: the version 6 golden (offscreens, their masks and blend shapes, blend
+modes), and every other golden exported at version 6, in the conformance pack with Mochi2D's
+reference renders, and exported, imported and exported again byte for byte.
 
 ## Preview builds
 

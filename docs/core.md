@@ -10,11 +10,11 @@ A `Document` is an immutable map from UID to object, plus `seq`, the UID counter
 
 | Kind | UID prefix | Notes |
 |---|---|---|
-| project | `project` | singleton: canvas, ordered lists, standard groups, hit areas, pose, user data, combined parameters, export settings |
+| project | `project` | singleton: canvas, ordered lists, standard groups, hit areas, pose, user data, combined parameters, export settings, explicit stacking orders (`stacks`, see [import.md](import.md#what-is-kept-from-the-file)), import origin |
 | parameter | `param_` | min, max, default, repeat, decimals, type, key list |
 | parameterGroup | `pgroup_` | display groups, nestable |
-| part | `part_` | ordered children (parts and meshes), sorting scope, enabled, visible at start, rig (draw order), blend shapes |
-| artMesh | `mesh_` | part, deformer, layer, UVs (layer pixels), triangles, clip, flags, rig (positions, opacity, draw order, colors), blend shapes |
+| part | `part_` | ordered children (parts and meshes), sorting scope, enabled, visible at start, offscreen (version 6), rig (draw order; the offscreen's opacity and tints), blend shapes |
+| artMesh | `mesh_` | part, deformer, layer, UVs (layer pixels), triangles, clip, flags, legacy blending, a version 6 blend mode, rig (positions, opacity, draw order, colors), blend shapes |
 | warp | `warp_` | rows, cols, cell mode, owning part, parent, rig (grid, opacity, colors), blend shapes |
 | rotation | `rot_` | base angle, owning part, parent, rig (angle, origin, scale, mirror, opacity, colors), blend shapes |
 | layer | `layer_` | an asset (SHA-256 of a PNG) placed on the canvas, with the source layer's visibility, opacity, blend mode, clipping and import notes |
@@ -111,6 +111,21 @@ errors and examples (`[op]` marks operations, below). Areas: `project`, `object`
   the template's span give way; the result lists `parameters` and `unmatched`;
   `E_NOT_FOUND` when nothing matches). `templateMatch(template, exportIds)`
   tells the matched and unmatched IDs beforehand.
+- **Version 6: offscreens and blend modes**:
+  - A blend mode is a color function (`normal`, `additive`, `multiplicative`, `add`, `addGlow`,
+    `darken`, `multiply`, `colorBurn`, `linearBurn`, `lighten`, `screen`, `colorDodge`, `overlay`,
+    `softLight`, `hardLight`, `linearLight`, `hue`, `color`) and an alpha mode (`over`, `atop`,
+    `out`, `conjoint`, `disjoint`). Normal over, additive and multiplicative are the blends every
+    version has; the others need version 6.
+  - `mesh.update { blend }` sets a mesh's version 6 blend mode. One every version has is stored as
+    `legacyBlend` instead, and `blend: null` goes back to `legacyBlend`.
+  - `part.setOffscreen { offscreen, blend?, masks?, invert? }` draws a part offscreen: its contents
+    are drawn into an image of their own, which is composited with the part's blend mode and masks,
+    and with the opacity and tints of the part's keyforms (`keyform.set` `opacity`, `multiply`,
+    `screen` on a part). The part gets its own sorting scope, which `part.update` then keeps.
+  - A part's blend shapes can change those values too (`blendShape.set`); they apply while the
+    part draws offscreen, and the offscreen's opacity and colors are then clamped to 0…1.
+  - The export writes version 6 for them ([`export.md`](export.md#version-6)).
 - **Guide images**: `part.create`/`part.update` take `guide`; such a part is a visual
   reference, left out of the export with everything in it unless
   `project.setExportSettings { includeGuideImages: true }`.
@@ -300,6 +315,7 @@ mochi-maker validate <project> [--export] [--target-version auto|3|4|5]
 mochi-maker export <project> --out <dir|file.zip> [--moc-version auto|3|4|5] [--atlas N] [--stem S] [--force]
 mochi-maker history <project>
 mochi-maker import-physics <project> <file.physics3.json> [--dry-run]
+mochi-maker import-model <model folder|file.model3.json> <new project dir>
 mochi-maker export-template <project> --out <file.mochitemplate> [--name N] [--description D] [--author A] [--no-physics] [--thumbnail file.png]
 mochi-maker apply-template <project> <file.mochitemplate> [--targets ref,…] [--draw-order template|keep] [--redivide] [--no-masks] [--parameters merge|add] [--physics merge|add|none] [--dry-run]
 mochi-maker conformance-pack <project…> --out <dir> [--versions 3,4,5] [--seed N] [--random N] [--no-renders] [--force]

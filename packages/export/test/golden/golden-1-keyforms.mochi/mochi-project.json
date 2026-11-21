@@ -1,6 +1,6 @@
 {
   "format": "mochi-maker-project",
-  "version": 12,
+  "version": 15,
   "writer": "@mochi-maker/core 0.0.0",
   "seq": 5,
   "project": {
@@ -43,6 +43,8 @@
       "fadeIn": null,
       "groups": []
     },
+    "importedFrom": null,
+    "stacks": [],
     "exportSettings": {
       "mocVersion": 5,
       "minimumVersion": 5,

@@ -19,6 +19,7 @@
   "doubleSided": true,
   "enabled": true,
   "legacyBlend": "normal",
+  "blend": null,
   "clip": {
     "masks": ["mesh_0011", "mesh_0012"],
     "invert": false

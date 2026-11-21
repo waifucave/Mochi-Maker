@@ -39,6 +39,8 @@ export const ERROR_CODES = {
   E_BUSY: 'Another transaction is still running in this session.',
   E_ASSET_FORMAT: 'An asset or imported file could not be decoded.',
   E_EXPORT: 'The document cannot be exported as it is; the details list each problem.',
+  E_MODEL_IMPORT:
+    'The model folder cannot be imported: an unsupported .moc3 version, a missing or unreadable file, or data the document cannot hold.',
   E_FORBIDDEN:
     'The path or action is outside what this session allows (for example, a directory that was not allowed).',
   E_NO_PROJECT: 'No project is open; open or create one first.',

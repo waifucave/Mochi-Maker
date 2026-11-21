@@ -1,0 +1,38 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "golden6.moc3",
+    "Textures": [
+      "golden6.1024/texture_00.png"
+    ],
+    "UserData": "golden6.userdata3.json",
+    "DisplayInfo": "golden6.cdi3.json"
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
+      ]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": [
+        "ParamMouthOpenY"
+      ]
+    }
+  ],
+  "HitAreas": [
+    {
+      "Id": "Head",
+      "Name": "Head"
+    },
+    {
+      "Id": "Body",
+      "Name": "Body"
+    }
+  ]
+}

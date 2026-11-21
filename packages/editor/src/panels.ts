@@ -10,8 +10,14 @@
  * - Mochi Maker's own: History, Validation, Agents, Art, Preview, Draw Order.
  */
 import {
+  ALPHA_BLENDS,
+  COLOR_BLENDS,
+  isCompatibleBlend,
+  type AlphaBlend,
   type AnyKeyform,
   type ArtMesh,
+  type BlendMode,
+  type ColorBlend,
   type DocObject,
   type DocReader,
   type Motion,
@@ -624,6 +630,35 @@ const KEYFORM_FIELDS: Record<string, [string, string][]> = {
 };
 const COLOR_KINDS = new Set(['artMesh', 'warp', 'rotation']);
 
+/** The names users see for the color functions of blend modes. */
+const COLOR_BLEND_NAMES: Record<ColorBlend, string> = {
+  normal: 'Normal',
+  additive: 'Additive (every version)',
+  multiplicative: 'Multiplicative (every version)',
+  add: 'Add',
+  addGlow: 'Add (glow)',
+  darken: 'Darken',
+  multiply: 'Multiply',
+  colorBurn: 'Color burn',
+  linearBurn: 'Linear burn',
+  lighten: 'Lighten',
+  screen: 'Screen',
+  colorDodge: 'Color dodge',
+  overlay: 'Overlay',
+  softLight: 'Soft light',
+  hardLight: 'Hard light',
+  linearLight: 'Linear light',
+  hue: 'Hue',
+  color: 'Color',
+};
+const ALPHA_BLEND_NAMES: Record<AlphaBlend, string> = {
+  over: 'Over',
+  atop: 'Atop (inside what is below)',
+  out: 'Out (cuts what is below)',
+  conjoint: 'Conjoint',
+  disjoint: 'Disjoint',
+};
+
 export class Inspector {
   readonly el = h('section.inspector');
 
@@ -847,6 +882,9 @@ export class Inspector {
             'double-sided',
           ),
         ),
+        ...this.blendFields(m.blend ?? { color: m.legacyBlend, alpha: 'over' }, locked, (blend) =>
+          this.run('Blend mode', 'mesh.update', { target: m.uid, blend }),
+        ),
         h(
           'div.buttons',
           h(
@@ -909,7 +947,69 @@ export class Inspector {
             'guide',
           ),
         ),
+        field(
+          'Draw offscreen',
+          check(
+            !!o.offscreen,
+            (b) => this.run('Draw offscreen', 'part.setOffscreen', { target: o.uid, offscreen: b }),
+            'offscreen',
+          ),
+        ),
       );
+      const off = o.offscreen;
+      if (off) {
+        const set = (args: Record<string, unknown>) =>
+          this.run('Offscreen', 'part.setOffscreen', { target: o.uid, offscreen: true, ...args });
+        parts.push(
+          ...this.blendFields(off.blend, locked, (blend) => set({ blend })),
+          field(
+            'Offscreen mask',
+            h(
+              'select',
+              {
+                disabled: locked,
+                dataset: { testid: 'offscreen-mask' },
+                title: 'The ArtMesh the offscreen image is drawn inside (clipping)',
+                on: {
+                  change: (e) => {
+                    const value = (e.target as HTMLSelectElement).value;
+                    set({ masks: value ? [value] : [] });
+                  },
+                },
+              },
+              h('option', { value: '' }, 'none'),
+              ...(off.clip && off.clip.masks.length > 1
+                ? [
+                    h(
+                      'option',
+                      { value: off.clip.masks[0]!, selected: true },
+                      `${off.clip.masks.length} masks`,
+                    ),
+                  ]
+                : []),
+              v.ofKind('artMesh').map((x) =>
+                h(
+                  'option',
+                  {
+                    value: x.uid,
+                    selected: off.clip?.masks.length === 1 && off.clip.masks[0] === x.uid,
+                  },
+                  x.exportId,
+                ),
+              ),
+            ),
+          ),
+          field(
+            'Invert offscreen mask',
+            check(off.clip?.invert ?? false, (b) => set({ invert: b }), 'offscreen-mask-invert'),
+          ),
+          h(
+            'div.facts',
+            { dataset: { testid: 'offscreen-note' } },
+            'Drawn offscreen: needs version 6. The opacity and tints are in the keyforms below.',
+          ),
+        );
+      }
     } else if (o.kind === 'warp' || o.kind === 'rotation') {
       const d = o as Warp | Rotation;
       // The deformer and everything below it cannot be its parent.
@@ -1021,6 +1121,67 @@ export class Inspector {
       );
     else if ('rig' in o && KEYFORM_FIELDS[o.kind]) parts.push(this.keyformSection(o, locked));
     fill(this.el, ...parts);
+  }
+
+  /**
+   * A blend mode as two choices: the color function and the alpha mode. Normal, additive and
+   * multiplicative work in every version; the others need version 6.
+   */
+  private blendFields(
+    value: BlendMode,
+    locked: boolean,
+    commit: (b: BlendMode) => void,
+  ): HTMLElement[] {
+    const select = <T extends string>(
+      options: readonly T[],
+      names: Record<T, string>,
+      current: T,
+      pick: (x: T) => void,
+      testid: string,
+    ) =>
+      h(
+        'select',
+        {
+          disabled: locked,
+          dataset: { testid },
+          on: { change: (e) => pick((e.target as HTMLSelectElement).value as T) },
+        },
+        options.map((x) => h('option', { value: x, selected: x === current }, names[x])),
+      );
+    const advanced = !isCompatibleBlend(value);
+    return [
+      h(
+        'label.field',
+        h('span', 'Color blend'),
+        select(
+          COLOR_BLENDS,
+          COLOR_BLEND_NAMES,
+          value.color,
+          (color) => commit({ ...value, color }),
+          'blend-color',
+        ),
+      ),
+      h(
+        'label.field',
+        h('span', 'Alpha blend'),
+        select(
+          ALPHA_BLENDS,
+          ALPHA_BLEND_NAMES,
+          value.alpha,
+          (alpha) => commit({ ...value, alpha }),
+          'blend-alpha',
+        ),
+      ),
+      ...(advanced
+        ? [
+            h(
+              'div.facts',
+              { dataset: { testid: 'blend-note' } },
+              'This blend mode needs version 6.',
+            ),
+          ]
+        : []),
+    ];
   }
 
   /**
@@ -1218,7 +1379,12 @@ export class Inspector {
       this.editor.transact('Edit keyform', [
         { name: 'keyform.set', args: { target: o.uid, cell: at.cell, values } },
       ]);
-    for (const [f, name] of KEYFORM_FIELDS[o.kind]!) {
+    // A part drawn offscreen also keyforms its offscreen's opacity and tints.
+    const offscreen = o.kind === 'part' && !!(o as Part).offscreen;
+    const fields = offscreen
+      ? [...KEYFORM_FIELDS.part!, ['opacity', 'Opacity'] as [string, string]]
+      : KEYFORM_FIELDS[o.kind]!;
+    for (const [f, name] of fields) {
       // A rotation's origin is shown and typed in canvas pixels, whatever its parent.
       if (o.kind === 'rotation' && (f === 'originX' || f === 'originY')) {
         if (f === 'originX')
@@ -1263,7 +1429,7 @@ export class Inspector {
         dragNumber(input, (n) => set({ drawOrder: Math.max(0, Math.min(1000, Math.round(n))) }));
       section.append(h('label.field', h('span', name), h('span.field-input', input, extra)));
     }
-    if (COLOR_KINDS.has(o.kind))
+    if (COLOR_KINDS.has(o.kind) || offscreen)
       for (const [f, name] of [
         ['multiply', 'Multiply color'],
         ['screen', 'Screen color'],
@@ -2312,6 +2478,7 @@ export class ProjectPalette {
       .map((p) => p.slice(this.editor.dir.length + 1))
       .sort();
     const layers = v.ofKind('layer');
+    const origin = v.project().importedFrom;
     fill(
       this.el,
       h(
@@ -2320,6 +2487,31 @@ export class ProjectPalette {
         h('span.name', `${this.editor.name}.mochi`),
         h('span.extra', 'model'),
       ),
+      origin
+        ? h(
+            'div.origin',
+            { dataset: { testid: 'project-origin' } },
+            h('div.group', 'Imported from a .moc3'),
+            h(
+              'div.row',
+              { style: 'padding-left:18px' },
+              h('span.name', `version ${origin.mocVersion}, on ${origin.date.slice(0, 10)}`),
+            ),
+            origin.files.map((f) =>
+              h(
+                'div.row',
+                { style: 'padding-left:18px' },
+                h('span.icon', '·'),
+                h('span.name.dim', f),
+              ),
+            ),
+            h(
+              'div.row.dim',
+              { style: 'padding-left:18px' },
+              'A reconstruction: names, source artwork and other editor data are not in a .moc3 file.',
+            ),
+          )
+        : null,
       files.map((p) =>
         h('div.row', { style: 'padding-left:18px' }, h('span.icon', '·'), h('span.name', p)),
       ),

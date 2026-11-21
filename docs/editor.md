@@ -362,6 +362,29 @@ Other browsers have no file handles; there the person uses Re-import. In the des
 changes, so the check runs only then, with no polling. The art is stored in the project's files as
 `import/<name>`, the same path an import from the editor uses, so re-imports match.
 
+## Importing a model (M16)
+
+File › Import Model… opens a `.moc3` model folder as a new project, not yet saved
+([`import.md`](import.md)). The first time, a dialog shows the notice with «Got it»; then the folder
+dialog opens (in a browser, a folder picker; on the desktop, the system's dialog). After the import,
+the Import Report lists what was reconstructed, what the folder did not hold, anything left out,
+and whether the model uses glue or blend shapes; Esc closes it, and the next import's report
+replaces it if it is still open. The Project palette shows where the project came from: the `.moc3`
+version, the date and the files. The texture pages appear as layers.
+
+## Version 6: offscreens and blend modes
+
+The Inspector of an ArtMesh has **Color blend** and **Alpha blend**: Normal, Additive and
+Multiplicative work in every version; the other blend modes need version 6, and a note says so. The
+Inspector of a part has **Draw offscreen**. When it is on, the part has its own draw order group,
+its own blend mode, an **Offscreen mask** with **Invert offscreen mask**, and, among the keyform
+values, the offscreen's **Opacity** and **Multiply** and **Screen** colors.
+
+The view shows a version 6 model as version 6 draws it: offscreens composited with their opacity,
+tints, blend mode and masks, and meshes with their blend modes. The toolbar's target version has
+«moc3 v6», which `auto` chooses for such a model; an earlier version is refused, naming each object
+that needs version 6 ([`export.md`](export.md#version-6)).
+
 ## The desktop build (M14)
 
 The same editor runs in Mochi Maker's Electron window (`docs/desktop.md`). There, the File menu
@@ -703,7 +726,7 @@ shortcut means ⌘ Command, and the dialog says so; a setting makes it Control i
 | Ctrl+W; Ctrl+PageUp / Ctrl+PageDown | Close the view tab; previous / next tab |
 | Ctrl+Z; Ctrl+Y or Ctrl+Shift+Z | Undo; redo |
 | Delete or Backspace; Ctrl+Delete | Delete the selection (or the selected vertices in mesh editing); a deformer with its contents |
-| Ctrl+A; Esc | Select all (vertices in mesh editing; locked and hidden objects left out); deselect, or cancel mesh editing |
+| Ctrl+A; Esc | Select all (vertices in mesh editing; locked and hidden objects left out); close the open dialog, else deselect, or cancel mesh editing |
 | Ctrl+F | Find and Replace |
 | Ctrl+I; Ctrl+Shift+M; Ctrl+P | Export an image sequence; a video; the PSD of the pose (beta) |
 | Ctrl+K | The command bar (Mochi Maker's own) |

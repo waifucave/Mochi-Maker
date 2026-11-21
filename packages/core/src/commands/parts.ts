@@ -6,7 +6,9 @@ import { f32 } from '../f32.js';
 import { decode } from '../codec.js';
 import { FRAGMENT_FORMAT, type Fragment } from '../fragment.js';
 import {
+  BlendMode,
   OBJECT_SCHEMAS,
+  isCompatibleBlend,
   type AnyKeyform,
   type ArtMesh,
   type DocObject,
@@ -20,6 +22,7 @@ import {
 } from '../model.js';
 import * as grid from '../rig.js';
 import { RefOf, type Kind } from '../schema.js';
+import { restack } from '../stacking.js';
 import {
   BLACK,
   WHITE,
@@ -87,7 +90,19 @@ Its draw order (default 500) sorts the part among its siblings when its parent s
       enabled: true,
       sortingScope: a.sortingScope ?? 'inherit',
       guide: a.guide ?? false,
-      rig: { bindings: [], keyforms: [{ authored: true, drawOrder: f32(a.drawOrder ?? 500) }] },
+      offscreen: null,
+      rig: {
+        bindings: [],
+        keyforms: [
+          {
+            authored: true,
+            drawOrder: f32(a.drawOrder ?? 500),
+            opacity: 1,
+            multiply: [...WHITE],
+            screen: [...BLACK],
+          },
+        ],
+      },
       blendShapes: [],
     };
     d.put(part);
@@ -117,6 +132,21 @@ it, unless the export settings' \`includeGuideImages\` is on.`,
   ],
   apply(d, a) {
     const p = d.getAs(a.target, 'part');
+    if (a.sortingScope === 'inherit' && p.offscreen)
+      throw new MochiError(
+        'E_RANGE',
+        `${d.describe(p.uid)} draws offscreen, which needs its own sorting scope.`,
+        {
+          path: 'args.sortingScope',
+          fixes: [
+            {
+              description: 'Stop drawing it offscreen first',
+              command: 'part.setOffscreen',
+              args: { target: p.uid, offscreen: false },
+            },
+          ],
+        },
+      );
     d.put({
       ...p,
       enabled: a.enabled ?? p.enabled,
@@ -128,11 +158,60 @@ it, unless the export settings' \`includeGuideImages\` is on.`,
   },
 });
 
+export const partSetOffscreen = defineCommand({
+  name: 'part.setOffscreen',
+  summary: 'Draw a part offscreen (version 6), with a blend mode and masks, or stop.',
+  doc: `With \`offscreen\` true, the part's contents are drawn into an image of their own, which is then
+composited into what is below with the part's opacity and tints (the part keyforms' \`opacity\`,
+\`multiply\` and \`screen\`, set with keyform.set), its blend mode, and its masks. The part gets its
+own sorting scope. Needs version 6, which the export chooses for it. Arguments left out keep their
+values; a new offscreen is normal over, without masks. \`offscreen\` false stops drawing it offscreen.`,
+  args: Type.Object({
+    target: RefOf(['part']),
+    offscreen: Type.Boolean(),
+    blend: Type.Optional(BlendMode),
+    masks: Type.Optional(Type.Array(RefOf(['artMesh']))),
+    invert: Type.Optional(Type.Boolean()),
+  }),
+  result: Empty,
+  errors: ['E_RANGE'],
+  examples: [
+    {
+      description: 'Draw the hair offscreen and multiply it over the head',
+      args: {
+        target: '@part:PartHair',
+        offscreen: true,
+        blend: { color: 'multiply', alpha: 'over' },
+      },
+    },
+  ],
+  apply(d, a) {
+    const p = d.getAs(a.target, 'part');
+    if (!a.offscreen) {
+      d.put({ ...p, offscreen: null });
+      return {};
+    }
+    const old = p.offscreen;
+    const masks = a.masks ? [...new Set(a.masks)] : (old?.clip?.masks ?? []);
+    const invert = a.invert ?? old?.clip?.invert ?? false;
+    d.put({
+      ...p,
+      sortingScope: 'own',
+      offscreen: {
+        blend: a.blend ?? old?.blend ?? { color: 'normal', alpha: 'over' },
+        clip: masks.length === 0 ? null : { masks, invert },
+      },
+    });
+    return {};
+  },
+});
+
 export const treeMove = defineCommand({
   name: 'tree.move',
   summary: 'Move a part or mesh to another parent part and/or position.',
   doc: `Moves within the part tree (grouping and order). It does not change geometry or the deformer
-a mesh uses. \`parent\` null means the top level. A part cannot move inside itself.`,
+a mesh uses. Where the group has an explicit stacking order (\`project.stacks\`, an imported model's),
+the moved object takes the same place there. \`parent\` null means the top level. A part cannot move inside itself.`,
   args: Type.Object({
     target: RefOf(['part', 'artMesh']),
     parent: Type.Union([RefOf(['part']), Type.Null()]),
@@ -160,6 +239,8 @@ a mesh uses. \`parent\` null means the top level. A part cannot move inside itse
     const moved = d.get(o.uid) as Part | ArtMesh;
     d.put(moved.kind === 'part' ? { ...moved, parent: a.parent } : { ...moved, part: a.parent });
     placeInTree(d, o.uid, a.parent, a.index);
+    // A group with an explicit stacking order (an imported model's) follows the move.
+    restack(d, o.uid);
     return {};
   },
 });
@@ -311,6 +392,7 @@ triples. The mesh starts with one keyform (no bindings).`,
       doubleSided: a.doubleSided ?? true,
       enabled: true,
       legacyBlend: 'normal',
+      blend: null,
       clip: null,
       rig: { bindings: [], keyforms: [keyform] },
       blendShapes: [],
@@ -323,8 +405,11 @@ triples. The mesh starts with one keyform (no bindings).`,
 
 export const meshUpdate = defineCommand({
   name: 'mesh.update',
-  summary: 'Change a mesh’s layer, sidedness, enabled flag or legacy blending.',
-  doc: 'A disabled mesh is always hidden. Single-sided meshes are culled when they face away.',
+  summary: 'Change a mesh’s layer, sidedness, enabled flag or blending.',
+  doc: `A disabled mesh is always hidden. Single-sided meshes are culled when they face away.
+\`legacyBlend\` is the blending every version has. \`blend\` sets a version 6 blend mode (a color
+function and an alpha mode); one that every version can draw (normal over, additive,
+multiplicative) is stored as \`legacyBlend\` instead. \`blend\` null goes back to \`legacyBlend\`.`,
   args: Type.Object({
     target: RefOf(['artMesh']),
     layer: Type.Optional(Type.Union([RefOf(['layer']), Type.Null()])),
@@ -337,6 +422,7 @@ export const meshUpdate = defineCommand({
         Type.Literal('multiplicative'),
       ]),
     ),
+    blend: Type.Optional(Type.Union([BlendMode, Type.Null()])),
   }),
   result: Empty,
   errors: [],
@@ -345,15 +431,27 @@ export const meshUpdate = defineCommand({
       description: 'Additive glow',
       args: { target: '@mesh:ArtMesh_Glow', legacyBlend: 'additive' },
     },
+    {
+      description: 'Overlay shading (version 6)',
+      args: { target: '@mesh:ArtMesh_Shade', blend: { color: 'overlay', alpha: 'atop' } },
+    },
   ],
   apply(d, a) {
     const m = d.getAs(a.target, 'artMesh');
+    let legacyBlend = a.legacyBlend ?? m.legacyBlend;
+    let blend = a.blend === undefined ? m.blend : a.blend;
+    if (a.legacyBlend !== undefined && a.blend === undefined) blend = null;
+    if (blend && isCompatibleBlend(blend)) {
+      legacyBlend = blend.color as 'normal' | 'additive' | 'multiplicative';
+      blend = null;
+    }
     d.put({
       ...m,
       layer: a.layer === undefined ? m.layer : a.layer,
       doubleSided: a.doubleSided ?? m.doubleSided,
       enabled: a.enabled ?? m.enabled,
-      legacyBlend: a.legacyBlend ?? m.legacyBlend,
+      legacyBlend,
+      blend,
     });
     return {};
   },
@@ -455,6 +553,9 @@ place the image's top-left pixel on the canvas. Import commands create layers fo
     clipped: Type.Optional(Type.Boolean()),
     notes: Type.Optional(Type.Array(Type.String())),
     source: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+    texturePage: Type.Optional(
+      Type.Boolean({ description: 'a whole texture page, exported as it is (default false)' }),
+    ),
     index: Type.Optional(Type.Integer({ minimum: 0 })),
   }),
   result: Uid,
@@ -482,6 +583,7 @@ place the image's top-left pixel on the canvas. Import commands create layers fo
       clipped: a.clipped ?? false,
       notes: a.notes ?? [],
       source: a.source ?? null,
+      texturePage: a.texturePage ?? false,
     });
     d.updateProject((p) => ({ ...p, layerOrder: insertAt(p.layerOrder, uid, a.index) }));
     return { uid };

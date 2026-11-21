@@ -1,0 +1,22 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamAngle",
+      "GroupId": "",
+      "Name": "ParamAngle"
+    },
+    {
+      "Id": "ParamShift",
+      "GroupId": "",
+      "Name": "ParamShift"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "PartBody",
+      "Name": "PartBody"
+    }
+  ]
+}

@@ -7,6 +7,10 @@
  * to the smallest power-of-two size that holds its regions. Transparent pixels inside a region take
  * the color of the nearest opaque pixel ("bleeding"), so apps that filter without premultiplying
  * show no dark fringes.
+ *
+ * Layers that are texture pages (`texturePage`, an imported model's pages) come first, in layer
+ * order: each is a page of its own, as it is, with its meshes' UVs unchanged (offset 0, no padding,
+ * trimming or bleeding). The other layers are packed onto the pages after them.
  */
 import { MochiError, type DocReader, type Uid } from '@mochi-maker/core';
 import type { Image } from '@mochi-maker/geometry';
@@ -29,6 +33,8 @@ export interface AtlasRegion {
 
 export interface Atlas {
   pages: Image[];
+  /** Per page: the texture-page layer it is, kept as it is (null: a packed page). */
+  kept: (Uid | null)[];
   regions: AtlasRegion[];
   placement: Map<Uid, TexturePlacement>;
 }
@@ -47,7 +53,7 @@ export function atlasNeeds(doc: DocReader): Need[] {
   const bounds = new Map<Uid, [number, number, number, number]>();
   const project = doc.project();
   for (const m of doc.ofKind('artMesh')) {
-    if (!m.layer) continue;
+    if (!m.layer || doc.getAs(m.layer, 'layer').texturePage) continue;
     const b = bounds.get(m.layer) ?? [Infinity, Infinity, -Infinity, -Infinity];
     for (let i = 0; i < m.uv.length; i += 2) {
       b[0] = Math.min(b[0], m.uv[i]!);
@@ -157,7 +163,36 @@ export function buildAtlas(
   let remaining = needs;
   const regions: AtlasRegion[] = [];
   const pages: Image[] = [];
+  const kept: (Uid | null)[] = [];
   const placement = new Map<Uid, TexturePlacement>();
+  // Texture pages first, each as it is.
+  const used = new Set(doc.ofKind('artMesh').map((m) => m.layer));
+  for (const uid of doc.project().layerOrder) {
+    const layer = doc.getAs(uid, 'layer');
+    if (!layer.texturePage || !used.has(uid)) continue;
+    const img = images.get(uid);
+    if (!img) continue;
+    const page = pages.length;
+    pages.push(img);
+    kept.push(uid);
+    regions.push({
+      layer: uid,
+      page,
+      x: 0,
+      y: 0,
+      width: img.width,
+      height: img.height,
+      layerX: 0,
+      layerY: 0,
+    });
+    placement.set(uid, {
+      page,
+      pageWidth: img.width,
+      pageHeight: img.height,
+      offsetX: 0,
+      offsetY: 0,
+    });
+  }
   while (remaining.length > 0) {
     const page = pages.length;
     const placed = packPage(remaining, pageSize);
@@ -198,10 +233,11 @@ export function buildAtlas(
       bleed(data, width, x, y, n.w, n.h);
     }
     pages.push({ width, height, data });
+    kept.push(null);
     remaining = remaining.filter((n) => !placed.has(n.layer));
   }
   regions.sort((a, b) => a.page - b.page || a.y - b.y || a.x - b.x);
-  return { pages, regions, placement };
+  return { pages, kept, regions, placement };
 }
 
 function blit(

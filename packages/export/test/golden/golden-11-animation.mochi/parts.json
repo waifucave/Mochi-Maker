@@ -11,12 +11,16 @@
       "enabled": true,
       "sortingScope": "inherit",
       "guide": false,
+      "offscreen": null,
       "rig": {
         "bindings": [],
         "keyforms": [
           {
             "authored": true,
-            "drawOrder": 500
+            "drawOrder": 500,
+            "opacity": 1,
+            "multiply": [1, 1, 1],
+            "screen": [0, 0, 0]
           }
         ]
       },
@@ -33,12 +37,16 @@
       "enabled": true,
       "sortingScope": "inherit",
       "guide": false,
+      "offscreen": null,
       "rig": {
         "bindings": [],
         "keyforms": [
           {
             "authored": true,
-            "drawOrder": 500
+            "drawOrder": 500,
+            "opacity": 1,
+            "multiply": [1, 1, 1],
+            "screen": [0, 0, 0]
           }
         ]
       },
@@ -55,12 +63,16 @@
       "enabled": true,
       "sortingScope": "inherit",
       "guide": false,
+      "offscreen": null,
       "rig": {
         "bindings": [],
         "keyforms": [
           {
             "authored": true,
-            "drawOrder": 500
+            "drawOrder": 500,
+            "opacity": 1,
+            "multiply": [1, 1, 1],
+            "screen": [0, 0, 0]
           }
         ]
       },

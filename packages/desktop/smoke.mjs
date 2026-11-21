@@ -6,12 +6,13 @@
  * Usage: node smoke.mjs [platform] [arch]  (defaults: this machine's). Prints each step's time and
  * exits non-zero on any failure.
  */
-import { cp, mkdtemp, readdir, rm, stat } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { _electron } from 'playwright-core';
+import { APP_ID } from './identity.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const platform = process.argv[2] ?? process.platform;
@@ -54,10 +55,30 @@ try {
     'LICENSE',
     'THIRD_PARTY_NOTICES.md',
     'ASSETS.md',
+    'TERMS.md',
     'mochi2d.THIRD_PARTY_NOTICES.md',
   ])
     if (!existsSync(join(folder, 'licenses', f))) throw new Error(`licenses/${f} is missing`);
   step('notices and license texts are in licenses/');
+  // macOS: the bundle carries the app identifier, and every helper's identifier derives from it.
+  if (platform === 'darwin') {
+    const contents = join(exe, '..', '..');
+    const idOf = async (plist) =>
+      (await readFile(plist, 'utf8')).match(
+        /<key>CFBundleIdentifier<\/key>\s*<string>([^<]*)<\/string>/,
+      )?.[1];
+    const main = await idOf(join(contents, 'Info.plist'));
+    if (main !== APP_ID) throw new Error(`The bundle ID is ${main}, not ${APP_ID}`);
+    const frameworks = join(contents, 'Frameworks');
+    const helpers = (await readdir(frameworks)).filter((f) => f.endsWith('.app'));
+    if (helpers.length === 0) throw new Error('No helper apps in Contents/Frameworks');
+    for (const h of helpers) {
+      const id = await idOf(join(frameworks, h, 'Contents', 'Info.plist'));
+      if (!id?.startsWith(`${APP_ID}.`))
+        throw new Error(`${h}'s bundle ID ${id} is not under ${APP_ID}`);
+    }
+    step(`bundle ID ${main}, ${helpers.length} helper(s) under it`);
+  }
   const project = join(work, 'Square.mochi');
   const out = join(work, 'export');
   await cp(GOLDEN, project, { recursive: true });
@@ -101,6 +122,12 @@ try {
     log.push(`[page error] ${e.message}`);
   });
   step(`window: ${page.url()}`);
+  // Windows: the AppUserModelID was set before the window; elsewhere it is not set.
+  const identity = await app.evaluate(() => globalThis.mochiDesktopIdentity);
+  const want = platform === 'win32' ? APP_ID : null;
+  if (identity?.appUserModelId !== want)
+    throw new Error(`AppUserModelID ${identity?.appUserModelId}, expected ${want}`);
+  step(`AppUserModelID: ${identity.appUserModelId ?? 'not set (not Windows)'}`);
   await page.waitForFunction(() => window.mochi !== undefined, null, { timeout: 120_000 });
   step(`started: ${page.url()}`);
   // Glue and blend-shape authoring are off by default in every build.

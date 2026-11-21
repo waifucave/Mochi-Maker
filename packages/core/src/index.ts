@@ -122,3 +122,4 @@ export {
   type Preview,
   type RunItemsResult,
 } from './operations.js';
+export * from './stacking.js';

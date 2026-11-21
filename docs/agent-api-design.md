@@ -391,12 +391,10 @@ inside results.
 - **Agent presence in the editor** (agent → editor): `focus { refs, pose? }`
   highlights what the agent is working on, so the person can follow.
 
-**Compatibility with Mochi Studio.** The brief asks for compatibility with
-Mochi Studio's bridge design where sensible. Its design is not in this
-repository's inputs. The protocol above is therefore provisional. It keeps
-transport, framing, handshake and methods separable, so adopting Mochi
-Studio's transport and handshake later changes only the outer layer
-(round report, Q4).
+**Compatibility with Mochi Studio.** The live bridge as built follows Mochi
+Studio's bridge protocol: the same paths, messages, pairing, tokens and error
+codes, with its own app name and port ([`bridge.md`](bridge.md)). Transport,
+framing, handshake and methods stay separable.
 
 ### 5.3 Taking over
 

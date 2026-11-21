@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('mochiDesktop', {
     ipcRenderer.on('art:changed', (_e, path: string) => fn(path));
   },
   pickPhysics: () => call('physics:pick'),
+  pickModel: () => call('model:pick'),
   exportToFolder: (files: Files) => call('export:folder', { files }),
   recent: () => call('recent:list'),
   autosave: (key: string, name: string, dir: string | null, files: Files) =>

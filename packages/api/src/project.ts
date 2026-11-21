@@ -40,9 +40,12 @@ import { NodeFileSystem } from '@mochi-maker/core/node';
 import {
   OPERATIONS,
   exportModel,
+  importModel,
   type ExportOptions,
   type ExportResult,
+  type ImportReport,
 } from '@mochi-maker/export';
+import { readModelFolder } from './modelfolder.js';
 import { MemoryFileSource, scenarioResult } from 'mochi2d/headless';
 import { NodeRenderer } from 'mochi2d/node';
 import { decodePng, encodePng } from '@mochi-maker/art';
@@ -225,6 +228,37 @@ export class Project {
       options.author ?? 'person',
       0,
     );
+  }
+
+  /**
+   * Imports a `.moc3` model folder (the folder, or its `.model3.json`) as a new project in `dir`,
+   * which must not hold a project, and returns it open, saved, with the import report and the
+   * notice to show the person (`notices`). See docs/import.md.
+   */
+  static async importModel(
+    model: string,
+    dir: string,
+    options: ProjectOptions & { date?: string } = {},
+  ): Promise<{ project: Project; report: ImportReport; notices: string[] }> {
+    const fs = options.fs ?? new NodeFileSystem();
+    if (await fs.exists(`${dir}/${MANIFEST}`))
+      throw new MochiError('E_PROJECT_FORMAT', `${dir} already contains a project.`);
+    const folder = await readModelFolder(fs, model);
+    const assets = new MemoryAssetStore();
+    const r = await importModel(folder.files, folder.settings, assets, {
+      date: options.date ?? new Date().toISOString(),
+      features: options.features,
+    });
+    const project = new Project(
+      Session.open(r.document, { features: options.features }),
+      assets,
+      dir,
+      fs,
+      options.author ?? 'person',
+      0,
+    );
+    await project.save();
+    return { project, report: r.report, notices: r.notices };
   }
 
   get revision(): number {
@@ -471,7 +505,7 @@ export class Project {
     width: number,
     height: number,
     parameters: Record<string, number>,
-    exported: ExportResult,
+    exported: ExportResult | undefined,
   ): Promise<{ x: number; y: number; pixelsPerUnit: number }> {
     const target = this.session.view.resolve(around, ['artMesh'], 'around');
     const e = await this.evaluate({ parameters }, exported);
@@ -514,17 +548,15 @@ export class Project {
         : undefined);
     const renderer = await this.openRenderer();
     const stem = this.session.view.project().exportSettings.fileStem;
-    const img = await renderer.render(
-      { source, settings: `${stem}.model3.json` },
-      {
-        width,
-        height,
-        parameters,
-        background: options.background,
-        view,
-        fast: options.reference ? false : true,
-      },
-    );
+    const input = { source, settings: `${stem}.model3.json` };
+    const img = await renderer.render(input, {
+      width,
+      height,
+      parameters,
+      background: options.background,
+      view,
+      fast: options.reference ? false : true,
+    });
     return {
       png: img.png,
       width: img.width,

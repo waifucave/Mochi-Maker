@@ -30,6 +30,7 @@ export {
 } from './history.js';
 export { contactSheet, difference, type DiffMetrics } from './images.js';
 export { openPackRenderer } from './conformance.js';
+export { readModelFolder, type ModelFolder } from './modelfolder.js';
 // The standard parameter and parameter-group IDs, for agents that create parameters.
 export {
   STANDARD_ID_NOTE,

@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-12-motions.v6.high.P_Bez",
+  "model": "golden-12-motions/v6/model/golden12.model3.json",
+  "parameters": {
+    "P_Bez": 200
+  },
+  "partOpacities": {}
+}

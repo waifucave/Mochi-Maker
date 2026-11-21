@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-2-deformers.v6.low.ParamAngle",
+  "model": "golden-2-deformers/v6/model/golden2.model3.json",
+  "parameters": {
+    "ParamAngle": -60
+  },
+  "partOpacities": {}
+}

@@ -1,0 +1,43 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0016",
+  "exportId": "Blue",
+  "name": "Blue",
+  "part": "part_0012",
+  "deformer": null,
+  "layer": "layer_0006",
+  "uv": [
+    [0, 0],
+    [60, 0],
+    [60, 60],
+    [0, 60]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "blend": null,
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [110, 110],
+          [170, 110],
+          [170, 170],
+          [110, 170]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

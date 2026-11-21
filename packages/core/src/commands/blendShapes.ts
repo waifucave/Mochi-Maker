@@ -23,7 +23,7 @@ const FIELDS: Record<ShapeTarget['kind'], string[]> = {
   artMesh: ['positions', 'opacity', 'drawOrder', 'multiply', 'screen'],
   warp: ['grid', 'opacity', 'multiply', 'screen'],
   rotation: ['angle', 'originX', 'originY', 'scale', 'opacity', 'multiply', 'screen'],
-  part: ['drawOrder'],
+  part: ['drawOrder', 'opacity', 'multiply', 'screen'],
   glue: ['intensity'],
 };
 
@@ -57,7 +57,7 @@ export function zeroDelta(o: ShapeTarget): AnyDelta {
         screen: zero3(),
       };
     case 'part':
-      return { drawOrder: 0 };
+      return { drawOrder: 0, opacity: 0, multiply: zero3(), screen: zero3() };
     case 'glue':
       return { intensity: 0 };
   }

@@ -1,0 +1,46 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0019",
+  "exportId": "Cut",
+  "name": "Cut",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0009",
+  "uv": [
+    [0, 0],
+    [40, 0],
+    [40, 40],
+    [0, 40]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "blend": {
+    "color": "darken",
+    "alpha": "atop"
+  },
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [140, 20],
+          [180, 20],
+          [180, 60],
+          [140, 60]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

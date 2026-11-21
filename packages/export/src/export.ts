@@ -63,7 +63,7 @@ export const EXPORT_REPORT_FORMAT = 'mochi-maker-export';
 
 export interface ExportOptions {
   /** Overrides the project's setting. */
-  mocVersion?: 'auto' | 3 | 4 | 5;
+  mocVersion?: 'auto' | 3 | 4 | 5 | 6;
   atlasSize?: 1024 | 2048 | 4096 | 8192;
   fileStem?: string;
   /** Glue and blend shapes (default: MOCHI_MAKER_FEATURES, else off): with one off, a project that holds it is refused. */
@@ -107,7 +107,7 @@ export interface ExportResult {
 /** Why a document needs a file version (design 2.2, roadmap M13). */
 export interface VersionReason {
   uid: Uid;
-  version: 4 | 5;
+  version: 4 | 5 | 6;
   feature: string;
   /** What to change to export at a lower version. */
   fix: string;
@@ -129,8 +129,27 @@ const DELTA_FIELDS: Record<string, string> = {
  * Each reason names the object and, for blend shapes, the parameter and the values, with a fix.
  * Most demanding reasons come first.
  */
-export function requiredVersion(doc: DocReader): { version: 3 | 4 | 5; reasons: VersionReason[] } {
+export function requiredVersion(doc: DocReader): {
+  version: 3 | 4 | 5 | 6;
+  reasons: VersionReason[];
+} {
   const reasons: VersionReason[] = [];
+  for (const p of doc.ofKind('part'))
+    if (p.offscreen)
+      reasons.push({
+        uid: p.uid,
+        version: 6,
+        feature: 'offscreen drawing (version 6)',
+        fix: `Export at version 6, or stop drawing it offscreen (part.setOffscreen target ${p.uid}, offscreen false).`,
+      });
+  for (const m of doc.ofKind('artMesh'))
+    if (m.blend)
+      reasons.push({
+        uid: m.uid,
+        version: 6,
+        feature: `the blend mode ${m.blend.color} ${m.blend.alpha} (version 6)`,
+        fix: `Export at version 6, or use a blending every version has (mesh.update target ${m.uid}, blend null).`,
+      });
   for (const o of doc.ofKind(['artMesh', 'warp', 'rotation'])) {
     const kfs = o.rig.keyforms as { multiply: number[]; screen: number[] }[];
     const colored = kfs.filter(
@@ -180,7 +199,7 @@ export function requiredVersion(doc: DocReader): { version: 3 | 4 | 5; reasons: 
             },
       );
     }
-  const version = reasons.reduce<3 | 4 | 5>((v, r) => (r.version > v ? r.version : v), 3);
+  const version = reasons.reduce<3 | 4 | 5 | 6>((v, r) => (r.version > v ? r.version : v), 3);
   reasons.sort((a, b) => b.version - a.version);
   return { version, reasons };
 }
@@ -322,7 +341,12 @@ export async function exportModel(
 
   // 4. Lowering, the writer rules, and validation at both levels.
   const lowered = lowerDocument(doc, { version, placement: atlas.placement });
-  for (const r of checkWriterRules(lowered.data, version)) {
+  const kept = doc.project().importedFrom?.keep;
+  for (const r of checkWriterRules(lowered.data, version, {
+    decimals: (kept?.decimals.length ?? 0) > 0,
+    displayFlags: (kept?.hidden.length ?? 0) > 0,
+    groupRanges: (kept?.ranges.length ?? 0) > 0,
+  })) {
     const { uid, message } = describeDiagnostic(r, lowered, doc);
     problems.push({
       severity: 'error',
@@ -384,7 +408,14 @@ export async function exportModel(
   const plan = planFiles(doc, stem, atlas.pages.length, pageSize);
   const files = new Map<string, Uint8Array>();
   files.set(plan.moc, moc);
-  atlas.pages.forEach((p, i) => files.set(plan.textures[i]!, encodePng(p)));
+  // Texture pages kept as they are keep their PNG bytes; packed pages are encoded.
+  for (const [i, p] of atlas.pages.entries()) {
+    const kept = atlas.kept[i];
+    files.set(
+      plan.textures[i]!,
+      kept ? await assets.get(doc.getAs(kept, 'layer').asset) : encodePng(p),
+    );
+  }
   await addRuntimeFiles(doc, plan, assets, files);
   const model3 = files.get(`${stem}.model3.json`)!;
 

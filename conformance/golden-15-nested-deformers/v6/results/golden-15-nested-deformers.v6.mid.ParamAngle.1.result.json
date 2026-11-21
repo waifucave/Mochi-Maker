@@ -1,0 +1,74 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-15-nested-deformers.v6.mid.ParamAngle.1",
+  "producer": "mochi2d@0.22.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "originX": 200,
+    "originY": 200,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamBend",
+      "value": 0
+    },
+    {
+      "id": "ParamAngle",
+      "value": 15
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartBody",
+      "opacity": 1
+    }
+  ],
+  "drawables": [
+    {
+      "id": "ArtMesh_Face",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.11242121458053589, 0.3348281979560852, 0.21384960412979126, 0.18268564343452454, 0.13333413004875183, -0.053372785449028015, -0.21384960412979126, 0.11731433868408203]
+    },
+    {
+      "id": "ArtMesh_Eye",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.07596127688884735, 0.22845306992530823, -0.021582812070846558, 0.2030959576368332, -0.03426136448979378, 0.1759067177772522, -0.08863983303308487, 0.20126383006572723]
+    },
+    {
+      "id": "ArtMesh_Badge",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.13974979519844055, -0.2266646772623062, -0.06730536371469498, -0.24607610702514648, -0.08671678602695465, -0.31852054595947266, -0.15916122496128082, -0.2991091012954712]
+    },
+    {
+      "id": "ArtMesh_Hat",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 3,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.036856818944215775, 0.3022262454032898, 0.10803206264972687, 0.26340335607528687, 0.0886206328868866, 0.1909589320421219, -0.056268248707056046, 0.22978179156780243]
+    }
+  ],
+  "offscreens": [],
+  "warnings": []
+}
+

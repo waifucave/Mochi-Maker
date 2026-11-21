@@ -1,0 +1,26 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamFade",
+      "GroupId": "",
+      "Name": "ParamFade"
+    },
+    {
+      "Id": "ParamBS",
+      "GroupId": "",
+      "Name": "ParamBS"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "Part_Glass",
+      "Name": "Part_Glass"
+    },
+    {
+      "Id": "Part_Light",
+      "Name": "Part_Light"
+    }
+  ]
+}

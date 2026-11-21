@@ -53,7 +53,7 @@ describe('project folder', () => {
       'p.mochi/sounds.json',
     ]);
     const manifest = JSON.parse(await fs.readText(`p.mochi/${MANIFEST}`));
-    expect(manifest).toMatchObject({ format: 'mochi-maker-project', version: 12, seq: 16 });
+    expect(manifest).toMatchObject({ format: 'mochi-maker-project', version: 15, seq: 16 });
   });
 
   it('rewrites only changed files, and removes stale object files', async () => {
@@ -98,7 +98,7 @@ describe('project folder', () => {
   it('refuses newer format versions and damaged files with clear errors', async () => {
     const { fs } = await saved();
     const m = JSON.parse(await fs.readText(`p.mochi/${MANIFEST}`));
-    await fs.writeText(`p.mochi/${MANIFEST}`, JSON.stringify({ ...m, version: 13 }));
+    await fs.writeText(`p.mochi/${MANIFEST}`, JSON.stringify({ ...m, version: 16 }));
     expect((await loadError(fs)).code).toBe('E_PROJECT_TOO_NEW');
 
     await fs.writeText(`p.mochi/${MANIFEST}`, JSON.stringify(m));
@@ -119,7 +119,7 @@ describe('project folder', () => {
 
   it('runs migrations step by step', async () => {
     const { s, fs } = await saved();
-    // Pretend the format is at version 14, and what we saved (version 12) has a renamed field.
+    // Pretend the format is at version 17, and what we saved (version 15) has a renamed field.
     const path = `p.mochi/${MANIFEST}`;
     const m = JSON.parse(await fs.readText(path));
     m.project.canvasOld = m.project.canvas;
@@ -128,18 +128,18 @@ describe('project folder', () => {
     const calls: number[] = [];
     const migrations: Migration[] = [
       {
-        from: 12,
+        from: 15,
         migrate(bundle) {
-          calls.push(12);
+          calls.push(15);
           const mm = bundle.get(MANIFEST) as { project: Record<string, unknown> };
           mm.project.canvas = mm.project.canvasOld;
           delete mm.project.canvasOld;
         },
       },
-      { from: 13, migrate: () => void calls.push(13) },
+      { from: 16, migrate: () => void calls.push(16) },
     ];
-    const doc = decodeBundle(await readBundle(fs, 'p.mochi'), { migrations, currentVersion: 14 });
-    expect(calls).toEqual([12, 13]);
+    const doc = decodeBundle(await readBundle(fs, 'p.mochi'), { migrations, currentVersion: 17 });
+    expect(calls).toEqual([15, 16]);
     expect(canonicalText(doc)).toBe(canonicalText(s.doc));
     expect(() =>
       decodeBundle(new Map([[MANIFEST, { ...m, version: 1 }]]), {
@@ -320,6 +320,20 @@ describe('project folder', () => {
       delete mo.motionSync;
       await fs.writeText(`p.mochi/motions/${f}`, JSON.stringify(mo));
     }
+    const { doc } = await loadProject(fs, 'p.mochi');
+    expect(canonicalText(doc)).toBe(canonicalText(s.doc));
+  });
+
+  it('migrates version-12 projects: no texture pages, and not imported', async () => {
+    const { s, fs } = await saved();
+    const m = JSON.parse(await fs.readText(`p.mochi/${MANIFEST}`));
+    delete m.project.importedFrom;
+    delete m.project.stacks;
+    await fs.writeText(`p.mochi/${MANIFEST}`, JSON.stringify({ ...m, version: 12 }));
+    const layers = JSON.parse(await fs.readText('p.mochi/layers.json'));
+    expect(layers.layers.length).toBeGreaterThan(0);
+    for (const l of layers.layers) delete l.texturePage;
+    await fs.writeText('p.mochi/layers.json', JSON.stringify(layers));
     const { doc } = await loadProject(fs, 'p.mochi');
     expect(canonicalText(doc)).toBe(canonicalText(s.doc));
   });

@@ -50,7 +50,7 @@ export interface SweepResult {
 }
 
 export interface ExportArgs {
-  mocVersion?: 'auto' | 3 | 4 | 5;
+  mocVersion?: 'auto' | 3 | 4 | 5 | 6;
   atlasSize?: 1024 | 2048 | 4096 | 8192;
   fileStem?: string;
   force?: boolean;
@@ -93,7 +93,7 @@ export interface Backend {
     to: number;
   }>;
   evaluate(options: { parameters?: Record<string, number>; vertices?: boolean }): Promise<Json>;
-  validate(targetVersion?: 'auto' | 3 | 4 | 5): Promise<Json>;
+  validate(targetVersion?: 'auto' | 3 | 4 | 5 | 6): Promise<Json>;
   importArt(path: string, options: Json, dryRun: boolean): Promise<Json>;
   reimportArt(path: string, options: Json, dryRun: boolean): Promise<Json>;
   export(out: string, options: ExportArgs): Promise<ExportReport>;
@@ -179,7 +179,7 @@ export class ProjectBackend implements Backend {
   async evaluate(options: { parameters?: Record<string, number>; vertices?: boolean }) {
     return (await this.project.evaluate(options)) as unknown as Json;
   }
-  async validate(targetVersion?: 'auto' | 3 | 4 | 5) {
+  async validate(targetVersion?: 'auto' | 3 | 4 | 5 | 6) {
     const p = this.project;
     const v = p.validate();
     if (targetVersion === undefined) return v as unknown as Json;
@@ -410,7 +410,7 @@ export class BridgeBackend implements Backend {
   evaluate(options: { parameters?: Record<string, number>; vertices?: boolean }) {
     return this.call('evaluate', options as Json);
   }
-  validate(targetVersion?: 'auto' | 3 | 4 | 5) {
+  validate(targetVersion?: 'auto' | 3 | 4 | 5 | 6) {
     return this.call('validate', targetVersion === undefined ? {} : { targetVersion });
   }
 

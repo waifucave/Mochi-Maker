@@ -256,7 +256,7 @@ describe('export fuzzing', () => {
       fc.asyncProperty(fc.integer(), async (seed) => {
         const { session, assets, params, rnd } = await randomDocument(seed);
         const need = requiredVersion(session.view).version;
-        for (const version of [3, 4, 5] as const) {
+        for (const version of [3, 4, 5, 6] as const) {
           if (version < need) {
             await expect(
               exportModel(session.doc, assets, { mocVersion: version }),

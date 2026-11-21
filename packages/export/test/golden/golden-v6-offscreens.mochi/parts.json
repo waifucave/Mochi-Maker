@@ -1,0 +1,104 @@
+{
+  "parts": [
+    {
+      "kind": "part",
+      "uid": "part_0011",
+      "exportId": "Part_Glass",
+      "name": "Part_Glass",
+      "parent": null,
+      "children": ["mesh_0014", "mesh_0015"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "own",
+      "guide": false,
+      "offscreen": {
+        "blend": {
+          "color": "multiply",
+          "alpha": "over"
+        },
+        "clip": null
+      },
+      "rig": {
+        "bindings": [
+          {
+            "parameter": "param_0001",
+            "keys": [0, 1]
+          }
+        ],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 500,
+            "opacity": 1,
+            "multiply": [1, 0.5, 0.5],
+            "screen": [0, 0, 0]
+          },
+          {
+            "authored": true,
+            "drawOrder": 500,
+            "opacity": 0.25,
+            "multiply": [1, 1, 1],
+            "screen": [0.2, 0, 0]
+          }
+        ]
+      },
+      "blendShapes": [
+        {
+          "parameter": "param_0002",
+          "keys": [0, 1],
+          "base": 0,
+          "deltas": [
+            {
+              "drawOrder": 0,
+              "opacity": 0,
+              "multiply": [0, 0, 0],
+              "screen": [0, 0, 0]
+            },
+            {
+              "drawOrder": 0,
+              "opacity": -0.5,
+              "multiply": [0, 0, 0],
+              "screen": [0, 0.3, 0]
+            }
+          ],
+          "constraints": []
+        }
+      ]
+    },
+    {
+      "kind": "part",
+      "uid": "part_0012",
+      "exportId": "Part_Light",
+      "name": "Part_Light",
+      "parent": null,
+      "children": ["mesh_0016"],
+      "visibleAtStart": true,
+      "enabled": true,
+      "sortingScope": "own",
+      "guide": false,
+      "offscreen": {
+        "blend": {
+          "color": "screen",
+          "alpha": "atop"
+        },
+        "clip": {
+          "masks": ["mesh_0017"],
+          "invert": false
+        }
+      },
+      "rig": {
+        "bindings": [],
+        "keyforms": [
+          {
+            "authored": true,
+            "drawOrder": 600,
+            "opacity": 1,
+            "multiply": [1, 1, 1],
+            "screen": [0, 0, 0]
+          }
+        ]
+      },
+      "blendShapes": []
+    }
+  ]
+}

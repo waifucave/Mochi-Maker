@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-9-draw-order-edges.v6.parts.half",
+  "model": "golden-9-draw-order-edges/v6/model/golden9.model3.json",
+  "parameters": {},
+  "partOpacities": {
+    "Part_Edge": 0.5
+  }
+}

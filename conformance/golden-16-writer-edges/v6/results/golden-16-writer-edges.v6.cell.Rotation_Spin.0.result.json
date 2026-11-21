@@ -1,0 +1,116 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-16-writer-edges.v6.cell.Rotation_Spin.0",
+  "producer": "mochi2d@0.22.0",
+  "error": null,
+  "canvas": {
+    "width": 300,
+    "height": 300,
+    "originX": 150,
+    "originY": 150,
+    "pixelsPerUnit": 300
+  },
+  "parameters": [
+    {
+      "id": "ParamX",
+      "value": 0
+    },
+    {
+      "id": "ParamY",
+      "value": 0
+    },
+    {
+      "id": "ParamSpin",
+      "value": -180
+    },
+    {
+      "id": "ParamFlip",
+      "value": 0
+    }
+  ],
+  "parts": [
+    {
+      "id": "Part_Root",
+      "opacity": 1
+    },
+    {
+      "id": "Part_Child",
+      "opacity": 1
+    }
+  ],
+  "drawables": [
+    {
+      "id": "ArtMesh_Grid",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.4333333373069763, 0.4333333373069763, -0.30000001192092896, 0.4333333373069763, -0.30000001192092896, 0.30000001192092896, -0.4333333373069763, 0.30000001192092896]
+    },
+    {
+      "id": "ArtMesh_Glow",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.4333333373069763, -0.23333333432674408, -0.3333333432674408, -0.23333333432674408, -0.3333333432674408, -0.3333333432674408, -0.4333333373069763, -0.3333333432674408]
+    },
+    {
+      "id": "ArtMesh_Shade",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.30000001192092896, -0.23333333432674408, -0.20000000298023224, -0.23333333432674408, -0.20000000298023224, -0.3333333432674408, -0.30000001192092896, -0.3333333432674408]
+    },
+    {
+      "id": "ArtMesh_Spun",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 3,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.1666666716337204, 0.15000000596046448, 0.06666667014360428, 0.14999999105930328, 0.06666667014360428, 0.18333333730697632, 0.1666666716337204, 0.18333333730697632]
+    },
+    {
+      "id": "ArtMesh_Mask",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 4,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.10000000149011612, -0.10000000149011612, 0.10000000149011612, -0.10000000149011612, 0.10000000149011612, -0.30000001192092896, -0.10000000149011612, -0.30000001192092896]
+    },
+    {
+      "id": "ArtMesh_Masked",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 5,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0, -0.1666666716337204, 0.20000000298023224, -0.1666666716337204, 0.20000000298023224, -0.2666666805744171, 0, -0.2666666805744171]
+    },
+    {
+      "id": "ArtMesh_Outside",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 6,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.20000000298023224, -0.13333334028720856, 0, -0.13333334028720856, 0, -0.23333333432674408, -0.20000000298023224, -0.23333333432674408]
+    }
+  ],
+  "offscreens": [],
+  "warnings": []
+}
+

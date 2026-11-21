@@ -1,0 +1,10 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-17-motion-sync.v6.centre.Mouth.1",
+  "model": "golden-17-motion-sync/v6/model/golden17.model3.json",
+  "parameters": {
+    "ParamMouthOpenY": 0.5,
+    "ParamMouthForm": 0.5
+  },
+  "partOpacities": {}
+}

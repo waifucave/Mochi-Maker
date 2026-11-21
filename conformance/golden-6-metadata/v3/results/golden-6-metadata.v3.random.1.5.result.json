@@ -1,7 +1,7 @@
 {
   "format": "mochi2d-result/0",
   "scenario": "golden-6-metadata.v3.random.1.5",
-  "producer": "mochi2d@0.21.0",
+  "producer": "mochi2d@0.22.0",
   "error": null,
   "canvas": {
     "width": 400,

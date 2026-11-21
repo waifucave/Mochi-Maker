@@ -14,7 +14,8 @@
       "blendMode": "normal",
       "clipped": false,
       "notes": [],
-      "source": "art/character.psd#Body"
+      "source": "art/character.psd#Body",
+      "texturePage": false
     },
     {
       "kind": "layer",
@@ -30,7 +31,8 @@
       "blendMode": "normal",
       "clipped": false,
       "notes": [],
-      "source": "art/character.psd#Head/Face"
+      "source": "art/character.psd#Head/Face",
+      "texturePage": false
     },
     {
       "kind": "layer",
@@ -46,7 +48,8 @@
       "blendMode": "normal",
       "clipped": false,
       "notes": [],
-      "source": "art/character.psd#Head/Eye"
+      "source": "art/character.psd#Head/Eye",
+      "texturePage": false
     },
     {
       "kind": "layer",
@@ -62,7 +65,8 @@
       "blendMode": "normal",
       "clipped": false,
       "notes": ["missing from art/character.psd at re-import"],
-      "source": "art/character.psd#目"
+      "source": "art/character.psd#目",
+      "texturePage": false
     },
     {
       "kind": "layer",
@@ -78,7 +82,8 @@
       "blendMode": "normal",
       "clipped": false,
       "notes": ["new at re-import; not meshed yet"],
-      "source": "art/character.psd#Head/Mouth"
+      "source": "art/character.psd#Head/Mouth",
+      "texturePage": false
     }
   ]
 }

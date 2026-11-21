@@ -1,0 +1,21 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamOrder",
+      "GroupId": "",
+      "Name": "ParamOrder"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "Part_Back",
+      "Name": "Part_Back"
+    },
+    {
+      "Id": "Part_Front",
+      "Name": "Part_Front"
+    }
+  ]
+}

@@ -26,6 +26,7 @@ import type {
   WarpDelta,
   DocReader,
   Glue,
+  ImportKeep,
   MeshKeyform,
   Parameter,
   Part,
@@ -37,6 +38,7 @@ import type {
   WarpKeyform,
 } from '@mochi-maker/core';
 import type { MocData, MocVersion } from 'mochi2d/headless';
+import { blendCode, stackOrder } from '@mochi-maker/core';
 import { DECIMALS, expectedGroupRanges, padPositionRuns } from './rules.js';
 
 /** Where a mesh's texture comes from: atlas page and the map from layer pixels to page pixels. */
@@ -65,6 +67,29 @@ export interface LowerResult {
     parameters: Uid[];
     glues: Uid[];
   };
+  /** Each draw-order group's own-scope part (null for the top), by group index. */
+  groupScopes: (Uid | null)[];
+}
+
+/**
+ * Sets each draw-order group's range: the reachable one, or an imported file's own while the
+ * group is the file's (same index and scope) and its reachable range is the one the file's data
+ * gave. Evaluation reads the range, so an unedited export must write the file's.
+ */
+export function setGroupRanges(
+  data: MocData,
+  version: number,
+  keep: ImportKeep | null | undefined,
+  scopes: readonly (Uid | null)[],
+): void {
+  const ranges = expectedGroupRanges(data, version);
+  for (const [g, min, max, emin, emax] of keep?.ranges ?? []) {
+    const r = ranges[g];
+    if (r && r.min === emin && r.max === emax && scopes[g] === (keep!.groups[g] ?? null))
+      ranges[g] = { min, max };
+  }
+  data.drawOrderGroups.minDrawOrder = i32(ranges.map((r) => r.min));
+  data.drawOrderGroups.maxDrawOrder = i32(ranges.map((r) => r.max));
 }
 
 const i32 = (a: number[]) => Int32Array.from(a);
@@ -88,7 +113,40 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     }
   };
   walk(project.root);
-  const deformers = project.deformerOrder.map((u) => doc.get(u) as Warp | Rotation);
+  // An imported model keeps its file's index orders (and values; see `exact`).
+  const keep = project.importedFrom?.keep ?? null;
+  const inOrder = <T extends { uid: Uid }>(list: T[], order: string[] | undefined): T[] => {
+    if (!order || order.length === 0) return list;
+    const pos = new Map(order.map((u, i) => [u, i]));
+    const known = list.filter((o) => pos.has(o.uid));
+    known.sort((a, b) => pos.get(a.uid)! - pos.get(b.uid)!);
+    return [...known, ...list.filter((o) => !pos.has(o.uid))];
+  };
+  parts.splice(0, parts.length, ...inOrder(parts, keep?.parts));
+  meshes.splice(0, meshes.length, ...inOrder(meshes, keep?.artMeshes));
+  const deformers = inOrder(
+    project.deformerOrder.map((u) => doc.get(u) as Warp | Rotation),
+    keep?.deformers,
+  );
+  const fileValues = new Map((keep?.values ?? []).map(([path, d, f]) => [path, [d, f] as const]));
+  /** The file's value at `path` while the document still holds what the import made of it. */
+  const exact = (path: string, doc: number, computed: number): number => {
+    if (fileValues.size === 0) return computed;
+    const o = fileValues.get(path);
+    return o && o[0] === doc ? o[1] : computed;
+  };
+  const hidden = new Set(keep?.hidden ?? []);
+  const decimalsOf = new Map(keep?.decimals ?? []);
+  const extraFlags = new Map(keep?.meshFlags ?? []);
+  // Version 6 codes and flags as an imported file has them (see ImportKeep).
+  const keptBlend = new Map((keep?.blendCodes ?? []).map(([u, d, f]) => [u, [d, f] as const]));
+  /** The file's code while the document's is the one the import gave it. */
+  const codeOf = (uid: Uid, computed: number) => {
+    const k = keptBlend.get(uid);
+    return k && k[0] === computed ? k[1] : computed;
+  };
+  const keptOffscreenFlags = new Map(keep?.offscreenFlags ?? []);
+  const keptBlendFlags = new Map((keep?.blendFlags ?? []).map(([u, d, f]) => [u, [d, f] as const]));
   const parameters = project.parameterOrder.map((u) => doc.get(u) as Parameter);
   const glues = project.glueOrder.map((u) => doc.get(u) as Glue);
   const index = (list: { uid: Uid }[]) => new Map(list.map((o, i) => [o.uid, i]));
@@ -204,16 +262,31 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     }
     return false;
   };
-  const toModel = (pts: Float32Array): number[] => {
+  /** Canvas pixels → model units; `path` names the values for `exact`. */
+  const toModel = (pts: Float32Array, path: string): number[] => {
     const out: number[] = [];
     for (let i = 0; i < pts.length; i += 2)
-      out.push((pts[i]! - originX) / ppu, (pts[i + 1]! - originY) / ppu);
+      out.push(
+        exact(`${path}/${i}`, pts[i]!, (pts[i]! - originX) / ppu),
+        exact(`${path}/${i + 1}`, pts[i + 1]!, (pts[i + 1]! - originY) / ppu),
+      );
     return out;
   };
   const positions: number[] = [];
 
   // ---------------------------------------------------------------- parts
-  const partKf: { drawOrder: number[] } = { drawOrder: [] };
+  const partKf = { drawOrder: [] as number[], offscreenKeyform: [] as number[] };
+  // Version 6: parts drawn offscreen, in part order. Such a part's normal keyforms are its
+  // offscreen's normal keyforms, which come first in the offscreen keyforms; blend-shape ones follow.
+  const v6 = v >= 6;
+  const offParts = v6
+    ? inOrder(
+        parts.filter((p) => p.offscreen),
+        keep?.offscreens,
+      )
+    : [];
+  const offIdx = new Map(offParts.map((p, i) => [p.uid, i]));
+  let offscreenKeyforms = 0;
   const P = {
     band: [] as number[],
     firstKeyform: [] as number[],
@@ -229,7 +302,11 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     P.visible.push(p.visibleAtStart ? 1 : 0);
     P.enabled.push(p.enabled ? 1 : 0);
     P.parent.push(p.parent === null ? -1 : partIdx.get(p.parent)!);
-    for (const k of p.rig.keyforms) partKf.drawOrder.push(k.drawOrder);
+    const off = offIdx.has(p.uid);
+    for (const k of p.rig.keyforms) {
+      partKf.drawOrder.push(k.drawOrder);
+      partKf.offscreenKeyform.push(off ? offscreenKeyforms++ : -1);
+    }
   }
 
   // ---------------------------------------------------------------- deformers
@@ -290,7 +367,9 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       d.rig.keyforms.forEach((k, i) => {
         WK.opacity.push(k.opacity);
         WK.firstPosition.push(positions.length);
-        positions.push(...(d.parent === null ? toModel(k.grid) : Array.from(k.grid)));
+        positions.push(
+          ...(d.parent === null ? toModel(k.grid, `${d.uid}/kf${i}`) : Array.from(k.grid)),
+        );
         WK.color.push(first + i);
       });
     } else {
@@ -308,11 +387,14 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
         RK.angle.push(k.angle);
         const [ox, oy] =
           d.parent === null
-            ? toModel(Float32Array.of(k.originX, k.originY))
+            ? [
+                exact(`${d.uid}/kf${i}/ox`, k.originX, (k.originX - originX) / ppu),
+                exact(`${d.uid}/kf${i}/oy`, k.originY, (k.originY - originY) / ppu),
+              ]
             : [k.originX, k.originY];
         RK.originX.push(ox!);
         RK.originY.push(oy!);
-        RK.scale.push(k.scale * factor);
+        RK.scale.push(exact(`${d.uid}/kf${i}/s`, k.scale, k.scale * factor));
         RK.mirrorX.push(k.mirrorX ? 1 : 0);
         RK.mirrorY.push(k.mirrorY ? 1 : 0);
         RK.color.push(first + i);
@@ -337,6 +419,7 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     firstMask: [] as number[],
     maskCount: [] as number[],
     firstColor: [] as number[],
+    blendMode: [] as number[],
   };
   const MK = {
     opacity: [] as number[],
@@ -356,19 +439,26 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     M.deformer.push(m.deformer === null ? -1 : defIdx.get(m.deformer)!);
     const place = m.layer ? options.placement.get(m.layer) : undefined;
     M.texture.push(place?.page ?? 0);
-    let flags = 0;
-    if (m.legacyBlend === 'additive') flags |= 1;
-    if (m.legacyBlend === 'multiplicative') flags |= 2;
+    const legacyCode =
+      m.legacyBlend === 'additive' ? 1 : m.legacyBlend === 'multiplicative' ? 2 : 0;
+    // Flag bits 0–1: the legacy blending, or a version 6 file's own while it is unedited.
+    const kept = keptBlendFlags.get(m.uid);
+    let flags = kept && kept[0] === legacyCode ? kept[1] : legacyCode;
     if (m.doubleSided) flags |= 4;
     if (m.clip?.invert) flags |= 8;
-    M.flags.push(flags);
+    M.flags.push(flags | (extraFlags.get(m.uid) ?? 0));
+    M.blendMode.push(codeOf(m.uid, m.blend ? blendCode(m.blend) : legacyCode));
     M.vertexCount.push(m.uv.length / 2);
     M.firstUv.push(uvs.length);
     for (let i = 0; i < m.uv.length; i += 2) {
       if (place)
         uvs.push(
-          (m.uv[i]! + place.offsetX) / place.pageWidth,
-          (m.uv[i + 1]! + place.offsetY) / place.pageHeight,
+          exact(`${m.uid}/uv/${i}`, m.uv[i]!, (m.uv[i]! + place.offsetX) / place.pageWidth),
+          exact(
+            `${m.uid}/uv/${i + 1}`,
+            m.uv[i + 1]!,
+            (m.uv[i + 1]! + place.offsetY) / place.pageHeight,
+          ),
         );
       else uvs.push(0, 0);
     }
@@ -385,8 +475,39 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       MK.opacity.push(k.opacity);
       MK.drawOrder.push(k.drawOrder);
       MK.firstPosition.push(positions.length);
-      positions.push(...(m.deformer === null ? toModel(k.positions) : Array.from(k.positions)));
+      positions.push(
+        ...(m.deformer === null
+          ? toModel(k.positions, `${m.uid}/kf${i}`)
+          : Array.from(k.positions)),
+      );
       MK.color.push(first + i);
+    });
+  }
+
+  // ---------------------------------------------------------------- offscreens (version 6)
+  const OF = {
+    part: [] as number[],
+    flags: [] as number[],
+    blendMode: [] as number[],
+    firstMask: [] as number[],
+    maskCount: [] as number[],
+  };
+  const OK = { opacity: [] as number[], color: [] as number[] };
+  for (const p of offParts) {
+    const o = p.offscreen!;
+    OF.part.push(partIdx.get(p.uid)!);
+    // Bit 2 as files usually have it (not read for offscreens), bit 3 the inverted mask.
+    OF.flags.push((o.clip?.invert ? 8 : 0) | (keptOffscreenFlags.get(p.uid) ?? 4));
+    OF.blendMode.push(codeOf(p.uid, blendCode(o.blend)));
+    OF.firstMask.push(masks.length);
+    const list = o.clip?.masks ?? [];
+    OF.maskCount.push(list.length);
+    for (const u of list) masks.push(meshIdx.get(u)!);
+    // Both colors of keyform j come from entry first + j.
+    const first = addColors(p.rig.keyforms);
+    p.rig.keyforms.forEach((k, j) => {
+      OK.opacity.push(k.opacity);
+      OK.color.push(first + j);
     });
   }
 
@@ -399,43 +520,68 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     min: [] as number[],
   };
   const O = { kind: [] as number[], index: [] as number[], nested: [] as number[] };
-  const buildGroup = (items: Uid[]): number => {
-    const g = G.firstObject.length;
+  // Each group's members in stacking order (stacking.ts): the tree's, or the project's explicit
+  // one. Groups are numbered in pre-order, or in the imported file's order; their objects are laid
+  // out nested groups first.
+  interface GroupNode {
+    scope: Uid | null;
+    objs: { kind: number; index: number; nested: GroupNode | null }[];
+    entries: number;
+    g: number;
+  }
+  const buildNode = (scope: Uid | null): GroupNode => {
+    const node: GroupNode = { scope, objs: [], entries: 0, g: -1 };
+    for (const uid of stackOrder(doc, scope)) {
+      const o = doc.get(uid);
+      if (o?.kind === 'artMesh') {
+        node.objs.push({ kind: 0, index: meshIdx.get(uid)!, nested: null });
+        node.entries += 1;
+      } else if (o?.kind === 'part') {
+        const nested = buildNode(uid);
+        node.objs.push({ kind: 1, index: partIdx.get(uid)!, nested });
+        // A part's offscreen is one more entry of the group it is drawn in.
+        node.entries += nested.entries + (offIdx.has(uid) ? 1 : 0);
+      }
+    }
+    return node;
+  };
+  const rootGroup = buildNode(null);
+  const nodes: GroupNode[] = [];
+  const preorder = (n: GroupNode) => {
+    nodes.push(n);
+    for (const o of n.objs) if (o.nested) preorder(o.nested);
+  };
+  preorder(rootGroup);
+  const keptGroups = new Map((keep?.groups ?? []).map((sc, i) => [sc ?? '', i]));
+  const numbered = keptGroups.size
+    ? [
+        ...nodes
+          .filter((n) => keptGroups.has(n.scope ?? ''))
+          .sort((a, b) => keptGroups.get(a.scope ?? '')! - keptGroups.get(b.scope ?? '')!),
+        ...nodes.filter((n) => !keptGroups.has(n.scope ?? '')),
+      ]
+    : nodes;
+  numbered.forEach((n, i) => {
+    n.g = i;
     G.firstObject.push(0);
     G.objectCount.push(0);
     G.entryCount.push(0);
     G.max.push(0);
     G.min.push(0);
-    const objs: { kind: number; index: number; nested: number }[] = [];
-    let entries = 0;
-    const collect = (list: Uid[]) => {
-      for (const uid of list) {
-        const o = doc.get(uid);
-        if (o?.kind === 'artMesh') {
-          objs.push({ kind: 0, index: meshIdx.get(uid)!, nested: -1 });
-          entries += 1;
-        } else if (o?.kind === 'part') {
-          if (o.sortingScope === 'own') {
-            const nested = buildGroup(o.children);
-            objs.push({ kind: 1, index: partIdx.get(uid)!, nested });
-            entries += G.entryCount[nested]!;
-          } else collect(o.children);
-        }
-      }
-    };
-    collect(items);
-    G.firstObject[g] = O.kind.length;
-    G.objectCount[g] = objs.length;
-    G.entryCount[g] = entries;
+  });
+  const emit = (n: GroupNode) => {
+    for (const o of n.objs) if (o.nested) emit(o.nested);
+    G.firstObject[n.g] = O.kind.length;
+    G.objectCount[n.g] = n.objs.length;
+    G.entryCount[n.g] = n.entries;
     // The range is filled in after assembly, from the data (expectedGroupRanges).
-    for (const o of objs) {
+    for (const o of n.objs) {
       O.kind.push(o.kind);
       O.index.push(o.index);
-      O.nested.push(o.nested);
+      O.nested.push(o.nested ? o.nested.g : -1);
     }
-    return g;
   };
-  buildGroup(project.root);
+  emit(rootGroup);
 
   // ---------------------------------------------------------------- glues
   const GL = {
@@ -489,20 +635,22 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     part: targets(),
     rotation: targets(),
     glue: targets(),
+    offscreen: targets(),
   };
   /** Adds an object's blend shapes; `push` stores one delta keyform and returns its keyform index. */
   const addShapes = <D extends AnyDelta>(
     t: Targets,
     object: number,
     shapes: BlendShape<D>[],
-    push: (d: D, color: number) => number,
+    push: (d: D, color: number, path: string) => number,
     colors: boolean,
+    uid: Uid,
   ) => {
     if (shapes.length === 0) return;
     t.object.push(object);
     t.firstBinding.push(KB.parameterBinding.length);
     t.bindingCount.push(shapes.length);
-    for (const b of shapes) {
+    for (const [bi, b] of shapes.entries()) {
       KB.parameterBinding.push(shapeBindingOf.get(`${b.parameter}|${shapeKey(b)}`)!);
       KB.keyformCount.push(b.keys.length);
       KB.firstConstraintEntry.push(constraintEntries.length);
@@ -523,15 +671,15 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
           : 0;
       let firstKf = -1;
       b.deltas.forEach((d, k) => {
-        const at = push(d, first + k);
+        const at = push(d, first + k, `${uid}/bs${bi}/${k}`);
         if (k === 0) firstKf = at;
       });
       KB.firstKeyform.push(firstKf);
     }
   };
   // Offsets convert with the scale only: a top-level offset of p pixels is p/ppu model units.
-  const scaled = (pts: Float32Array, top: boolean) =>
-    top ? Array.from(pts, (x) => x / ppu) : Array.from(pts);
+  const scaled = (pts: Float32Array, top: boolean, path: string) =>
+    top ? Array.from(pts, (x, i) => exact(`${path}/${i}`, x, x / ppu)) : Array.from(pts);
   for (const d of deformers) {
     const ki = D.kindIndex[defIdx.get(d.uid)!]!;
     if (d.kind === 'warp')
@@ -539,14 +687,15 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
         T.warp,
         ki,
         d.blendShapes as BlendShape<WarpDelta>[],
-        (x, color) => {
+        (x, color, path) => {
           WK.opacity.push(x.opacity);
           WK.firstPosition.push(positions.length);
-          positions.push(...scaled(x.grid, d.parent === null));
+          positions.push(...scaled(x.grid, d.parent === null, path));
           WK.color.push(color);
           return WK.opacity.length - 1;
         },
         true,
+        d.uid,
       );
   }
   meshes.forEach((m, mi) =>
@@ -554,15 +703,16 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       T.artMesh,
       mi,
       m.blendShapes as BlendShape<MeshDelta>[],
-      (x, color) => {
+      (x, color, path) => {
         MK.opacity.push(x.opacity);
         MK.drawOrder.push(x.drawOrder);
         MK.firstPosition.push(positions.length);
-        positions.push(...scaled(x.positions, m.deformer === null));
+        positions.push(...scaled(x.positions, m.deformer === null, path));
         MK.color.push(color);
         return MK.opacity.length - 1;
       },
       true,
+      m.uid,
     ),
   );
   parts.forEach((p, pi) =>
@@ -572,9 +722,28 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       p.blendShapes as BlendShape<PartDelta>[],
       (x) => {
         partKf.drawOrder.push(x.drawOrder);
+        partKf.offscreenKeyform.push(-1);
         return partKf.drawOrder.length - 1;
       },
       false,
+      p.uid,
+    ),
+  );
+  // An offscreen's blend shapes: those of its part that change its opacity or colors.
+  const offDelta = (x: PartDelta) =>
+    x.opacity !== 0 || x.multiply.some((c) => c !== 0) || x.screen.some((c) => c !== 0);
+  offParts.forEach((p, oi) =>
+    addShapes(
+      T.offscreen,
+      oi,
+      (p.blendShapes as BlendShape<PartDelta>[]).filter((b) => b.deltas.some(offDelta)),
+      (x, color) => {
+        OK.opacity.push(x.opacity);
+        OK.color.push(color);
+        return OK.opacity.length - 1;
+      },
+      true,
+      p.uid,
     ),
   );
   for (const d of deformers) {
@@ -586,18 +755,19 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       T.rotation,
       ki,
       d.blendShapes as BlendShape<RotationDelta>[],
-      (x, color) => {
+      (x, color, path) => {
         RK.opacity.push(x.opacity);
         RK.angle.push(x.angle);
-        RK.originX.push(top ? x.originX / ppu : x.originX);
-        RK.originY.push(top ? x.originY / ppu : x.originY);
-        RK.scale.push(x.scale * factor);
-        RK.mirrorX.push(0);
-        RK.mirrorY.push(0);
+        RK.originX.push(top ? exact(`${path}/ox`, x.originX, x.originX / ppu) : x.originX);
+        RK.originY.push(top ? exact(`${path}/oy`, x.originY, x.originY / ppu) : x.originY);
+        RK.scale.push(exact(`${path}/s`, x.scale, x.scale * factor));
+        RK.mirrorX.push(exact(`${path}/mx`, 0, 0));
+        RK.mirrorY.push(exact(`${path}/my`, 0, 0));
         RK.color.push(color);
         return RK.opacity.length - 1;
       },
       true,
+      d.uid,
     );
   }
 
@@ -612,6 +782,7 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
         return intensity.length - 1;
       },
       false,
+      g.uid,
     ),
   );
 
@@ -623,7 +794,7 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       originY: Math.fround(originY),
       width: Math.fround(project.canvas.width),
       height: Math.fround(project.canvas.height),
-      flags: 0,
+      flags: keep?.canvasFlags ?? 0,
     },
     parts: {
       ids: parts.map((p) => p.exportId),
@@ -637,7 +808,7 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
     deformers: {
       ids: deformers.map((d) => d.exportId),
       band: i32(D.band),
-      visible: i32(D.band.map(() => 1)),
+      visible: i32(deformers.map((d) => (hidden.has(d.uid) ? 0 : 1))),
       enabled: i32(D.enabled),
       part: i32(D.part),
       parent: i32(D.parent),
@@ -663,7 +834,7 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       band: i32(M.band),
       firstKeyform: i32(M.firstKeyform),
       keyformCount: i32(M.keyformCount),
-      visible: i32(M.band.map(() => 1)),
+      visible: i32(meshes.map((m) => (hidden.has(m.uid) ? 0 : 1))),
       enabled: i32(M.enabled),
       part: i32(M.part),
       deformer: i32(M.deformer),
@@ -684,7 +855,7 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       repeat: i32(parameters.map((p) => (p.repeat ? 1 : 0))),
       // Not display-only: it sets the key-snapping and range tolerance. The document's
       // `decimals` is the editor's display precision; the file always gets 3.
-      decimals: i32(parameters.map(() => DECIMALS)),
+      decimals: i32(parameters.map((p) => decimalsOf.get(p.uid) ?? DECIMALS)),
       firstBinding: i32(paramFirstBinding),
       bindingCount: i32(paramBindingCount),
     },
@@ -793,11 +964,28 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       data.rotationBlendShapeTargets = targetsOf(T.rotation);
       data.glueBlendShapeTargets = targetsOf(T.glue);
     }
+    if (v6) {
+      data.parts.offscreen = i32(parts.map((p) => offIdx.get(p.uid) ?? -1));
+      data.artMeshes.blendMode = i32(M.blendMode);
+      data.partKeyforms.offscreenKeyform = i32(partKf.offscreenKeyform);
+      data.offscreens = {
+        part: i32(OF.part),
+        flags: Uint8Array.from(OF.flags),
+        blendMode: i32(OF.blendMode),
+        firstMask: i32(OF.firstMask),
+        maskCount: i32(OF.maskCount),
+      };
+      data.offscreenKeyforms = {
+        opacity: f32a(OK.opacity),
+        multiplyColor: i32(OK.color),
+        screenColor: i32(OK.color),
+      };
+      data.offscreenBlendShapeTargets = targetsOf(T.offscreen);
+    }
   }
   // Group ranges: every draw-order key the members can reach, blend shapes included.
-  const ranges = expectedGroupRanges(data, v);
-  data.drawOrderGroups.minDrawOrder = i32(ranges.map((r) => r.min));
-  data.drawOrderGroups.maxDrawOrder = i32(ranges.map((r) => r.max));
+  const groupScopes = numbered.map((n) => n.scope ?? null);
+  setGroupRanges(data, v, keep, groupScopes);
   // Keyforms are in object order, so this never appends anything; it is the guarantee.
   padPositionRuns(data);
   return {
@@ -809,5 +997,6 @@ export function lowerDocument(doc: DocReader, options: LowerOptions): LowerResul
       parameters: parameters.map((p) => p.uid),
       glues: glues.map((g) => g.uid),
     },
+    groupScopes,
   };
 }

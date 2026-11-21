@@ -1,0 +1,10 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-6-metadata.v6.parts.half",
+  "model": "golden-6-metadata/v6/model/golden6.model3.json",
+  "parameters": {},
+  "partOpacities": {
+    "PartHead": 0.5,
+    "PartBody": 0.5
+  }
+}

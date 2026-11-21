@@ -11,12 +11,16 @@
       "enabled": true,
       "sortingScope": "own",
       "guide": false,
+      "offscreen": null,
       "rig": {
         "bindings": [],
         "keyforms": [
           {
             "authored": true,
-            "drawOrder": 500
+            "drawOrder": 500,
+            "opacity": 1,
+            "multiply": [1, 1, 1],
+            "screen": [0, 0, 0]
           }
         ]
       },
@@ -27,10 +31,16 @@
           "base": 0,
           "deltas": [
             {
-              "drawOrder": 0
+              "drawOrder": 0,
+              "opacity": 0,
+              "multiply": [0, 0, 0],
+              "screen": [0, 0, 0]
             },
             {
-              "drawOrder": -20
+              "drawOrder": -20,
+              "opacity": 0,
+              "multiply": [0, 0, 0],
+              "screen": [0, 0, 0]
             }
           ],
           "constraints": []

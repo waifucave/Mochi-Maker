@@ -176,3 +176,5 @@ Save the project with **File › Save** (Ctrl+S), so you can come back to it.
 - **Expressions**, **motion sync** for a voice, and **model templates** are in
   [editor.md](../editor.md) as well.
 - **Agents** can do all of this through the MCP server: [agent.md](agent.md).
+- **A model you made earlier** (a `.moc3` model folder) opens as a project with **File › Import
+  Model…**; see [import.md](../import.md).

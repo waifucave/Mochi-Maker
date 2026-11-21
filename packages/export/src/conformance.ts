@@ -28,7 +28,7 @@ export interface PackProject {
 }
 
 export interface PackOptions {
-  versions?: readonly (3 | 4 | 5)[];
+  versions?: readonly (3 | 4 | 5 | 6)[];
   /** Seed of the random poses (default 1). */
   seed?: number;
   /** Random poses per project and version (default 8). */
@@ -41,7 +41,7 @@ export interface PackOptions {
 
 export interface PackEntry {
   project: string;
-  version: 3 | 4 | 5;
+  version: 3 | 4 | 5 | 6;
   /** Exported, or why not (a feature the version cannot carry, or an export error). */
   status: 'exported' | 'skipped';
   reason?: string;
@@ -188,6 +188,24 @@ export const COVERAGE: { path: string; test: (d: Data, files: string[], v: numbe
     {
       path: 'moc v5: glue blend shapes',
       test: (d, _f, v) => v >= 5 && count(d, 'glueBlendShapeTargets') > 0,
+    },
+    { path: 'moc v6: offscreens', test: (d, _f, v) => v >= 6 && count(d, 'offscreens') > 0 },
+    {
+      path: 'moc v6: offscreen masks',
+      test: (d, _f, v) => v >= 6 && some(field(d, 'offscreens', 'maskCount'), (x) => x > 0),
+    },
+    {
+      path: 'moc v6: offscreen blend shapes',
+      test: (d, _f, v) => v >= 6 && count(d, 'offscreenBlendShapeTargets') > 0,
+    },
+    {
+      path: 'moc v6: art-mesh blend modes',
+      test: (d, _f, v) =>
+        v >= 6 && some(field(d, 'artMeshes', 'blendMode'), (x) => (x & 255) > 2 || x > 255),
+    },
+    {
+      path: 'moc v6: offscreen blend modes',
+      test: (d, _f, v) => v >= 6 && some(field(d, 'offscreens', 'blendMode'), (x) => x !== 0),
     },
     { path: 'file: model settings', test: (_d, f) => f.some((x) => x.endsWith('.model3.json')) },
     { path: 'file: display info', test: (_d, f) => f.some((x) => x.endsWith('.cdi3.json')) },
@@ -531,7 +549,7 @@ export async function conformancePack(
   projects: PackProject[],
   options: PackOptions = {},
 ): Promise<Pack> {
-  const versions = options.versions ?? [3, 4, 5];
+  const versions = options.versions ?? [3, 4, 5, 6];
   const seed = options.seed ?? 1;
   const randomPoses = options.randomPoses ?? 8;
   const renderPoses = Math.min(options.renderPoses ?? 3, randomPoses);
@@ -682,10 +700,10 @@ export function packReadme(m: PackManifest): string {
     '## Layout',
     '',
     '```',
-    '<project>/v<3|4|5>/model/        the exported model folder (.moc3, model3.json, textures, …)',
-    '<project>/v<3|4|5>/scenarios/    <id>.json: mochi2d-scenario/0 and mochi2d-anim-scenario/0',
-    "<project>/v<3|4|5>/results/      <id>.result.json: Mochi2D's results for them",
-    "<project>/v<3|4|5>/renders/      <id>.png and <id>.render.json: Mochi2D's renders of the render.* scenarios",
+    '<project>/v<3|4|5|6>/model/      the exported model folder (.moc3, model3.json, textures, …)',
+    '<project>/v<3|4|5|6>/scenarios/  <id>.json: mochi2d-scenario/0 and mochi2d-anim-scenario/0',
+    "<project>/v<3|4|5|6>/results/    <id>.result.json: Mochi2D's results for them",
+    "<project>/v<3|4|5|6>/renders/    <id>.png and <id>.render.json: Mochi2D's renders of the render.* scenarios",
     "manifest.json                    every entry, its scenarios, the coverage, every file's SHA-256",
     '```',
     '',

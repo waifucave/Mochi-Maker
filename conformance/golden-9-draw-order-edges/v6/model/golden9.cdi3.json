@@ -1,0 +1,17 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamEdge",
+      "GroupId": "",
+      "Name": "ParamEdge"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "Part_Edge",
+      "Name": "Part_Edge"
+    }
+  ]
+}

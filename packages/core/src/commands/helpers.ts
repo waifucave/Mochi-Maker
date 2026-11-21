@@ -13,6 +13,7 @@ import {
   type DocObject,
   type ObjectByKind,
   type Parameter,
+  type Part,
   type Riggable,
   type Rig,
   type ShapeTarget,
@@ -225,6 +226,15 @@ export function detach(d: Draft, o: DocObject, uid: Uid): DocObject | null {
       let r: DocObject = o.children.includes(uid)
         ? { ...o, children: without(o.children, uid) }
         : o;
+      const clip = o.offscreen?.clip;
+      if (clip && clip.masks.includes(uid)) {
+        const masks = without(clip.masks, uid);
+        const part = r as Part;
+        r = {
+          ...part,
+          offscreen: { ...part.offscreen!, clip: masks.length > 0 ? { ...clip, masks } : null },
+        };
+      }
       if (gone?.kind === 'parameter') r = unshape(unbind(r as Riggable, gone), uid);
       return r;
     }

@@ -28,6 +28,7 @@ import {
   conformancePack,
   exportModel,
   exportTemplate,
+  importReportText,
   packReadme,
   renderPack,
   reportText,
@@ -47,6 +48,7 @@ import {
   writeExport,
   REPORT_FILE,
   openPackRenderer,
+  Project,
 } from '@mochi-maker/api';
 
 const VERSION = '0.0.0';
@@ -331,6 +333,26 @@ async function cmdImportPhysics(p: Parsed): Promise<number> {
   return 0;
 }
 
+/** A .moc3 model folder as a new project (model import). */
+async function cmdImportModel(p: Parsed): Promise<number> {
+  const [, model, dir] = need(
+    p,
+    3,
+    'import-model <model folder|file.model3.json> <new project dir>',
+  );
+  const r = await Project.importModel(model!, dir!, {
+    fs,
+    author: opt(p, 'author') ?? 'person',
+    features: core.featuresFromEnv(),
+  });
+  // The notice, on each import.
+  for (const n of r.notices) process.stderr.write(n + '\n');
+  out(p, { project: dir, report: r.report, notices: r.notices }, () =>
+    [importReportText(r.report), `Saved the project in ${dir}.`].join('\n'),
+  );
+  return 0;
+}
+
 /** A project as a model template file. */
 async function cmdExportTemplate(p: Parsed): Promise<number> {
   const usage =
@@ -471,9 +493,9 @@ function exportOptions(p: Parsed, versionOption: string): ExportOptions {
   const o: ExportOptions = {};
   const v = opt(p, versionOption);
   if (v !== undefined) {
-    if (!['auto', '3', '4', '5'].includes(v))
-      throw new UsageError(`--${versionOption} is auto, 3, 4 or 5`);
-    o.mocVersion = v === 'auto' ? 'auto' : (Number(v) as 3 | 4 | 5);
+    if (!['auto', '3', '4', '5', '6'].includes(v))
+      throw new UsageError(`--${versionOption} is auto, 3, 4, 5 or 6`);
+    o.mocVersion = v === 'auto' ? 'auto' : (Number(v) as 3 | 4 | 5 | 6);
   }
   const atlas = opt(p, 'atlas');
   if (atlas !== undefined) {
@@ -580,7 +602,7 @@ async function cmdExport(p: Parsed): Promise<number> {
   const [, dir] = need(
     p,
     2,
-    'export <project> --out <dir|file.zip> [--moc-version auto|3|4|5] [--atlas N] [--stem S] [--force]',
+    'export <project> --out <dir|file.zip> [--moc-version auto|3|4|5|6] [--atlas N] [--stem S] [--force]',
   );
   const target = opt(p, 'out');
   if (!target) throw new UsageError('export needs --out <dir> or --out <file.zip>');
@@ -602,16 +624,16 @@ async function cmdExport(p: Parsed): Promise<number> {
   return 0;
 }
 
-/** design 7.5: the exports, scenarios and Mochi2D's results of projects, at versions 3, 4 and 5. */
+/** design 7.5: the exports, scenarios and Mochi2D's results of projects, at versions 3 to 6. */
 async function cmdConformancePack(p: Parsed): Promise<number> {
   const usage =
-    'conformance-pack <project…> --out <dir> [--versions 3,4,5] [--seed N] [--random N] [--render-poses N] [--no-renders] [--force]';
+    'conformance-pack <project…> --out <dir> [--versions 3,4,5,6] [--seed N] [--random N] [--render-poses N] [--no-renders] [--force]';
   const dirs = need(p, 2, usage).slice(1);
   const target = opt(p, 'out');
   if (!target) throw new UsageError(`usage: mochi-maker ${usage}`);
-  const versions = (opt(p, 'versions') ?? '3,4,5').split(',').map((v) => Number(v.trim()));
-  if (!versions.length || versions.some((v) => ![3, 4, 5].includes(v)))
-    throw new UsageError('--versions is a list of 3, 4 and 5');
+  const versions = (opt(p, 'versions') ?? '3,4,5,6').split(',').map((v) => Number(v.trim()));
+  if (!versions.length || versions.some((v) => ![3, 4, 5, 6].includes(v)))
+    throw new UsageError('--versions is a list of 3, 4, 5 and 6');
   const int = (name: string, fallback: number) => {
     const v = opt(p, name);
     if (v === undefined) return fallback;
@@ -631,7 +653,7 @@ async function cmdConformancePack(p: Parsed): Promise<number> {
     projects.push({ name, doc, assets });
   }
   const pack = await conformancePack(projects, {
-    versions: versions as (3 | 4 | 5)[],
+    versions: versions as (3 | 4 | 5 | 6)[],
     seed: int('seed', 1),
     randomPoses: int('random', 8),
     renderPoses: int('render-poses', 3),
@@ -834,15 +856,16 @@ Usage:
   mochi-maker import <project> <file.psd|file.ora|file.png|folder> [--no-meshes] [--include-hidden]
         [--parent ref] [--spacing N] [--margin N] [--tolerance N] [--preview out.png] [--dry-run]
   mochi-maker import-physics <project> <file.physics3.json> [--dry-run]
+  mochi-maker import-model <model folder|file.model3.json> <new project dir>   (open a .moc3 model as a project)
   mochi-maker export-template <project> --out <file.mochitemplate> [--name N] [--description D] [--author A] [--no-physics]
   mochi-maker apply-template <project> <file.mochitemplate> [--targets ref,…] [--parameters merge|add] [--physics merge|add|none] [--dry-run]
   mochi-maker reimport <project> <file.psd|file.ora|file.png|folder> [--no-add] [--preview out.png] [--dry-run]
   mochi-maker query <project> [kind] [--where field=value] [--fields a,b] [--limit N] [--offset N]
   mochi-maker get <project> <ref>
   mochi-maker validate <project> [--export] [--target-version auto|3|4|5]
-  mochi-maker export <project> --out <dir|file.zip> [--moc-version auto|3|4|5] [--atlas N] [--stem S] [--force]
+  mochi-maker export <project> --out <dir|file.zip> [--moc-version auto|3|4|5|6] [--atlas N] [--stem S] [--force]
   mochi-maker history <project>
-  mochi-maker conformance-pack <project…> --out <dir> [--versions 3,4,5] [--seed N] [--random N] [--render-poses N] [--no-renders] [--force]
+  mochi-maker conformance-pack <project…> --out <dir> [--versions 3,4,5,6] [--seed N] [--random N] [--render-poses N] [--no-renders] [--force]
   mochi-maker replay <history.jsonl> --out <dir> [--base <project>] [--assets <project>]
   mochi-maker describe [command] [--search words]
   mochi-maker mcp [project] [--allow-dir dir]... [--scope read|edit|export] [--author agent:name]   (MCP server on stdio)
@@ -858,6 +881,7 @@ const COMMAND_TABLE: Record<string, (p: Parsed) => Promise<number>> = {
   import: cmdImport,
   reimport: cmdReimport,
   'import-physics': cmdImportPhysics,
+  'import-model': cmdImportModel,
   'export-template': cmdExportTemplate,
   'apply-template': cmdApplyTemplate,
   export: cmdExport,

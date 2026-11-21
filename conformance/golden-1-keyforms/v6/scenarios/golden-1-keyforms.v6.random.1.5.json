@@ -1,0 +1,11 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-1-keyforms.v6.random.1.5",
+  "model": "golden-1-keyforms/v6/model/golden1.model3.json",
+  "parameters": {
+    "ParamA": 0.432907
+  },
+  "partOpacities": {
+    "PartBody": 0.488788
+  }
+}

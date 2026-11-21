@@ -96,3 +96,13 @@ export {
   type TemplateOptions,
   type TemplatePair,
 } from './template.js';
+export {
+  importModel,
+  importReportText,
+  invertF32,
+  MODEL_IMPORT_NOTICE,
+  IMPORT_REPORT_FORMAT,
+  type ImportModelOptions,
+  type ImportReport,
+  type ImportedModel,
+} from './modelimport.js';

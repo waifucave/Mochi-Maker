@@ -1,0 +1,40 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-1-keyforms.v6.random.1.1",
+  "producer": "mochi2d@0.22.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 300,
+    "originX": 200,
+    "originY": 150,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamA",
+      "value": 0.5411710143089294
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartBody",
+      "opacity": 0.9810510277748108
+    }
+  ],
+  "drawables": [
+    {
+      "id": "ArtMesh_Square",
+      "visible": true,
+      "opacity": 0.7155928015708923,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.3208829164505005, 0.25, -0.0708829015493393, 0.25, -0.0708829015493393, 0, -0.3208829164505005, 0]
+    }
+  ],
+  "offscreens": [],
+  "warnings": []
+}
+

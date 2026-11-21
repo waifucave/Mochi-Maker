@@ -1,0 +1,58 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamEyeLOpen",
+      "GroupId": "ParamGroupEyes",
+      "Name": "Eye L Open"
+    },
+    {
+      "Id": "ParamEyeROpen",
+      "GroupId": "ParamGroupEyes",
+      "Name": "Eye R Open"
+    },
+    {
+      "Id": "ParamMouthOpenY",
+      "GroupId": "ParamGroupFace",
+      "Name": "Mouth Open"
+    },
+    {
+      "Id": "ParamAngleX",
+      "GroupId": "",
+      "Name": "Angle X"
+    },
+    {
+      "Id": "ParamAngleY",
+      "GroupId": "",
+      "Name": "Angle Y"
+    }
+  ],
+  "ParameterGroups": [
+    {
+      "Id": "ParamGroupFace",
+      "GroupId": "",
+      "Name": "Face"
+    },
+    {
+      "Id": "ParamGroupEyes",
+      "GroupId": "ParamGroupFace",
+      "Name": "Eyes"
+    }
+  ],
+  "Parts": [
+    {
+      "Id": "PartHead",
+      "Name": "Head"
+    },
+    {
+      "Id": "PartBody",
+      "Name": "Body"
+    }
+  ],
+  "CombinedParameters": [
+    [
+      "ParamAngleX",
+      "ParamAngleY"
+    ]
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-7-blend-positions.v6.random.1.4",
+  "producer": "mochi2d@0.22.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "originX": 200,
+    "originY": 200,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamOpen",
+      "value": 0.4837160110473633
+    },
+    {
+      "id": "ParamSmile",
+      "value": -1
+    },
+    {
+      "id": "ParamWide",
+      "value": 0.34192898869514465
+    },
+    {
+      "id": "ParamLift",
+      "value": 0.9006620049476624
+    }
+  ],
+  "parts": [],
+  "drawables": [
+    {
+      "id": "Mouth",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.13354822993278503, -0.012907099910080433, 0.13354822993278503, -0.012907099910080433, 0.13354822993278503, -0.12418580055236816, -0.13354822993278503, -0.12418580055236816]
+    },
+    {
+      "id": "Brow",
+      "visible": true,
+      "opacity": 1,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.125, 0.3575330972671509, 0.125, 0.3575330972671509, 0.125, 0.23253309726715088, -0.125, 0.23253309726715088]
+    }
+  ],
+  "offscreens": [],
+  "warnings": []
+}
+

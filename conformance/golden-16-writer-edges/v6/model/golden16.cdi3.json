@@ -1,0 +1,36 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamX",
+      "GroupId": "",
+      "Name": "ParamX"
+    },
+    {
+      "Id": "ParamY",
+      "GroupId": "",
+      "Name": "ParamY"
+    },
+    {
+      "Id": "ParamSpin",
+      "GroupId": "",
+      "Name": "ParamSpin"
+    },
+    {
+      "Id": "ParamFlip",
+      "GroupId": "",
+      "Name": "ParamFlip"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "Part_Root",
+      "Name": "Part_Root"
+    },
+    {
+      "Id": "Part_Child",
+      "Name": "Part_Child"
+    }
+  ]
+}

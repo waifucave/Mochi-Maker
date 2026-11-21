@@ -75,7 +75,9 @@ describe('Find and Replace', () => {
     const history = await p.evaluate(() => window.mochi.history().at(-1)!.label);
     expect(history).toBe('Replace "^Param(\\w+)$" with "Prm$1"');
     // One undo brings every ID back.
+    expect(await p.locator('body > .backdrop').count()).toBe(1);
     await p.keyboard.press('Escape');
+    expect(await p.locator('body > .backdrop').count()).toBe(0);
     await p.keyboard.press('Control+Z');
     await poll(physicsInput).toBe('ParamIn');
     expect(errors).toEqual([]);

@@ -90,17 +90,31 @@ export class PreviewBuilder {
     // Atlas, from the cache when its inputs are unchanged.
     const needs = atlasNeeds(doc);
     const assetOf = (layer: Uid) => doc.getAs(layer, 'layer').asset;
-    const key = JSON.stringify([pageSize, needs.map((n) => [n, assetOf(n.layer)])]);
+    // Texture pages (an imported model's) are pages as they are.
+    const meshLayers = new Set(doc.ofKind('artMesh').map((m) => m.layer));
+    const pageLayers = doc
+      .project()
+      .layerOrder.filter((u) => meshLayers.has(u) && doc.getAs(u, 'layer').texturePage);
+    const key = JSON.stringify([
+      pageSize,
+      needs.map((n) => [n, assetOf(n.layer)]),
+      pageLayers.map(assetOf),
+    ]);
     let atlasReused = true;
     if (this.atlas?.key !== key) {
       atlasReused = false;
       const images = new Map<Uid, Image>();
-      for (const n of needs) {
-        const layer = doc.getAs(n.layer, 'layer');
+      for (const uid of [...needs.map((n) => n.layer), ...pageLayers]) {
+        const layer = doc.getAs(uid, 'layer');
         images.set(layer.uid, await this.image(layer.asset, layer.name));
       }
       const atlas = buildAtlas(doc, images, pageSize);
-      this.atlas = { key, atlas, pngs: atlas.pages.map((p) => encodePng(p)) };
+      const pngs: Uint8Array[] = [];
+      for (const [i, p] of atlas.pages.entries()) {
+        const kept = atlas.kept[i];
+        pngs.push(kept ? await this.assets.get(assetOf(kept)) : encodePng(p));
+      }
+      this.atlas = { key, atlas, pngs };
     }
     const { atlas, pngs } = this.atlas!;
     const t1 = now();

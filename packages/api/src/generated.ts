@@ -273,7 +273,7 @@ export interface CommandMethods {
      * - mesh: positions ([x, y] per vertex, in the parent deformer space), opacity, drawOrder, multiply, screen
      * - warp: grid ([x, y] per grid point, row-major), opacity, multiply, screen
      * - rotation: angle (degrees), originX, originY, scale, mirrorX, mirrorY, opacity, multiply, screen
-     * - part: drawOrder
+     * - part: drawOrder; opacity, multiply, screen (the offscreen's, used while the part draws offscreen)
      * - glue: intensity
      *
      * Values are rounded to float32. Editing in canvas space comes with the deformer milestone.
@@ -485,9 +485,12 @@ export interface CommandMethods {
      */
     subdivide(args: ArgsOf<'mesh.subdivide'>): ResultOf<'mesh.subdivide'>;
     /**
-     * Change a mesh’s layer, sidedness, enabled flag or legacy blending.
+     * Change a mesh’s layer, sidedness, enabled flag or blending.
      *
      * A disabled mesh is always hidden. Single-sided meshes are culled when they face away.
+     * `legacyBlend` is the blending every version has. `blend` sets a version 6 blend mode (a color
+     * function and an alpha mode); one that every version can draw (normal over, additive,
+     * multiplicative) is stored as `legacyBlend` instead. `blend` null goes back to `legacyBlend`.
      *
      * Command `mesh.update`.
      * Errors: none.
@@ -864,6 +867,19 @@ export interface CommandMethods {
      */
     delete(args: ArgsOf<'part.delete'>): ResultOf<'part.delete'>;
     /**
+     * Draw a part offscreen (version 6), with a blend mode and masks, or stop.
+     *
+     * With `offscreen` true, the part's contents are drawn into an image of their own, which is then
+     * composited into what is below with the part's opacity and tints (the part keyforms' `opacity`,
+     * `multiply` and `screen`, set with keyform.set), its blend mode, and its masks. The part gets its
+     * own sorting scope. Needs version 6, which the export chooses for it. Arguments left out keep their
+     * values; a new offscreen is normal over, without masks. `offscreen` false stops drawing it offscreen.
+     *
+     * Command `part.setOffscreen`.
+     * Errors: E_RANGE.
+     */
+    setOffscreen(args: ArgsOf<'part.setOffscreen'>): ResultOf<'part.setOffscreen'>;
+    /**
      * Change a part’s enabled flag, initial visibility, sorting scope or guide-image flag.
      *
      * A disabled part hides everything below it, including meshes moved by deformers it owns.
@@ -942,8 +958,9 @@ export interface CommandMethods {
     /**
      * Set the export target version, minimum version, atlas size and file stem.
      *
-     * `mocVersion` is 'auto' or 3, 4 or 5. 'auto' picks the lowest version that carries every feature
-     * the document uses, but never below `minimumVersion` (design 2.2).
+     * `mocVersion` is 'auto' or 3, 4, 5 or 6. 'auto' picks the lowest version that carries every feature
+     * the document uses, but never below `minimumVersion` (design 2.2). Offscreens and version 6 blend
+     * modes need version 6.
      *
      * Command `project.setExportSettings`.
      * Errors: E_SCHEMA.
@@ -1090,7 +1107,8 @@ export interface CommandMethods {
      * Move a part or mesh to another parent part and/or position.
      *
      * Moves within the part tree (grouping and order). It does not change geometry or the deformer
-     * a mesh uses. `parent` null means the top level. A part cannot move inside itself.
+     * a mesh uses. Where the group has an explicit stacking order (`project.stacks`, an imported model's),
+     * the moved object takes the same place there. `parent` null means the top level. A part cannot move inside itself.
      *
      * Command `tree.move`.
      * Errors: E_CYCLE.
@@ -1116,7 +1134,7 @@ export const COMMAND_AREAS = {
   objects: ['paste', 'replaceText'],
   param: ['create', 'delete', 'reorder', 'setKeys', 'update'],
   paramGroup: ['create', 'delete', 'update'],
-  part: ['create', 'delete', 'update'],
+  part: ['create', 'delete', 'setOffscreen', 'update'],
   physics: ['addSetting', 'removeSetting', 'setFps', 'updateSetting'],
   pose: ['setGroups'],
   project: ['setCanvas', 'setExportSettings'],

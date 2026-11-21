@@ -34,7 +34,8 @@ Linux minute. Each job:
 2. on macOS, gives the bundle an ad-hoc signature (Apple silicon runs only signed code);
 3. runs the smoke test, `node smoke.mjs <platform> <arch>` (also `npm run smoke -w
    @mochi-maker/desktop`): the packaged app starts, opens golden 1's project folder, exports it into
-   a folder (the dialogs answered by `MOCHI_DESKTOP_PICKS`), checks the files, and quits;
+   a folder (the dialogs answered by `MOCHI_DESKTOP_PICKS`), checks the files and the app identifier,
+   and quits;
 4. keeps the zipped app as the run's artifact (`mochi-maker-<platform>-<arch>`, 30 days). The macOS
    zip is made with `ditto`, so the bundle keeps its symlinks and permissions.
 
@@ -72,6 +73,20 @@ macOS signs with the hardened runtime and `entitlements.mac.plist` (JIT and unsi
 memory, which Electron's V8 needs), notarizes and staples; Windows signs `mochi-maker.exe` with
 `signtool` and a timestamp. These steps have not run yet: there are no secrets.
 
+**The app identifier** is `com.waifucave.mochimaker`, in `packages/desktop/identity.mjs`:
+
+- **macOS:** the packager (`package.mjs`) writes it as the bundle ID in `Info.plist`, and the
+  helper apps' IDs derive from it (`com.waifucave.mochimaker.helper`). The category is
+  `public.app-category.graphics-design`. Signing takes the identifier from `Info.plist`.
+- **Windows:** the main process sets it as the AppUserModelID (`app.setAppUserModelId`) before any
+  window; taskbar grouping and pinning follow it.
+- **The data folder follows the product name, «Mochi Maker», not the identifier:**
+  `~/Library/Application Support/Mochi Maker` on macOS, `%APPDATA%\Mochi Maker` on Windows,
+  `~/.config/Mochi Maker` on Linux. The product is not renamed and the app does not call
+  `app.setName`, so auto-saves, recent projects and bridge tokens stay where they are.
+- The smoke test checks it on each system: the bundle ID and every helper's under it on macOS, the
+  AppUserModelID on Windows, none elsewhere.
+
 ## Files
 
 The in-window menus stay as they are. In the desktop build, their File actions go to the disk:
@@ -84,6 +99,7 @@ The in-window menus stay as they are. In the desktop build, their File actions g
 | Save As (Ctrl+Shift+S) | A save dialog; `.mochi` is added to the name. |
 | Import Art, Link Art | A file dialog (PSD, ORA, PNG); the art is imported and linked (below). |
 | Import Physics | A file dialog for `.physics3.json`, run through `physics.import`. |
+| Import Model | A folder dialog: the model folder's files are read (nothing is written) and imported as a new project ([`import.md`](import.md)); it is unsaved, so Save asks for a folder. |
 | Export, Export Motions | A folder dialog: the exported files are written into it. |
 
 Exporting an image sequence, a video or the PSD of the pose writes into a folder chosen
@@ -167,6 +183,8 @@ running `mochi-maker bridge`, the app starts without its own bridge and says so 
 
 ## Tests
 
+- `packages/desktop/test/identity.test.ts`: the app identifier, the Windows call on Windows only,
+  and that the packager gets it while the product name stays.
 - `packages/desktop/test/main.test.ts`, in Node without Electron:
   - the path guard, symbolic links included;
   - project writes and pruning, and export writes;

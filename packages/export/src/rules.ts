@@ -255,8 +255,16 @@ function strictlyIncreasing(keys: Float32Array, first: number, count: number): b
   return true;
 }
 
-/** Checks every writer rule. `version` is the file version the data will be written as. */
-export function checkWriterRules(data: MocData, version: number): RuleViolation[] {
+/**
+ * Checks every writer rule. `version` is the file version the data will be written as. `allow`
+ * lets an imported model's own decimal places, hidden flags and draw-order group ranges through
+ * (its file has them).
+ */
+export function checkWriterRules(
+  data: MocData,
+  version: number,
+  allow: { decimals?: boolean; displayFlags?: boolean; groupRanges?: boolean } = {},
+): RuleViolation[] {
   const out: RuleViolation[] = [];
   const add = (v: RuleViolation) => out.push(v);
 
@@ -294,7 +302,7 @@ export function checkWriterRules(data: MocData, version: number): RuleViolation[
           message: `The ${name} flag is ${v}; flag fields hold only 0 or 1.`,
           fix: 'Write 0 or 1.',
         });
-      else if (mustBeOne && v !== 1)
+      else if (mustBeOne && v !== 1 && !allow.displayFlags)
         add({
           code: 'display-flag',
           kind,
@@ -304,7 +312,7 @@ export function checkWriterRules(data: MocData, version: number): RuleViolation[
         });
     });
   data.parameters.decimals.forEach((d, index) => {
-    if (d !== DECIMALS)
+    if (d !== DECIMALS && !allow.decimals)
       add({
         code: 'decimals',
         kind: 'parameters',
@@ -392,7 +400,7 @@ export function checkWriterRules(data: MocData, version: number): RuleViolation[
   // Draw-order group ranges.
   const g = data.drawOrderGroups;
   expectedGroupRanges(data, version).forEach((e, gi) => {
-    if (g.minDrawOrder[gi] !== e.min || g.maxDrawOrder[gi] !== e.max)
+    if ((g.minDrawOrder[gi] !== e.min || g.maxDrawOrder[gi] !== e.max) && !allow.groupRanges)
       add({
         code: 'group-range',
         kind: 'model',

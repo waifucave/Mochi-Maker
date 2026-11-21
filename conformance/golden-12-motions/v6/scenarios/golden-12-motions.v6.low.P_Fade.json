@@ -1,0 +1,9 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-12-motions.v6.low.P_Fade",
+  "model": "golden-12-motions/v6/model/golden12.model3.json",
+  "parameters": {
+    "P_Fade": -200
+  },
+  "partOpacities": {}
+}

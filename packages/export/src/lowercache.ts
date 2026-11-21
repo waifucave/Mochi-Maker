@@ -21,8 +21,7 @@ import {
   type Warp,
 } from '@mochi-maker/core';
 import type { MocData } from 'mochi2d/headless';
-import { lowerDocument, type LowerOptions, type LowerResult } from './lower.js';
-import { expectedGroupRanges } from './rules.js';
+import { lowerDocument, setGroupRanges, type LowerOptions, type LowerResult } from './lower.js';
 
 /** Kinds that do not reach the model data (layers reach it through the atlas placement). */
 const OUTSIDE_DATA = new Set([
@@ -63,6 +62,7 @@ function structure(o: DocObject): string | null {
         o.doubleSided,
         o.enabled,
         o.legacyBlend,
+        o.blend,
         o.clip,
         rig(o.rig),
       ]);
@@ -90,6 +90,7 @@ function structure(o: DocObject): string | null {
         o.visibleAtStart,
         o.enabled,
         o.sortingScope,
+        o.offscreen,
         rig(o.rig),
       ]);
     case 'glue':
@@ -148,7 +149,7 @@ export class LoweringCache {
     this.last = {
       objects: document.objects,
       options,
-      result: { data: copyData(result.data), uids: result.uids },
+      result: { data: copyData(result.data), uids: result.uids, groupScopes: result.groupScopes },
       index,
     };
     this.stats = { mode: 'full', rewritten: 0 };
@@ -265,6 +266,13 @@ export class LoweringCache {
       } else if (o.kind === 'part') {
         const first = data.parts.firstKeyform[i]!;
         o.rig.keyforms.forEach((k, j) => (data.partKeyforms.drawOrder[first + j] = k.drawOrder));
+        // An offscreen's keyforms are its part's: opacity, and colors from consecutive entries.
+        const OK = data.offscreenKeyforms;
+        const okf = data.partKeyforms.offscreenKeyform?.[first];
+        if (o.offscreen && OK && okf !== undefined && okf >= 0) {
+          o.rig.keyforms.forEach((k, j) => (OK.opacity[okf + j] = k.opacity));
+          setColors(OK.multiplyColor[okf]!, o.rig.keyforms);
+        }
         drawOrders = true;
       } else if (o.kind === 'glue') {
         const first = data.glues.firstKeyform[i]!;
@@ -277,19 +285,15 @@ export class LoweringCache {
       } else return null;
     }
     if (drawOrders) {
-      const ranges = expectedGroupRanges(data, v);
-      ranges.forEach((r, g) => {
-        data.drawOrderGroups.minDrawOrder[g] = r.min;
-        data.drawOrderGroups.maxDrawOrder[g] = r.max;
-      });
+      setGroupRanges(data, v, doc.project().importedFrom?.keep, last.result.groupScopes);
     }
     this.last = {
       objects: next,
       options,
-      result: { data, uids: last.result.uids },
+      result: { data, uids: last.result.uids, groupScopes: last.result.groupScopes },
       index: last.index,
     };
     this.stats = { mode: 'values', rewritten: changed.length };
-    return { data: copyData(data), uids: last.result.uids };
+    return { data: copyData(data), uids: last.result.uids, groupScopes: last.result.groupScopes };
   }
 }

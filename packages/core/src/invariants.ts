@@ -250,6 +250,15 @@ function checkObject(doc: DocReader, o: DocObject, add: Add): void {
     case 'part':
       checkRig(doc, o, add, () => {});
       checkBlendShapes(doc, o, add, () => {});
+      if (o.offscreen) {
+        if (o.sortingScope !== 'own')
+          add(o.uid, 'sortingScope', 'a part drawn offscreen needs its own sorting scope');
+        const masks = new Set<Uid>();
+        for (const m of o.offscreen.clip?.masks ?? []) {
+          if (masks.has(m)) add(o.uid, 'offscreen.clip.masks', `${m} is listed twice`);
+          masks.add(m);
+        }
+      }
       break;
     case 'artMesh': {
       const v = o.uv.length / 2;

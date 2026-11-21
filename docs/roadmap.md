@@ -20,8 +20,8 @@ capabilities that design section 5 asks of Mochi2D.
 | **M12** | Conformance pack | `mochi-maker conformance-pack`; golden coverage of every writer path; the pack of every golden at versions 3–5 in `conformance/`, with reference renders. | M8, M10 | done |
 | **M13** | Compatibility targets | v4 and v3 export with downgrade diagnostics; `--moc-version auto`. | M8 | done |
 | **M14** | Desktop build | Electron app (unsigned), native file dialogs, the bridge endpoint in the main process, auto-saved copies; Windows, macOS and Linux builds in CI. | M11 | done |
-| **M15** | v6: offscreens and blend modes | Part offscreens and blend modes in the document, preview and export (Mochi2D M16). | a v6 test model | not started |
-| **M16** | moc3 import | Import a `.moc3` model folder into a document; round-trip tests on locally available models. | Mochi2D M2 | not started |
+| **M15** | v6: offscreens and blend modes | Part offscreens and blend modes in the document, the editor's Inspector and view, the export and the import; renders in the agent API and the MCP server; a version 6 golden and every golden at version 6 in the conformance pack, with reference renders ([`export.md`](export.md#version-6)). Tested on the project's own models: no version 6 file from other software is at hand. | Mochi2D 0.22.0 | done |
+| **M16** | moc3 import | A `.moc3` model folder (versions 3–6) opens as an editable project, from the editor's File menu, the CLI, the API and the MCP server ([`import.md`](import.md)); the round trip of every golden at versions 3–5 is bit-identical in evaluation and byte-identical in its files; files from other writers keep their orders, stacking, ranges and values, tested on synthetic models and one value at a time. | Mochi2D M2 | done |
 
 **Order.** M1 → M2 was the critical path, because it proves the whole chain to a file that loads in
 Mochi2D. M5 came before most of the editor work, M6, on purpose: the agent API exercises every

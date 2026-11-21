@@ -1,0 +1,11 @@
+{
+  "Version": 3,
+  "Parameters": [],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "Part_Head",
+      "Name": "Head"
+    }
+  ]
+}

@@ -32,7 +32,22 @@ const PATTERNS: [RegExp, string][] = [
     /\bthe guide['’]s (list|step|names|tenth|second|template|workflow|brush|mesh|ctrl|dope|recording)\b|\b(in|of) the guide\b|\bthe guide (says|does not|gives|lists)\b|\b(beta|confirmed) there\b/i,
     'the private conventions guide',
   ],
-  [/\b(this|that|next|last|previous) round\b/i, 'a development round'],
+  [/\b(this|that|next|last|previous) round\b|\bround reports?\b/i, 'a development round'],
+  [/\bguide section \d|\bsection \d+(\.\d+)* of the guide\b/i, 'the private conventions guide'],
+  // Model import is "open" or "import", never these.
+  [/\b(rip|rips|ripped|ripping)\b/i, 'wording to keep out of model import'],
+  [
+    /^(?!.*I have not viewed, decompiled or copied).*\bdecompil/i,
+    'wording to keep out of model import',
+  ],
+  [
+    /\bextract(s|ed|ing|ion)? (a |an |the )?(\.?moc3|models?)\b|\bmodel extract|\bextract mode\b|\bextractor\b/i,
+    'wording to keep out of model import',
+  ],
+  [
+    /recover any model|convert(ing)? Cubism models|migrat(e|es|ing|ion) from Cubism|no Cubism licen[cs]e/i,
+    'wording to keep out of model import',
+  ],
   [/Cubism 5\.1/, 'a product version used as a reference'],
   [/\bclone of\b|\balternative to\b|\bdrop-in replacement\b/i, 'a description to avoid'],
   [
@@ -53,11 +68,19 @@ const BINARY = /\.(png|psd|ora|moc3|tgz|wav|webm|mp4|zip|ico|icns)$/i;
 const IGNORED =
   /(^|\/)(node_modules|dist|coverage|\.mochi-cache|\.git)(\/|$)|^assets\/models\/|^packages\/desktop\/(app|out)\/|\.tsbuildinfo$/;
 
-/** The tracked files; in a tree that is not a git checkout (an exported archive), every file. */
+/**
+ * The files a commit would hold: tracked ones and new ones not ignored (a new file is checked before
+ * it is committed). In a tree that is not a git checkout (an exported archive), every file.
+ */
 function trackedFiles(): string[] {
   let files: string[];
   if (existsSync(join(ROOT, '.git')))
-    files = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n');
+    files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .filter((f) => f && existsSync(join(ROOT, f)));
   else {
     files = readdirSync(ROOT, { recursive: true, withFileTypes: true })
       .filter((e) => e.isFile())

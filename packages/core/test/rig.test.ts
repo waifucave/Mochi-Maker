@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { rig, type PartKeyform, type Rig } from '@mochi-maker/core';
 
-const kf = (drawOrder: number, authored = true): PartKeyform => ({ authored, drawOrder });
+const kf = (drawOrder: number, authored = true): PartKeyform => ({
+  authored,
+  drawOrder,
+  opacity: 1,
+  multiply: [1, 1, 1],
+  screen: [0, 0, 0],
+});
 const orders = (r: Rig<PartKeyform>) => r.keyforms.map((k) => k.drawOrder);
 
 describe('keyform grids', () => {

@@ -32,7 +32,7 @@ export interface Settings {
   /** Home at startup, and whether it closes once a file is opened. */
   homeAtStartup: boolean;
   homeClosesOnOpen: boolean;
-  /** Gentle warnings at the point of action (guide section 6). */
+  /** Gentle warnings at the point of action. */
   tips: boolean;
   /** Glue authoring, off by default in this build (feature flag `glue`). */
   featureGlue: boolean;

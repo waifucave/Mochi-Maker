@@ -60,6 +60,8 @@ export function emptyDocument(canvas: CanvasInit = { width: 2048, height: 2048 }
     combinedParameters: [],
     userData: [],
     pose: { fadeIn: null, groups: [] },
+    importedFrom: null,
+    stacks: [],
     exportSettings: {
       mocVersion: 5,
       minimumVersion: 5,

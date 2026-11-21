@@ -1,0 +1,43 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0020",
+  "exportId": "Glow",
+  "name": "Glow",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0010",
+  "uv": [
+    [0, 0],
+    [30, 0],
+    [30, 30],
+    [0, 30]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "additive",
+  "blend": null,
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [150, 150],
+          [180, 150],
+          [180, 180],
+          [150, 180]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

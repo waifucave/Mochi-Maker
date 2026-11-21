@@ -1,0 +1,11 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-10-glue-blend-shapes.v6.render.default",
+  "model": "golden-10-glue-blend-shapes/v6/model/golden10.model3.json",
+  "parameters": {},
+  "partOpacities": {},
+  "render": {
+    "width": 512,
+    "height": 512
+  }
+}

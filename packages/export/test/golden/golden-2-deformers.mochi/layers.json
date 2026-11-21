@@ -14,7 +14,8 @@
       "blendMode": "normal",
       "clipped": false,
       "notes": [],
-      "source": null
+      "source": null,
+      "texturePage": false
     }
   ]
 }

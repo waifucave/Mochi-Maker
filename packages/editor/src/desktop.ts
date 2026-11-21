@@ -31,6 +31,8 @@ export interface DesktopApi {
   unwatchArt(): Promise<boolean>;
   onArtChanged(fn: (path: string) => void): void;
   pickPhysics(): Promise<{ path: string; name: string; text: string } | null>;
+  /** A model folder chosen in a dialog, read for import (its files by relative path). */
+  pickModel(): Promise<{ dir: string; name: string; files: Files } | null>;
   exportToFolder(files: Files): Promise<{ dir: string } | null>;
   recent(): Promise<string[]>;
   autosave(key: string, name: string, dir: string | null, files: Files): Promise<unknown>;
@@ -104,6 +106,20 @@ export class DesktopFiles {
     this.saved = this.editor.session.revision;
     this.report();
     this.editor.emit('message', { level: 'info', text: `Opened ${r.dir ?? r.name}.` });
+  }
+
+  /** A model folder for import, from a folder dialog; null when cancelled. */
+  async pickModel(): Promise<Map<string, Uint8Array> | null> {
+    const r = await this.api.pickModel();
+    return r ? new Map(r.files) : null;
+  }
+
+  /** After an import: a new project with no folder yet, and unsaved work (it asks on close). */
+  imported(): void {
+    this.dir = null;
+    this.key = DesktopFiles.newKey();
+    this.saved = -1;
+    this.report();
   }
 
   async open(): Promise<void> {

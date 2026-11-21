@@ -47,11 +47,18 @@ Stored positions are not moved.`,
 export const projectSetExportSettings = defineCommand({
   name: 'project.setExportSettings',
   summary: 'Set the export target version, minimum version, atlas size and file stem.',
-  doc: `\`mocVersion\` is 'auto' or 3, 4 or 5. 'auto' picks the lowest version that carries every feature
-the document uses, but never below \`minimumVersion\` (design 2.2).`,
+  doc: `\`mocVersion\` is 'auto' or 3, 4, 5 or 6. 'auto' picks the lowest version that carries every feature
+the document uses, but never below \`minimumVersion\` (design 2.2). Offscreens and version 6 blend
+modes need version 6.`,
   args: Type.Object({
     mocVersion: Type.Optional(
-      Type.Union([Type.Literal('auto'), Type.Literal(3), Type.Literal(4), Type.Literal(5)]),
+      Type.Union([
+        Type.Literal('auto'),
+        Type.Literal(3),
+        Type.Literal(4),
+        Type.Literal(5),
+        Type.Literal(6),
+      ]),
     ),
     minimumVersion: Type.Optional(Type.Union([Type.Literal(3), Type.Literal(4), Type.Literal(5)])),
     atlasSize: Type.Optional(

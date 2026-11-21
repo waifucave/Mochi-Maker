@@ -1,0 +1,46 @@
+{
+  "kind": "artMesh",
+  "uid": "mesh_0018",
+  "exportId": "Shade",
+  "name": "Shade",
+  "part": null,
+  "deformer": null,
+  "layer": "layer_0008",
+  "uv": [
+    [0, 0],
+    [60, 0],
+    [60, 40],
+    [0, 40]
+  ],
+  "triangles": [
+    [0, 1, 2],
+    [0, 2, 3]
+  ],
+  "doubleSided": true,
+  "enabled": true,
+  "legacyBlend": "normal",
+  "blend": {
+    "color": "overlay",
+    "alpha": "over"
+  },
+  "clip": null,
+  "rig": {
+    "bindings": [],
+    "keyforms": [
+      {
+        "authored": true,
+        "positions": [
+          [20, 140],
+          [80, 140],
+          [80, 180],
+          [20, 180]
+        ],
+        "opacity": 1,
+        "drawOrder": 500,
+        "multiply": [1, 1, 1],
+        "screen": [0, 0, 0]
+      }
+    ]
+  },
+  "blendShapes": []
+}

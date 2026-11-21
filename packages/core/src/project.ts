@@ -22,7 +22,7 @@ import { OBJECT_SCHEMAS, type DocObject } from './model.js';
 import type { Kind } from './schema.js';
 
 export const PROJECT_FORMAT = 'mochi-maker-project';
-export const PROJECT_VERSION = 12;
+export const PROJECT_VERSION = 15;
 export const WRITER = '@mochi-maker/core 0.0.0';
 export const MANIFEST = 'mochi-project.json';
 
@@ -150,6 +150,61 @@ export const MIGRATIONS: Migration[] = [
     migrate(bundle) {
       for (const [path, value] of bundle)
         if (path.startsWith('motions/')) (value as Record<string, unknown>).motionSync ??= null;
+    },
+  },
+  {
+    // Version 13: model import. Layers can be texture pages kept as they are, and the project
+    // notes where it was imported from.
+    from: 12,
+    migrate(bundle) {
+      const manifest = bundle.get(MANIFEST) as { project?: Record<string, unknown> } | undefined;
+      if (manifest?.project) manifest.project.importedFrom ??= null;
+      const file = bundle.get('layers.json') as { layers?: Record<string, unknown>[] } | undefined;
+      for (const layer of file?.layers ?? []) layer.texturePage ??= false;
+    },
+  },
+  {
+    // Version 14: explicit stacking orders, and what an import keeps of the file.
+    from: 13,
+    migrate(bundle) {
+      const manifest = bundle.get(MANIFEST) as { project?: Record<string, unknown> } | undefined;
+      if (!manifest?.project) return;
+      manifest.project.stacks ??= [];
+      const from = manifest.project.importedFrom as Record<string, unknown> | null | undefined;
+      if (from) from.keep ??= null;
+    },
+  },
+  {
+    // Version 15 (version 6 models): parts can draw offscreen, with an opacity and tints in their
+    // keyforms and blend shapes; art meshes can have a version 6 blend mode.
+    from: 14,
+    migrate(bundle) {
+      const manifest = bundle.get(MANIFEST) as { project?: Record<string, unknown> } | undefined;
+      const from = manifest?.project?.importedFrom as { keep?: Record<string, unknown> } | null;
+      if (from?.keep) {
+        from.keep.blendCodes ??= [];
+        from.keep.offscreenFlags ??= [];
+        from.keep.offscreens ??= [];
+        from.keep.blendFlags ??= [];
+      }
+      const parts = bundle.get('parts.json') as { parts?: Record<string, unknown>[] } | undefined;
+      for (const p of parts?.parts ?? []) {
+        p.offscreen ??= null;
+        const rig = p.rig as { keyforms?: Record<string, unknown>[] } | undefined;
+        for (const k of rig?.keyforms ?? []) {
+          k.opacity ??= 1;
+          k.multiply ??= [1, 1, 1];
+          k.screen ??= [0, 0, 0];
+        }
+        for (const b of (p.blendShapes as { deltas?: Record<string, unknown>[] }[]) ?? [])
+          for (const k of b.deltas ?? []) {
+            k.opacity ??= 0;
+            k.multiply ??= [0, 0, 0];
+            k.screen ??= [0, 0, 0];
+          }
+      }
+      for (const [path, value] of bundle)
+        if (path.startsWith('meshes/')) (value as Record<string, unknown>).blend ??= null;
     },
   },
 ];

@@ -307,10 +307,10 @@ describe('mochi-maker', () => {
     );
     expect(r.stderr).toBe('');
     expect(r.code).toBe(0);
-    expect(r.stdout).toMatch(/Wrote .*: 6 export\(s\)/);
+    expect(r.stdout).toMatch(/Wrote .*: 8 export\(s\)/);
     // Renders where Chromium runs (each export's render.default, and render poses capped by
-    // --random 2: 6 × 3), else a note.
-    expect(r.stdout).toMatch(/18 render\(s\)|no renders:/);
+    // --random 2: 8 × 3), else a note.
+    expect(r.stdout).toMatch(/24 render\(s\)|no renders:/);
     const manifest = JSON.parse(await readFile(join(out, 'manifest.json'), 'utf8'));
     expect(manifest.format).toBe('mochi-maker-conformance-pack');
     expect(await readFile(join(out, 'README.md'), 'utf8')).toMatch(/npm run judge/);
@@ -334,8 +334,17 @@ describe('mochi-maker', () => {
     // A non-empty folder is refused without --force.
     expect((await cli('conformance-pack', golden('golden-1-keyforms'), '--out', out)).code).toBe(2);
     expect(
-      (await cli('conformance-pack', golden('golden-1-keyforms'), '--out', out, '--versions', '6'))
-        .code,
+      (
+        await cli(
+          'conformance-pack',
+          golden('golden-1-keyforms'),
+          '--out',
+          out,
+          '--force',
+          '--versions',
+          '7',
+        )
+      ).code,
     ).toBe(2);
   }, 60_000);
 

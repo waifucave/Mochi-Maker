@@ -114,7 +114,8 @@ export const U16Triangles = (): TUnsafe<Uint16Array> =>
 export const Rgb = () =>
   Type.Tuple([F32(), F32(), F32()], { description: 'RGB, 0–1 (not clamped)' });
 
-export const Nullable = <T extends TSchema>(schema: T) => Type.Union([schema, Type.Null()]);
+export const Nullable = <T extends TSchema>(schema: T, options?: { description?: string }) =>
+  Type.Union([schema, Type.Null()], options);
 
 /** Reads a custom annotation from a schema. */
 export function annotation<T>(schema: TSchema, key: string): T | undefined {

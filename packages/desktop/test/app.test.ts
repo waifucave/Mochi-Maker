@@ -257,11 +257,35 @@ describe.skipIf(!exe && !required)('the desktop app', () => {
     await app.close();
   }, 120_000);
 
+  it('imports a model folder chosen in the native dialog, after the notice', async () => {
+    const model = join(here, '../../../conformance/golden-1-keyforms/v5/model');
+    const { app, page, errors } = await start(join(work, 'data-import'), [model]);
+    await page.evaluate(() => window.mochiEditor.keymap.run('file.importModel'));
+    await page.getByTestId('model-notice-ok').click();
+    await poll(() => page.getByTestId('import-report').count()).toBe(1);
+    expect(await page.evaluate(() => window.mochiEditor.editor.name)).toBe('golden1');
+    expect(
+      await page.evaluate(() => window.mochiEditor.editor.view.project().importedFrom?.mocVersion),
+    ).toBe(5);
+    // A new project with no folder, and unsaved: closing would ask.
+    expect(await page.evaluate(() => window.mochiEditor.desktop!.dir)).toBeNull();
+    expect(await page.evaluate(() => window.mochiEditor.desktop!.dirty)).toBe(true);
+    expect(errors).toEqual([]);
+    // Nothing to ask about on close.
+    await page.evaluate(() => {
+      const d = window.mochiEditor.desktop!;
+      d.saved = window.mochiEditor.editor.session.revision;
+      d.report();
+    });
+    await app.close();
+  }, 120_000);
+
   it("carries the notices and every bundled package's license text", async () => {
     const licenses = await readdir(join(DESKTOP, 'app', 'licenses'));
     expect(licenses.sort()).toEqual([
       'ASSETS.md',
       'LICENSE',
+      'TERMS.md',
       'THIRD_PARTY_NOTICES.md',
       'ag-psd.LICENSE.txt',
       'base64-js.LICENSE.txt',

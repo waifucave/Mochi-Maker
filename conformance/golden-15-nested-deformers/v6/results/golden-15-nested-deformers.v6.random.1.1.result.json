@@ -1,0 +1,74 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-15-nested-deformers.v6.random.1.1",
+  "producer": "mochi2d@0.22.0",
+  "error": null,
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "originX": 200,
+    "originY": 200,
+    "pixelsPerUnit": 400
+  },
+  "parameters": [
+    {
+      "id": "ParamBend",
+      "value": 1
+    },
+    {
+      "id": "ParamAngle",
+      "value": 30
+    }
+  ],
+  "parts": [
+    {
+      "id": "PartBody",
+      "opacity": 0.2811039984226227
+    }
+  ],
+  "drawables": [
+    {
+      "id": "ArtMesh_Face",
+      "visible": true,
+      "opacity": 0.2811039984226227,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.0579088032245636, 0.3302886486053467, 0.2602313756942749, 0.16180479526519775, 0.1678549349308014, -0.06986935436725616, -0.17023134231567383, 0.11819517612457275]
+    },
+    {
+      "id": "ArtMesh_Eye",
+      "visible": true,
+      "opacity": 0.2811039984226227,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.026887288317084312, 0.22220230102539062, 0.026136072352528572, 0.19412164390087128, 0.012095743790268898, 0.16760995984077454, -0.040927618741989136, 0.19569061696529388]
+    },
+    {
+      "id": "ArtMesh_Badge",
+      "visible": true,
+      "opacity": 0.2811039984226227,
+      "drawOrder": 500,
+      "renderOrder": 2,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.06608285754919052, -0.2444695383310318, 0.005284585058689117, -0.26752781867980957, -0.017773672938346863, -0.3388952612876892, -0.08914116024971008, -0.31583699584007263]
+    },
+    {
+      "id": "ArtMesh_Hat",
+      "visible": true,
+      "opacity": 0.2811039984226227,
+      "drawOrder": 500,
+      "renderOrder": 3,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [0.015906061977148056, 0.29389867186546326, 0.1586409956216812, 0.24778205156326294, 0.13558268547058105, 0.1764145940542221, -0.007152244448661804, 0.22253119945526123]
+    }
+  ],
+  "offscreens": [],
+  "warnings": []
+}
+

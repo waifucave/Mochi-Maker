@@ -22,6 +22,7 @@ await p.save();
 | Member | What it does |
 |---|---|
 | `Project.open(dir)`, `Project.create(dir, canvas)`, `Project.memory(canvas)`, `Project.fromSession(session, assets)` | open or make a project |
+| `Project.importModel(model, dir, { date?, features? })` | a `.moc3` model folder (or its `.model3.json`) as a new project in `dir`, saved; returns `{ project, report, notices }` ([`import.md`](import.md)) |
 | `transact(label, (tx) => …, { dryRun, expectRevision, author })` | one atomic transaction. `tx.<area>.<verb>(args)` is one typed method per command, with its docs as TSDoc; `tx.run(name, args)` takes the name as a string. |
 | `run(label, [{ name, args }], options)` | commands and operations (`art.import`, `mesh.generate`, `mesh.reparent`, `keyform.moveInCanvas`, …) given as data |
 | `describe()`, `describe(name)`, `describe({ search })`, `schema(kind)`, `errorCodes()` | self-description |
@@ -62,7 +63,7 @@ Newline-delimited JSON-RPC 2.0 on stdio, MCP protocol versions 2025-06-18, 2025-
 
 | Tool | Purpose |
 |---|---|
-| `mochi_project` | `new`, `open`, `save`, `close`, `status` |
+| `mochi_project` | `new`, `open`, `importModel` (`model`: a `.moc3` model folder or its `.model3.json`; `path`: the new project; the result adds `report` and `notices`), `save`, `close`, `status` |
 | `mochi_describe` | commands, operations, object schemas, error codes |
 | `mochi_query` | objects by kind, filter, fields and paging; one object by `ref` |
 | `mochi_run` | a transaction: `{ label, commands, dryRun?, expectRevision?, preview? }` → results, revision, changes, a structural diff, and with `preview` a render of the result |

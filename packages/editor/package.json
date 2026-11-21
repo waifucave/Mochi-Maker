@@ -17,7 +17,7 @@
     "@mochi-maker/geometry": "0.0.0",
     "ag-psd": "31.0.3",
     "fflate": "0.8.3",
-    "mochi2d": "file:../../vendor/mochi2d-0.21.0.tgz",
+    "mochi2d": "file:../../vendor/mochi2d-0.22.0.tgz",
     "mp4-muxer": "5.2.2"
   },
   "devDependencies": {

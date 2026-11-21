@@ -25,14 +25,14 @@ export interface Golden {
 }
 
 /** A solid rectangle with a 1-pixel transparent border, so the atlas has edges to bleed. */
-function swatch(w: number, h: number, rgb: [number, number, number]): Image {
+export function swatch(w: number, h: number, rgb: [number, number, number]): Image {
   const data = new Uint8Array(w * h * 4);
   for (let y = 1; y < h - 1; y++)
     for (let x = 1; x < w - 1; x++) data.set([...rgb, 255], 4 * (y * w + x));
   return { width: w, height: h, data };
 }
 
-async function layer(
+export async function layer(
   assets: MemoryAssetStore,
   name: string,
   img: Image,
@@ -46,13 +46,13 @@ async function layer(
   };
 }
 
-const quadUv = (w: number, h: number): [number, number][] => [
+export const quadUv = (w: number, h: number): [number, number][] => [
   [0, 0],
   [w, 0],
   [w, h],
   [0, h],
 ];
-const QUAD: [number, number, number][] = [
+export const QUAD: [number, number, number][] = [
   [0, 1, 2],
   [0, 2, 3],
 ];
@@ -1887,6 +1887,125 @@ export async function golden17(): Promise<Golden> {
   return { name: 'golden-17-motion-sync', session, assets };
 }
 
+// Version 6 (offscreens and blend modes).
+/**
+ * Offscreens and blend modes.
+ * Canvas 200 × 200, ppu 200, origin (100, 100). ParamFade (normal, keys 0 and 1) and ParamBS
+ * (blend shape, keys 0 and 1, base 0).
+ * - Back (10, 10) 180 × 180 grey, draw order 400.
+ * - Part_Glass (own scope, draw order 500) is drawn offscreen with multiply over. Its keyforms on
+ *   ParamFade: at 0 opacity 1, multiply (1, 0.5, 0.5), screen (0, 0, 0); at 1 opacity 0.25,
+ *   multiply (1, 1, 1), screen (0.2, 0, 0). Its blend shape on ParamBS at 1: opacity −0.5, screen
+ *   (0, 0.3, 0); an offscreen with blend shapes is clamped to 0…1, so at ParamFade 1 and ParamBS 1
+ *   its opacity is 0 (not −0.25). It holds Red (30, 30) and Green (60, 60), 60 × 60 each, which
+ *   overlap: the offscreen composites them as one image.
+ * - Part_Light (own scope, draw order 600) is drawn offscreen with screen atop, clipped by Mask
+ *   (100, 100) 40 × 40 (top level, draw order 450). It holds Blue (110, 110) 60 × 60.
+ * - Shade (20, 140) 60 × 40 has the blend mode overlay over; Cut (140, 20) 40 × 40 darken atop;
+ *   Glow (150, 150) 30 × 30 the legacy additive blending.
+ * The root group has 6 meshes, 2 parts and 2 offscreens: 3 + 2 + 2 + 2 + 1 = 10 entries
+ * (Back, Mask, Shade, Cut, Glow; Red, Green; Blue; and the two offscreens).
+ */
+export async function goldenOffscreens(): Promise<Golden> {
+  const session = Session.create({
+    width: 200,
+    height: 200,
+    pixelsPerUnit: 200,
+    originX: 100,
+    originY: 100,
+  });
+  const assets = new MemoryAssetStore();
+  const unit = { min: 0, max: 1, default: 0, keys: [0, 1] };
+  const mesh = (exportId: string, layerRef: string, w: number, h: number, part?: string) => ({
+    name: 'mesh.create',
+    args: {
+      exportId,
+      layer: layerRef,
+      uv: quadUv(w, h),
+      triangles: QUAD,
+      ...(part ? { part } : {}),
+    },
+  });
+  session.runBatch('golden v6', [
+    {
+      name: 'project.setExportSettings',
+      args: { fileStem: 'offscreens', atlasSize: 1024, mocVersion: 'auto' },
+    },
+    { name: 'param.create', args: { exportId: 'ParamFade', ...unit } }, // $1
+    { name: 'param.create', args: { exportId: 'ParamBS', type: 'blendShape', ...unit } }, // $2
+    await layer(assets, 'back', swatch(180, 180, [128, 128, 128]), 10, 10), // $3
+    await layer(assets, 'red', swatch(60, 60, [255, 0, 0]), 30, 30), // $4
+    await layer(assets, 'green', swatch(60, 60, [0, 255, 0]), 60, 60), // $5
+    await layer(assets, 'blue', swatch(60, 60, [0, 0, 255]), 110, 110), // $6
+    await layer(assets, 'mask', swatch(40, 40, [255, 255, 255]), 100, 100), // $7
+    await layer(assets, 'shade', swatch(60, 40, [200, 100, 50]), 20, 140), // $8
+    await layer(assets, 'cut', swatch(40, 40, [50, 50, 50]), 140, 20), // $9
+    await layer(assets, 'glow', swatch(30, 30, [60, 60, 200]), 150, 150), // $10
+    {
+      name: 'part.create',
+      args: { exportId: 'Part_Glass', sortingScope: 'own', drawOrder: 500 },
+    }, // $11
+    {
+      name: 'part.create',
+      args: { exportId: 'Part_Light', sortingScope: 'own', drawOrder: 600 },
+    }, // $12
+    mesh('Back', '$3', 180, 180), // $13
+    mesh('Red', '$4', 60, 60, '$11'), // $14
+    mesh('Green', '$5', 60, 60, '$11'), // $15
+    mesh('Blue', '$6', 60, 60, '$12'), // $16
+    mesh('Mask', '$7', 40, 40), // $17
+    mesh('Shade', '$8', 60, 40), // $18
+    mesh('Cut', '$9', 40, 40), // $19
+    mesh('Glow', '$10', 30, 30), // $20
+    { name: 'keyform.set', args: { target: '$13', values: { drawOrder: 400 } } },
+    { name: 'keyform.set', args: { target: '$17', values: { drawOrder: 450 } } },
+    {
+      name: 'part.setOffscreen',
+      args: { target: '$11', offscreen: true, blend: { color: 'multiply', alpha: 'over' } },
+    },
+    { name: 'rig.addBinding', args: { target: '$11', parameter: '$1', keys: [0, 1] } },
+    {
+      name: 'keyform.set',
+      args: {
+        target: '$11',
+        cell: { '@param:ParamFade': 0 },
+        values: { opacity: 1, multiply: [1, 0.5, 0.5], screen: [0, 0, 0] },
+      },
+    },
+    {
+      name: 'keyform.set',
+      args: {
+        target: '$11',
+        cell: { '@param:ParamFade': 1 },
+        values: { opacity: 0.25, multiply: [1, 1, 1], screen: [0.2, 0, 0] },
+      },
+    },
+    { name: 'blendShape.add', args: { target: '$11', parameter: '$2' } },
+    {
+      name: 'blendShape.set',
+      args: {
+        target: '$11',
+        parameter: '$2',
+        key: 1,
+        values: { opacity: -0.5, screen: [0, 0.3, 0] },
+      },
+    },
+    {
+      name: 'part.setOffscreen',
+      args: {
+        target: '$12',
+        offscreen: true,
+        blend: { color: 'screen', alpha: 'atop' },
+        masks: ['$17'],
+      },
+    },
+    { name: 'mesh.update', args: { target: '$18', blend: { color: 'overlay', alpha: 'over' } } },
+    { name: 'mesh.update', args: { target: '$19', blend: { color: 'darken', alpha: 'atop' } } },
+    { name: 'mesh.update', args: { target: '$20', legacyBlend: 'additive' } },
+  ]);
+  return { name: 'golden-v6-offscreens', session, assets };
+}
+
 export const GOLDENS = [
   golden1,
   golden2,
@@ -1905,4 +2024,5 @@ export const GOLDENS = [
   golden15,
   golden16,
   golden17,
+  goldenOffscreens,
 ];

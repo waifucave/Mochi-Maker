@@ -27,6 +27,7 @@ import { basename, extname, join, normalize, relative, sep } from 'node:path';
 import { Autosaves } from './autosave.js';
 import { APP_ORIGIN, startBridge, type DesktopBridge } from './bridge.js';
 import { PathGuard } from './guard.js';
+import { applyIdentity } from './identity.js';
 import { isFolder, readFolder, writeFolder, writeProject } from './projectfs.js';
 import { Recent } from './recent.js';
 
@@ -59,6 +60,10 @@ const TYPES: Record<string, string> = {
   '.wasm': 'application/wasm',
   '.ico': 'image/x-icon',
 };
+
+// The app identifier (Windows: before any window). The smoke test reads what was set.
+const appUserModelId = applyIdentity(app);
+(globalThis as { mochiDesktopIdentity?: unknown }).mochiDesktopIdentity = { appUserModelId };
 
 // Where the app keeps its data (auto-saves, recent projects, bridge tokens): MOCHI_DESKTOP_USER_DATA
 // moves it, for tests and portable use.
@@ -184,6 +189,16 @@ const handlers: Record<string, (e: IpcMainInvokeEvent, a: Record<string, unknown
     await recent.add(dir);
     if (typeof a.key === 'string') await autosaves.clear(a.key);
     return { dir, name: projectName(dir) };
+  },
+  // A model folder for import: read, never written. Only the chosen folder and below.
+  'model:pick': async () => {
+    const dir = await pick('folder', { title: 'Import Model Folder' });
+    if (!dir) return null;
+    if (!(await isFolder(dir))) throw new Error(`${dir} is not a folder.`);
+    const files = await readFolder(dir);
+    if (files.length > 4096)
+      throw new Error(`${dir} holds more than 4096 files; choose the model's own folder.`);
+    return { dir, name: basename(dir), files };
   },
   'art:pick': async () => {
     const p = await pick('file', {

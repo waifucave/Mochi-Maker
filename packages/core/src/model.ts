@@ -67,7 +67,13 @@ export const RotationKeyform = Type.Object({
   multiply: Rgb(),
   screen: Rgb(),
 });
-export const PartKeyform = Type.Object({ ...keyformBase, drawOrder: F32() });
+export const PartKeyform = Type.Object({
+  ...keyformBase,
+  drawOrder: F32(),
+  opacity: F32({ description: 'the offscreen’s opacity, used while the part draws offscreen' }),
+  multiply: Rgb(),
+  screen: Rgb(),
+});
 export const GlueKeyform = Type.Object({ ...keyformBase, intensity: F32() });
 
 export type MeshKeyform = Static<typeof MeshKeyform>;
@@ -123,7 +129,12 @@ export const RotationDelta = Type.Object({
   multiply: Rgb(),
   screen: Rgb(),
 });
-export const PartDelta = Type.Object({ drawOrder: F32() });
+export const PartDelta = Type.Object({
+  drawOrder: F32(),
+  opacity: F32({ description: 'offscreen opacity offset, used while the part draws offscreen' }),
+  multiply: Rgb(),
+  screen: Rgb(),
+});
 export const GlueDelta = Type.Object({ intensity: F32() });
 
 export type MeshDelta = Static<typeof MeshDelta>;
@@ -202,6 +213,74 @@ export const ParameterGroup = Type.Object({
 });
 export type ParameterGroup = Static<typeof ParameterGroup>;
 
+// ---------------------------------------------------------------- blend modes (version 6)
+
+/**
+ * Color functions of a blend mode, in code order (the code is the index). `normal`, `additive` and
+ * `multiplicative` are the blends every version has; the others need version 6.
+ */
+export const COLOR_BLENDS = [
+  'normal',
+  'additive',
+  'multiplicative',
+  'add',
+  'addGlow',
+  'darken',
+  'multiply',
+  'colorBurn',
+  'linearBurn',
+  'lighten',
+  'screen',
+  'colorDodge',
+  'overlay',
+  'softLight',
+  'hardLight',
+  'linearLight',
+  'hue',
+  'color',
+] as const;
+/** How the source's alpha combines with what is below it, in code order. */
+export const ALPHA_BLENDS = ['over', 'atop', 'out', 'conjoint', 'disjoint'] as const;
+export type ColorBlend = (typeof COLOR_BLENDS)[number];
+export type AlphaBlend = (typeof ALPHA_BLENDS)[number];
+
+export const BlendMode = Type.Object(
+  {
+    color: Type.Union(COLOR_BLENDS.map((c) => Type.Literal(c))),
+    alpha: Type.Union(ALPHA_BLENDS.map((c) => Type.Literal(c))),
+  },
+  { description: 'a version 6 blend mode: a color function and an alpha mode' },
+);
+export type BlendMode = Static<typeof BlendMode>;
+
+/** The file's code of a blend mode: the color function, and the alpha mode times 256. */
+export const blendCode = (b: BlendMode): number =>
+  COLOR_BLENDS.indexOf(b.color) | (ALPHA_BLENDS.indexOf(b.alpha) << 8);
+
+/**
+ * Whether every version can draw a blend mode: normal over, or the additive and multiplicative
+ * functions (with any alpha mode, which they ignore).
+ */
+export const isCompatibleBlend = (b: BlendMode): boolean =>
+  b.color === 'additive' ||
+  b.color === 'multiplicative' ||
+  (b.color === 'normal' && b.alpha === 'over');
+
+/**
+ * A part drawn offscreen (version 6): its contents are drawn into an image of their own, which is
+ * then composited with the part keyforms' opacity and tints, this blend mode and these masks.
+ */
+export const Offscreen = Type.Object({
+  blend: BlendMode,
+  clip: Nullable(
+    Type.Object({
+      masks: Type.Array(UidOf(['artMesh'])),
+      invert: Type.Boolean(),
+    }),
+  ),
+});
+export type Offscreen = Static<typeof Offscreen>;
+
 export const Part = Type.Object({
   kind: Type.Literal('part'),
   uid: UidOf(['part']),
@@ -215,6 +294,9 @@ export const Part = Type.Object({
   }),
   guide: Type.Boolean({
     description: 'a guide image: a visual reference, exported only when the export settings ask',
+  }),
+  offscreen: Nullable(Offscreen, {
+    description: 'drawn offscreen (version 6; needs its own sorting scope), or null',
   }),
   rig: RigOf(PartKeyform),
   blendShapes: Type.Array(BlendShapeOf(PartDelta)),
@@ -237,6 +319,10 @@ export const ArtMesh = Type.Object({
     Type.Literal('additive'),
     Type.Literal('multiplicative'),
   ]),
+  blend: Nullable(BlendMode, {
+    description:
+      'a version 6 blend mode beyond the legacy ones, or null for legacyBlend (isCompatibleBlend modes are kept as legacyBlend)',
+  }),
   clip: Nullable(
     Type.Object({
       masks: Type.Array(UidOf(['artMesh'])),
@@ -298,6 +384,10 @@ export const Layer = Type.Object({
   clipped: Type.Boolean({ description: 'clipped to the layer below in the source file' }),
   notes: Type.Array(Type.String(), { description: 'import notes, e.g. unsupported features' }),
   source: Nullable(Type.String({ description: 'where the layer was imported from' })),
+  texturePage: Type.Boolean({
+    description:
+      'a whole texture page kept as it is (an imported model’s page): exported as its own page, unpacked, with its meshes’ UVs unchanged',
+  }),
 });
 export type Layer = Static<typeof Layer>;
 
@@ -545,6 +635,65 @@ export const DeformPath = Type.Object({
 });
 export type DeformPath = Static<typeof DeformPath>;
 
+/**
+ * What an imported model's file has that the document otherwise derives (its own habits), kept so
+ * that an unedited export writes the file's order and values again. Entries name UIDs; ones that
+ * no longer exist are ignored, and objects not listed follow in the document's order.
+ */
+export const ImportKeep = Type.Object(
+  {
+    parts: Type.Array(Type.String(), { description: 'the parts’ index order in the file' }),
+    artMeshes: Type.Array(Type.String(), { description: 'the art meshes’ index order' }),
+    deformers: Type.Array(Type.String(), { description: 'the deformers’ index order' }),
+    groups: Type.Array(Nullable(Type.String()), {
+      description: 'the draw-order groups’ order: each group’s own-scope part, null for the top',
+    }),
+    values: Type.Array(Type.Tuple([Type.String(), Type.Number(), Type.Number()]), {
+      description:
+        '[path, document value, file value] for values with no exact float32 inverse: while the document still holds that value, the export writes the file’s',
+    }),
+    decimals: Type.Array(Type.Tuple([Type.String(), Type.Integer({ minimum: 0 })]), {
+      description: '[parameter UID, decimal places] where the file does not have 3',
+    }),
+    hidden: Type.Array(Type.String(), {
+      description: 'art meshes and deformers whose file flag says hidden',
+    }),
+    meshFlags: Type.Array(Type.Tuple([Type.String(), Type.Integer({ minimum: 0 })]), {
+      description: '[art mesh UID, flag bits the document has no place for]',
+    }),
+    canvasFlags: Type.Integer({ minimum: 0 }),
+    blendCodes: Type.Array(Type.Tuple([Type.String(), Type.Integer(), Type.Integer()]), {
+      description:
+        '[art mesh or part UID, the code the document gives, the file’s code] for version 6 blend codes the document holds otherwise: written while the document gives that code',
+    }),
+    offscreenFlags: Type.Array(Type.Tuple([Type.String(), Type.Integer({ minimum: 0 })]), {
+      description: '[part UID, offscreen flag bits other than the inverted mask]',
+    }),
+    offscreens: Type.Array(Type.String(), {
+      description: 'the parts drawn offscreen, in the file’s offscreen order',
+    }),
+    blendFlags: Type.Array(Type.Tuple([Type.String(), Type.Integer(), Type.Integer()]), {
+      description:
+        '[art mesh UID, the flag bits 0–1 the document gives, the file’s] in version 6 files, where the blend code, not these bits, gives the blending: written while the document gives those bits',
+    }),
+    ranges: Type.Array(
+      Type.Tuple([
+        Type.Integer({ minimum: 0 }),
+        Type.Integer(),
+        Type.Integer(),
+        Type.Integer(),
+        Type.Integer(),
+      ]),
+      {
+        description:
+          '[group index, the file’s min and max draw order, the reachable range its data gives] where the two differ: while the reachable range is unchanged, the export writes the file’s',
+      },
+    ),
+  },
+  { description: 'the imported file’s own order and values' },
+);
+export type ImportKeep = Static<typeof ImportKeep>;
+
 /** The singleton root object: canvas, ordered lists and project-wide settings. */
 export const Project = Type.Object({
   kind: Type.Literal('project'),
@@ -591,12 +740,38 @@ export const Project = Type.Object({
       Type.Array(Type.Object({ part: UidOf(['part']), links: Type.Array(UidOf(['part'])) })),
     ),
   }),
+  importedFrom: Nullable(
+    Type.Object(
+      {
+        format: Type.Literal('moc3'),
+        date: Type.String({ description: 'when it was imported (ISO 8601, from the caller)' }),
+        mocVersion: Type.Integer({ minimum: 1, maximum: 6 }),
+        files: Type.Array(Type.String(), { description: 'the model folder’s files, as read' }),
+        keep: Nullable(ImportKeep),
+      },
+      { description: 'the project was imported from a .moc3 model folder' },
+    ),
+  ),
+  stacks: Type.Array(
+    Type.Object({
+      scope: Nullable(Type.String({ description: 'an own-scope part’s UID; null: the top level' })),
+      entries: Type.Array(Type.String(), {
+        description:
+          'the group’s meshes and own-scope parts (UIDs), back to front among equal draw orders',
+      }),
+    }),
+    {
+      description:
+        'explicit stacking orders of draw-order groups, where the part tree’s order cannot hold them (an imported model’s); objects not listed stack after their predecessor in the tree, and UIDs that no longer exist are ignored',
+    },
+  ),
   exportSettings: Type.Object({
     mocVersion: Type.Union([
       Type.Literal('auto'),
       Type.Literal(3),
       Type.Literal(4),
       Type.Literal(5),
+      Type.Literal(6),
     ]),
     minimumVersion: Type.Union([Type.Literal(3), Type.Literal(4), Type.Literal(5)]),
     atlasSize: Type.Union([

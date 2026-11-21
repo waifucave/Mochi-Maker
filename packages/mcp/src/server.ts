@@ -234,11 +234,14 @@ export class MochiMcpServer {
         name: 'mochi_project',
         title: 'Project',
         description:
-          'Open, create, save or close the project, or get its status (path, revision, counts, dirty flag). Paths must be inside the allowed directories.',
+          'Open, create, save or close the project, or get its status (path, revision, counts, dirty flag). "importModel" opens a .moc3 model folder (model: the folder or its .model3.json) as a new project in path; the result has the import report and a notice in "notices". Paths must be inside the allowed directories.',
         inputSchema: obj(
           {
-            action: str('What to do', { enum: ['new', 'open', 'save', 'close', 'status'] }),
-            path: str('Project folder (new, open)'),
+            action: str('What to do', {
+              enum: ['new', 'open', 'importModel', 'save', 'close', 'status'],
+            }),
+            path: str('Project folder (new, open, importModel: the new project)'),
+            model: str('A .moc3 model folder or its .model3.json (importModel)'),
             discard: bool('Close without saving (close)'),
             canvas: obj(
               {
@@ -254,7 +257,8 @@ export class MochiMcpServer {
           ['action'],
         ),
         readOnly: false,
-        scope: (a) => (a.action === 'new' || a.action === 'save' ? 'edit' : 'read'),
+        scope: (a) =>
+          a.action === 'new' || a.action === 'save' || a.action === 'importModel' ? 'edit' : 'read',
         call: async (a) => {
           const action = need<string>(a, 'action', 'string');
           if (action === 'status') return this.status();
@@ -273,6 +277,12 @@ export class MochiMcpServer {
             this.attach(
               new ProjectBackend(await Project.create(dir, canvas, { author: this.author })),
             );
+          } else if (action === 'importModel') {
+            const dir = this.paths.check(need<string>(a, 'path', 'string'), 'The project');
+            const model = this.paths.check(need<string>(a, 'model', 'string'), 'The model');
+            const r = await Project.importModel(model, dir, { author: this.author });
+            this.attach(new ProjectBackend(r.project));
+            return { ...(await this.status()), report: r.report, notices: r.notices };
           } else if (action === 'save') await this.requireProject().save();
           else if (action === 'close') {
             const p = this.requireProject();
@@ -548,14 +558,14 @@ export class MochiMcpServer {
         name: 'mochi_validate',
         title: 'Validate',
         description:
-          'Document invariants and lint results with fixes; with targetVersion (auto, 3, 4 or 5), also the whole export, which names what a version cannot carry.',
+          'Document invariants and lint results with fixes; with targetVersion (auto, 3, 4, 5 or 6), also the whole export, which names what a version cannot carry.',
         inputSchema: obj({
-          targetVersion: { description: 'auto, 3, 4 or 5', enum: ['auto', 3, 4, 5] },
+          targetVersion: { description: 'auto, 3, 4, 5 or 6', enum: ['auto', 3, 4, 5, 6] },
         }),
         readOnly: true,
         scope: 'read',
         call: async (a) => {
-          return this.require().validate(a.targetVersion as 'auto' | 3 | 4 | 5 | undefined);
+          return this.require().validate(a.targetVersion as 'auto' | 3 | 4 | 5 | 6 | undefined);
         },
       },
       {
@@ -608,11 +618,11 @@ export class MochiMcpServer {
         name: 'mochi_export',
         title: 'Export',
         description:
-          'Export the model for apps to a folder or .zip inside an allowed directory; returns the export report. mocVersion: auto, 3, 4 or 5.',
+          'Export the model for apps to a folder or .zip inside an allowed directory; returns the export report. mocVersion: auto, 3, 4, 5 or 6.',
         inputSchema: obj(
           {
             out: str('Output folder or .zip file'),
-            mocVersion: { enum: ['auto', 3, 4, 5] },
+            mocVersion: { enum: ['auto', 3, 4, 5, 6] },
             atlasSize: { enum: [1024, 2048, 4096, 8192] },
             fileStem: str('Base name of the files'),
             force: bool('Write into a non-empty folder that holds no previous export'),
@@ -625,7 +635,7 @@ export class MochiMcpServer {
           const p = this.require();
           const out = this.paths.check(need<string>(a, 'out', 'string'), 'The export target');
           return p.export(out, {
-            mocVersion: a.mocVersion as 'auto' | 3 | 4 | 5 | undefined,
+            mocVersion: a.mocVersion as 'auto' | 3 | 4 | 5 | 6 | undefined,
             atlasSize: a.atlasSize as 1024 | 2048 | 4096 | 8192 | undefined,
             fileStem: a.fileStem as string | undefined,
             force: a.force === true,

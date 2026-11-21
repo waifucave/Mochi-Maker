@@ -1,0 +1,22 @@
+{
+  "Version": 3,
+  "Parameters": [
+    {
+      "Id": "ParamBend",
+      "GroupId": "",
+      "Name": "ParamBend"
+    },
+    {
+      "Id": "ParamAngle",
+      "GroupId": "",
+      "Name": "ParamAngle"
+    }
+  ],
+  "ParameterGroups": [],
+  "Parts": [
+    {
+      "Id": "PartBody",
+      "Name": "PartBody"
+    }
+  ]
+}

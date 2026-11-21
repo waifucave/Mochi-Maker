@@ -34,13 +34,13 @@ describe('conformance pack', () => {
   it('exports every golden at every version that can carry it, and says why not otherwise', async () => {
     const p = await pack();
     const { entries } = p.manifest;
-    expect(entries).toHaveLength(GOLDENS.length * 3);
+    expect(entries).toHaveLength(GOLDENS.length * 4);
     for (const e of entries) {
-      if (e.status === 'skipped') expect(e.reason).toMatch(/Version [34] cannot carry this model/);
+      if (e.status === 'skipped') expect(e.reason).toMatch(/Version [345] cannot carry this model/);
       else expect(e.errors, `${e.project} v${e.version}`).toEqual([]);
     }
     // Every version is exercised by several goldens.
-    for (const v of [3, 4, 5])
+    for (const v of [3, 4, 5, 6])
       expect(
         entries.filter((e) => e.version === v && e.status === 'exported').length,
       ).toBeGreaterThan(8);

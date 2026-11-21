@@ -1,0 +1,15 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-9-draw-order-edges.v6.render.random.1.2",
+  "model": "golden-9-draw-order-edges/v6/model/golden9.model3.json",
+  "parameters": {
+    "ParamEdge": 1.202567
+  },
+  "partOpacities": {
+    "Part_Edge": 0.281104
+  },
+  "render": {
+    "width": 512,
+    "height": 512
+  }
+}

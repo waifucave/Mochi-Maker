@@ -1,0 +1,74 @@
+{
+  "format": "mochi2d-result/0",
+  "scenario": "golden-12-motions.v6.random.1.4",
+  "producer": "mochi2d@0.22.0",
+  "error": null,
+  "canvas": {
+    "width": 200,
+    "height": 200,
+    "originX": 100,
+    "originY": 100,
+    "pixelsPerUnit": 200
+  },
+  "parameters": [
+    {
+      "id": "P_Linear",
+      "value": 66.28431701660156
+    },
+    {
+      "id": "P_Step",
+      "value": -13.759195327758789
+    },
+    {
+      "id": "P_Bez",
+      "value": 81.1241455078125
+    },
+    {
+      "id": "P_Fade",
+      "value": 100
+    },
+    {
+      "id": "P_Loop",
+      "value": -78.20000457763672
+    },
+    {
+      "id": "P_BezR",
+      "value": 77.10038757324219
+    }
+  ],
+  "parts": [
+    {
+      "id": "Part_Open",
+      "opacity": 0.15327100455760956
+    },
+    {
+      "id": "Part_Closed",
+      "opacity": 0.3233320116996765
+    }
+  ],
+  "drawables": [
+    {
+      "id": "Mesh_Part_Open",
+      "visible": true,
+      "opacity": 0.15327100455760956,
+      "drawOrder": 500,
+      "renderOrder": 0,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.4000000059604645, 0.4000000059604645, -0.30000001192092896, 0.4000000059604645, -0.30000001192092896, 0.30000001192092896, -0.4000000059604645, 0.30000001192092896]
+    },
+    {
+      "id": "Mesh_Part_Closed",
+      "visible": true,
+      "opacity": 0.3233320116996765,
+      "drawOrder": 500,
+      "renderOrder": 1,
+      "multiplyColor": [1, 1, 1, 1],
+      "screenColor": [0, 0, 0, 1],
+      "vertices": [-0.20000000298023224, 0.4000000059604645, -0.10000000149011612, 0.4000000059604645, -0.10000000149011612, 0.30000001192092896, -0.20000000298023224, 0.30000001192092896]
+    }
+  ],
+  "offscreens": [],
+  "warnings": []
+}
+

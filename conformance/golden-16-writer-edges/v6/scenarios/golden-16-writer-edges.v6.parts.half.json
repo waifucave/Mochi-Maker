@@ -1,0 +1,10 @@
+{
+  "format": "mochi2d-scenario/0",
+  "id": "golden-16-writer-edges.v6.parts.half",
+  "model": "golden-16-writer-edges/v6/model/golden16.model3.json",
+  "parameters": {},
+  "partOpacities": {
+    "Part_Root": 0.5,
+    "Part_Child": 0.5
+  }
+}
