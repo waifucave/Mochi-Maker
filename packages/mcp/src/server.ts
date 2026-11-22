@@ -234,14 +234,16 @@ export class MochiMcpServer {
         name: 'mochi_project',
         title: 'Project',
         description:
-          'Open, create, save or close the project, or get its status (path, revision, counts, dirty flag). "importModel" opens a .moc3 model folder (model: the folder or its .model3.json) as a new project in path; the result has the import report and a notice in "notices". Paths must be inside the allowed directories.',
+          'Open, create, save or close the project, or get its status (path, revision, counts, dirty flag). "importModel" opens a .moc3 model (model: its folder, its .model3.json or a zip of it) as a new project in path; the result has the import report and a notice in "notices". Paths must be inside the allowed directories.',
         inputSchema: obj(
           {
             action: str('What to do', {
               enum: ['new', 'open', 'importModel', 'save', 'close', 'status'],
             }),
             path: str('Project folder (new, open, importModel: the new project)'),
-            model: str('A .moc3 model folder or its .model3.json (importModel)'),
+            model: str(
+              'A .moc3 model folder, its .model3.json, or a zip of the model (importModel)',
+            ),
             discard: bool('Close without saving (close)'),
             canvas: obj(
               {

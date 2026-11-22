@@ -14,7 +14,7 @@ To try it, import [`samples/mochi/`](../samples/mochi/), the getting-started gui
 |---|---|
 | Editor (browser) | File › Import Model…, then choose the model's folder. |
 | Editor (desktop) | File › Import Model…, then choose the folder in the system's dialog. |
-| Command line | `mochi-maker import-model <model folder or file.model3.json> <new project dir>` |
+| Command line | `mochi-maker import-model <model folder, file.model3.json or model.zip> <new project dir>` |
 | API | `Project.importModel(model, dir, options?)` returns `{ project, report, notices }`, saved in `dir` |
 | MCP | `mochi_project` with `{ "action": "importModel", "model": "…", "path": "…" }`; the result has `report` and `notices` |
 
@@ -23,16 +23,25 @@ the MCP server save it in the new folder, which must not hold a project yet.
 
 ## What it reads
 
-One model folder: its `.model3.json` and what it refers to: the `.moc3`, the texture pages, and
-the physics, pose, expression, motion, display-info, user-data, sound and motion-sync files.
-Point at the folder or at its `.model3.json`. Nothing else is read: no archives, no downloads, no
-other folders. A folder with several `.model3.json` files at its top is refused; name the one to
-import.
+One model: its `.model3.json` and what it refers to: the `.moc3`, the texture pages, and the
+physics, pose, expression, motion, display-info, user-data, sound and motion-sync files. Point at
+the folder, at its `.model3.json`, or (command line, API and MCP) at a zip of the model. Nothing
+else is read: no downloads, no other folders. A folder with several `.model3.json` files at its
+top, or a zip with several at its shallowest level, is refused; name the one to import, or unzip
+it first. The editor takes a folder.
 
-The folder is read within the caps Mochi2D suggests for models from strangers: 64 MiB a file,
-256 MiB in all, 2,000 files, each checked by its size before anything is read. Textures are
-checked against the image caps before they are decoded. A folder past a cap is refused as too
-large ([`limits.md`](limits.md)).
+A model is read within the caps Mochi2D suggests for models from strangers, the same for a
+folder's files and a zip's entries: 64 MiB a file, 256 MiB in all, 2,000 files, each checked by
+its size before anything is read. A zip is read with Mochi2D's zip reader within those caps.
+
+**Textures** must be PNG files. Each one's header is checked before it is decoded: at most 16,384
+pixels a side, 2^27 pixels each, and 2^28 pixels for all of a model's textures. A texture in
+another format is refused by name ("is a JPEG image, not a PNG"; AVIF, HEIF, TIFF and JPEG XL are
+not texture formats models can use at all), and so is one whose data holds more or less than its
+header declares. A model past a cap is refused as too large ([`limits.md`](limits.md)).
+
+**Motion sounds** are kept as WAV files. A sound in another format (MP3, Ogg, FLAC…) is left out,
+and the import report says which and why; the motion is imported without it.
 
 - `.moc3` versions 3 to 6 are imported; versions 1 and 2 are refused. The version 6 import is
   tested only on the project's own files (every golden exported at version 6, the version 6 golden

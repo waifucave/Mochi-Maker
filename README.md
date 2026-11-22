@@ -162,7 +162,7 @@ Packages live in `packages/`:
 - `editor`: the web app (Vite);
 - `desktop`: the desktop app (Electron).
 
-Mochi2D is pinned as `vendor/mochi2d-0.23.0.tgz`. Third-party packages are
+Mochi2D is pinned as `vendor/mochi2d-0.24.0.tgz`. Third-party packages are
 listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 **How it was made.** Most of this code was written by AI coding agents (Anthropic's Claude) under the direction of the project's maintainer, through the clean-room process in [CLEANROOM.md](CLEANROOM.md). Copyright may not subsist in every part of it. To the extent it does, it is licensed under the MIT License. Either way, it is provided as is, without warranty. Third-party code keeps its own licenses ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).

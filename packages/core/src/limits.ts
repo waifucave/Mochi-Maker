@@ -23,21 +23,59 @@ export interface ArchiveCaps {
   maxEntries: number;
 }
 
+/** Caps on what textures declare, in the form Mochi2D's `TextureLimits` takes. */
+export interface TextureCaps {
+  maxSide: number;
+  maxPixels: number;
+  maxTotalPixels: number;
+}
+
+/** Caps on files' own sizes, in the form Mochi2D's `FileLimits` takes. */
+export interface FileCaps {
+  maxFileBytes: number;
+  maxTotalBytes: number;
+}
+
+const IMAGE_SIDE = 16384;
+const IMAGE_PIXELS = 2 ** 27;
+const TOTAL_PIXELS = 2 ** 28;
+const MODEL: ArchiveCaps = { maxEntryBytes: 64 * MiB, maxTotalBytes: 256 * MiB, maxEntries: 2000 };
+
+/**
+ * One set of numbers for every reader. Where Mochi Maker decodes a file itself (fast-png, ag-psd,
+ * its folder and file reads), it checks these; where Mochi2D reads a model (its zip reader, its
+ * loads and renders), these are the caps Mochi Maker passes it (`archive`, `textures`, `files`).
+ * The two can't disagree: they are the same constants.
+ */
 export const LIMITS = {
   /** One file read whole, where no smaller cap applies: a PSD, OpenRaster file, PNG, template. */
   fileBytes: 512 * MiB,
   /** One image's width or height, in pixels. */
-  imageSide: 16384,
+  imageSide: IMAGE_SIDE,
   /** One image's pixels (width × height): 2^27, 512 MiB as 8-bit RGBA. */
-  imagePixels: 2 ** 27,
+  imagePixels: IMAGE_PIXELS,
   /** Layers in one art file or PNG folder (groups included). */
   layers: 2000,
   /** The pixels of all layers (and masks) of one art file together: 2^28, 1 GiB as RGBA. */
-  layerPixels: 2 ** 28,
+  layerPixels: TOTAL_PIXELS,
   /** An embedded color profile in a PNG, inflated. */
   pngProfileBytes: 16 * MiB,
-  /** A model folder: Mochi2D's caps for models from strangers, applied to the folder's files. */
-  model: { maxEntryBytes: 64 * MiB, maxTotalBytes: 256 * MiB, maxEntries: 2000 } as ArchiveCaps,
+  /**
+   * A model from others, zipped or in a folder: Mochi2D's suggested archive caps for models from
+   * strangers, applied to a zip's entries and to a folder's files alike.
+   */
+  model: MODEL,
+  /** The same caps on a model's files, as Mochi2D's `files` (each file, all of them). */
+  modelFiles: { maxFileBytes: MODEL.maxEntryBytes, maxTotalBytes: MODEL.maxTotalBytes } as FileCaps,
+  /**
+   * What a model's textures may declare, as Mochi2D's `textures`: the image caps above (a side,
+   * one image, and all of a model's textures together, as for an art file's layers).
+   */
+  textures: {
+    maxSide: IMAGE_SIDE,
+    maxPixels: IMAGE_PIXELS,
+    maxTotalPixels: TOTAL_PIXELS,
+  } as TextureCaps,
   /** A zipped project or a template (a project inside): more files than a model has. */
   projectArchive: {
     maxEntryBytes: 256 * MiB,

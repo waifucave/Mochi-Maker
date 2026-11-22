@@ -340,7 +340,7 @@ async function cmdImportModel(p: Parsed): Promise<number> {
   const [, model, dir] = need(
     p,
     3,
-    'import-model <model folder|file.model3.json> <new project dir>',
+    'import-model <model folder|file.model3.json|model.zip> <new project dir>',
   );
   const r = await Project.importModel(model!, dir!, {
     fs,
@@ -858,7 +858,7 @@ Usage:
   mochi-maker import <project> <file.psd|file.ora|file.png|folder> [--no-meshes] [--include-hidden]
         [--parent ref] [--spacing N] [--margin N] [--tolerance N] [--preview out.png] [--dry-run]
   mochi-maker import-physics <project> <file.physics3.json> [--dry-run]
-  mochi-maker import-model <model folder|file.model3.json> <new project dir>   (open a .moc3 model as a project)
+  mochi-maker import-model <model folder|file.model3.json|model.zip> <new project dir>   (open a .moc3 model as a project)
   mochi-maker export-template <project> --out <file.mochitemplate> [--name N] [--description D] [--author A] [--no-physics]
   mochi-maker apply-template <project> <file.mochitemplate> [--targets ref,…] [--parameters merge|add] [--physics merge|add|none] [--dry-run]
   mochi-maker reimport <project> <file.psd|file.ora|file.png|folder> [--no-add] [--preview out.png] [--dry-run]

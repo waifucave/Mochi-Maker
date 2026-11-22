@@ -23,9 +23,9 @@ please say so in an issue.
 | One image's width or height | 16,384 pixels |
 | One image's pixels (width × height) | 2^27 (134,217,728; 512 MiB as RGBA) |
 | Layers in one art file or PNG folder (groups included) | 2,000 |
-| The pixels of all layers and masks of one art file, or of a model's textures | 2^28 (268,435,456; 1 GiB as RGBA) |
+| The pixels of all layers and masks of one art file, or of all of a model's textures | 2^28 (268,435,456; 1 GiB as RGBA) |
 | A PNG's embedded color profile, inflated | 16 MiB |
-| A model folder: each file, all files, the number of files | 64 MiB, 256 MiB, 2,000 |
+| A model from others, in a folder or a zip: each file, all files, the number of files | 64 MiB, 256 MiB, 2,000 |
 | A zipped project or a template: each entry, all entries, the number of entries | 256 MiB, 1 GiB, 50,000 |
 | An OpenRaster file's zip: each entry, all entries, the number of entries | 256 MiB, 512 MiB, 4,000 |
 | A project folder: each JSON file, all of them, the number of object files | 64 MiB, 512 MiB, 50,000 |
@@ -34,6 +34,41 @@ please say so in an issue.
 | Art the MCP server sends to the editor through the bridge | what fits in one bridge message (about 12 MiB) |
 
 The model folder's caps are the ones Mochi2D suggests for models from strangers.
+
+## One rule: the same numbers on both sides
+
+Mochi2D also caps what it reads: zip entries, what a model's textures declare, and files' own
+sizes. Mochi Maker passes it the caps above, so the two can never disagree:
+
+| Check | Who checks | With |
+| --- | --- | --- |
+| A file's or folder's size, before reading | Mochi Maker (it reads every file itself) | the caps above |
+| A zip's entries (OpenRaster, projects, templates, model zips) | Mochi2D's zip reader | `archive`: the caps above |
+| A picture Mochi Maker decodes (art, project images, a model's textures on import) | Mochi Maker, before decoding with fast-png or ag-psd | the image caps above |
+| The textures of a model Mochi2D loads or renders (the editor's view, its renders, the template preview, the agent API's and the conformance pack's renders) | Mochi2D, from each texture's header | `textures`: what an export may hold (below) |
+
+- **Models Mochi Maker builds** are checked against what an export may hold: pages of at most
+  8,192 (the largest atlas), textures kept from an imported model at most 16,384 a side and 2^27
+  pixels, and 2^30 pixels together, Mochi2D's default. All are within Mochi2D's defaults, and the
+  export refuses a model past them, so every export loads with Mochi2D's defaults. An export past
+  the caps above for models from others (more than 2^28 pixels of textures, a file over 64 MiB or
+  256 MiB in all) is written with a warning: an app that loads models from others with these
+  caps, Mochi Maker's import among them, may refuse it.
+- **Mochi2D's `files` caps** are not passed: they apply to files Mochi2D reads from a folder, a
+  URL or a pick, and Mochi Maker always hands it files it has already read within the caps above.
+- **Formats:** Mochi Maker reads art as PSD, OpenRaster or PNG, and a model's textures as PNG. A
+  picture in another format is refused by name ("is a JPEG image, not a PNG"); AVIF, HEIF, TIFF
+  and JPEG XL are not texture formats models can use at all. Exports always write PNG textures.
+- **A lying picture,** one whose data holds more or less than its header declares, is refused as
+  damaged before it is decoded.
+
+## Motion sounds
+
+A project keeps motion sounds as WAV files: `sound.import` reads WAV only, and a model's import
+leaves out any other sound, naming its format in the import report. The editor's view of the
+person's own project plays compressed sounds too (`sounds: { compressed: true }`); a template's
+preview, from others, plays WAV only. What Mochi2D warns about the shown model (a sound that
+won't play, an optional file it skipped) goes to the message bar, each warning once.
 
 ## What each reader does
 

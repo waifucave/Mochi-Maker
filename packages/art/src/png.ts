@@ -3,13 +3,14 @@
  *
  * Before decoding, a PNG's chunks are checked here: its declared size against the image caps
  * (LIMITS), and its compressed data, inflated in small steps and counted but not kept, against
- * what that size holds. fast-png inflates all of it at once, so without this check a small file
+ * what that size holds, more or less. fast-png inflates all of it at once, so without this check a small file
  * could inflate to gigabytes.
  */
 import { LIMITS, MochiError, checkImageSize, tooLarge, type Budget } from '@mochi-maker/core';
 import type { Image } from '@mochi-maker/geometry';
 import { convertIndexedToRgb, decode, encode } from 'fast-png';
 import { Unzlib } from 'fflate';
+import { FORMAT_NAMES, imageHeader } from './mochi2d.js';
 
 const SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
 const CHANNELS: Record<number, number> = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 };
@@ -94,16 +95,62 @@ export function checkPng(bytes: Uint8Array, what = 'PNG', budget?: Budget): void
     o += 12 + len;
   }
   const raw = rawSize(width, height, depth, channels, interlace);
-  inflateCount(idat, raw, () => {
+  const n = inflateCount(idat, raw, () => {
     throw new MochiError(
       'E_ASSET_FORMAT',
       `${what} is damaged or crafted: its image data inflates to more than a ${width} × ${height} image holds.`,
     );
   });
+  // A header that declares more than the data holds: fast-png would allocate the declared size.
+  if (n < raw)
+    throw new MochiError(
+      'E_ASSET_FORMAT',
+      `${what} is damaged or crafted: its image data holds less than the ${width} × ${height} pixels its header declares.`,
+    );
   if (profile)
     inflateCount([profile], LIMITS.pngProfileBytes, (n) => {
       throw tooLarge(`${what}'s embedded color profile`, n, LIMITS.pngProfileBytes);
     });
+}
+
+/** Formats Mochi2D does not load as textures, by their first bytes (generic signatures). */
+function otherFormat(b: Uint8Array): string | null {
+  const ascii = (o: number, n: number) => String.fromCharCode(...b.subarray(o, o + n));
+  if (ascii(4, 4) === 'ftyp') {
+    const brand = ascii(8, 4);
+    if (brand === 'avif' || brand === 'avis') return 'AVIF';
+    if (['heic', 'heix', 'hevc', 'mif1', 'msf1'].includes(brand)) return 'HEIF';
+  }
+  if (ascii(0, 4) === 'II*\0' || ascii(0, 4) === 'MM\0*') return 'TIFF';
+  if ((b[0] === 0xff && b[1] === 0x0a) || ascii(4, 4) === 'JXL ') return 'JPEG XL';
+  if (/^\s*<(\?xml|svg)/i.test(ascii(0, 64))) return 'SVG';
+  return null;
+}
+
+/**
+ * Refuses data that is not a PNG, plainly: the format it is, where it is one Mochi2D reads the
+ * header of (a JPEG, a WebP…) or one it does not load at all (AVIF, HEIF, TIFF, JPEG XL, SVG).
+ */
+function notPng(bytes: Uint8Array, what: string): never {
+  const other = otherFormat(bytes);
+  if (other)
+    throw new MochiError(
+      'E_ASSET_FORMAT',
+      `${what} is a${other === 'AVIF' ? 'n' : ''} ${other} image, not a PNG. Mochi Maker reads PNG images, and ${other} is not a texture format models can use; save it as PNG.`,
+    );
+  let header;
+  try {
+    header = imageHeader(what, bytes);
+  } catch {
+    throw new MochiError(
+      'E_ASSET_FORMAT',
+      `${what} is not a readable PNG: it is damaged, or not an image. Mochi Maker reads PNG images.`,
+    );
+  }
+  throw new MochiError(
+    'E_ASSET_FORMAT',
+    `${what} is a ${FORMAT_NAMES[header.format]} image, not a PNG. Mochi Maker reads PNG images; save it as PNG.`,
+  );
 }
 
 /**
@@ -111,6 +158,7 @@ export function checkPng(bytes: Uint8Array, what = 'PNG', budget?: Budget): void
  * total (an art file's layers).
  */
 export function decodePng(bytes: Uint8Array, what = 'PNG', budget?: Budget): Image {
+  if (bytes.length < 8 || SIGNATURE.some((b, i) => bytes[i] !== b)) notPng(bytes, what);
   checkPng(bytes, what, budget);
   let png;
   try {

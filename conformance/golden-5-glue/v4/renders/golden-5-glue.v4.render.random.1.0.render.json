@@ -1,7 +1,7 @@
 {
   "format": "mochi2d-render/0",
   "scenario": "golden-5-glue.v4.render.random.1.0",
-  "producer": "mochi2d@0.23.0",
+  "producer": "mochi2d@0.24.0",
   "error": null,
   "png": "golden-5-glue.v4.render.random.1.0.png",
   "alpha": "premultiplied",

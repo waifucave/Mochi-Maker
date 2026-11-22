@@ -35,6 +35,7 @@ import {
   parsePhysics,
   parsePose,
   parseUserData,
+  readTextureHeader,
   decodeWav,
   scenarioResult,
   validateMoc,
@@ -43,6 +44,7 @@ import {
   type MocVersion,
 } from 'mochi2d/headless';
 import { buildAtlas, type AtlasRegion } from './atlas.js';
+import { BUILD_TEXTURES, FOREIGN_MODEL } from './caps.js';
 import {
   displayInfo,
   expressionFile,
@@ -441,6 +443,7 @@ export async function exportModel(
       message: describeDiagnostic(d, lowered, doc).message,
     });
   check(plan.moc, () => loadMoc(moc));
+  checkTextures(plan.textures, files, problems);
   check(`${stem}.model3.json`, () => parseModelSettings(model3, `${stem}.model3.json`));
   check(plan.displayInfo, () => parseDisplayInfo(files.get(plan.displayInfo)!, plan.displayInfo));
   if (plan.physics)
@@ -624,4 +627,70 @@ export function featuresUsed(doc: DocReader): Features {
         .ofKind(['artMesh', 'warp', 'rotation', 'part', 'glue'])
         .some((o) => o.blendShapes.length > 0),
   };
+}
+
+/**
+ * The export's textures as Mochi2D reads them: each one's header, against what a model Mochi
+ * Maker builds may declare (BUILD_TEXTURES, within Mochi2D's defaults), so an export never holds a
+ * texture Mochi2D then refuses. A model past the caps Mochi Maker's own import applies to models
+ * from others (LIMITS) is exported with a warning: an app that loads models from others with
+ * Mochi2D's suggested caps may refuse it.
+ */
+export function checkTextures(
+  textures: readonly string[],
+  files: ReadonlyMap<string, Uint8Array>,
+  problems: ExportProblem[],
+): void {
+  let total = 0;
+  let bytes = 0;
+  let largest = 0;
+  for (const path of textures) {
+    const file = files.get(path)!;
+    bytes += file.length;
+    largest = Math.max(largest, file.length);
+    let h;
+    try {
+      h = readTextureHeader(path, file);
+    } catch (e) {
+      problems.push({
+        severity: 'error',
+        source: 'load-check',
+        code: 'texture-refused',
+        message: `${path}: Mochi2D cannot read it (${(e as Error).message}).`,
+      });
+      continue;
+    }
+    total += h.width * h.height;
+    if (
+      h.width > BUILD_TEXTURES.maxSide ||
+      h.height > BUILD_TEXTURES.maxSide ||
+      h.width * h.height > BUILD_TEXTURES.maxPixels
+    )
+      problems.push({
+        severity: 'error',
+        source: 'load-check',
+        code: 'texture-too-large',
+        message: `${path} is ${h.width} × ${h.height} pixels, more than a texture Mochi2D loads by default.`,
+      });
+  }
+  const fix = 'Use a smaller atlas size, fewer or smaller layers, or move art out of the model.';
+  if (total > BUILD_TEXTURES.maxTotalPixels)
+    problems.push({
+      severity: 'error',
+      source: 'load-check',
+      code: 'textures-too-large',
+      message: `The textures are too large together: ${total.toLocaleString('en-US')} pixels, more than the ${BUILD_TEXTURES.maxTotalPixels.toLocaleString('en-US')} Mochi2D loads by default. ${fix}`,
+      fix,
+    });
+  else if (
+    total > FOREIGN_MODEL.textures.maxTotalPixels ||
+    largest > FOREIGN_MODEL.files.maxFileBytes ||
+    bytes > FOREIGN_MODEL.files.maxTotalBytes
+  )
+    problems.push({
+      severity: 'warning',
+      source: 'load-check',
+      code: 'textures-past-caps-for-others',
+      message: `The textures are larger than apps that load models from others usually accept (${FOREIGN_MODEL.textures.maxTotalPixels.toLocaleString('en-US')} pixels together, ${FOREIGN_MODEL.files.maxFileBytes / 2 ** 20} MiB a file, ${FOREIGN_MODEL.files.maxTotalBytes / 2 ** 20} MiB in all); Mochi Maker's own model import is one. This model has ${total.toLocaleString('en-US')} pixels in ${textures.length} textures (${Math.round(bytes / 2 ** 20)} MiB).`,
+    });
 }

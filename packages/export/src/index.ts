@@ -22,6 +22,7 @@ export {
   type TexturePlacement,
 } from './lower.js';
 export { LoweringCache, type LowerStats } from './lowercache.js';
+export { BUILD_TEXTURES, FOREIGN_MODEL, MAX_ATLAS } from './caps.js';
 export { buildAtlas, atlasNeeds, ATLAS_PADDING, type Atlas, type AtlasRegion } from './atlas.js';
 export { safeFileName, curveCounts, motionFile, planFiles } from './files.js';
 export {

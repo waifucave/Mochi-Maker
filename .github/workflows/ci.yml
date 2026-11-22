@@ -37,7 +37,7 @@ jobs:
       - run: npm ci
       - run: npm install -g playwright@1.63.0
       - run: npx -y playwright@1.63.0 install --with-deps chromium
-      - run: npx vitest run packages/export/test/rig.test.ts packages/api/test/render.test.ts packages/mcp/test/render.test.ts
+      - run: npx vitest run packages/export/test/rig.test.ts packages/api/test/render.test.ts packages/api/test/textures.test.ts packages/mcp/test/render.test.ts
         env:
           MOCHI_MAKER_REQUIRE_RENDER: '1'
       # The editor's browser tests, one file at a time: several software-rendered browsers at once

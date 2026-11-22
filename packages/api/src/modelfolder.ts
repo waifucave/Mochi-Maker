@@ -1,11 +1,12 @@
 /**
- * Reading a model folder for import: the folder a person points at, or the folder of the
- * `.model3.json` they name. Only that folder and its subfolders are read, a few levels deep;
- * nothing else (no archives, no downloads, no search elsewhere).
+ * Reading a model for import: the folder a person points at, the folder of the `.model3.json`
+ * they name, or a zip of the model. Only that folder and its subfolders are read, a few levels
+ * deep, or that zip's entries; nothing else (no downloads, no search elsewhere).
  *
- * The folder is read within Mochi2D's caps for models from strangers (LIMITS.model): the size of
- * each file, of all of them together, and their number. A file larger than its cap is refused
- * before it is read, where the file system can tell its size.
+ * A model is read within Mochi2D's caps for models from strangers (LIMITS.model): the size of
+ * each file, of all of them together, and their number, the same for a folder's files and a
+ * zip's entries. A folder's file larger than its cap is refused before it is read, where the file
+ * system can tell its size; a zip is read with Mochi2D's zip reader within the same caps.
  */
 import {
   Budget,
@@ -16,6 +17,7 @@ import {
   tooLarge,
   type FileSystem,
 } from '@mochi-maker/core';
+import { readZip } from '@mochi-maker/art';
 
 export interface ModelFolder {
   /** The folder the paths are relative to. */
@@ -28,8 +30,37 @@ export interface ModelFolder {
 
 const MAX_DEPTH = 6;
 
+/** The settings file of a zip: the shallowest `.model3.json`, refused when several share it. */
+function zipSettings(path: string, names: string[]): string {
+  const all = names.filter((n) => n.toLowerCase().endsWith('.model3.json'));
+  const depth = (n: string) => n.split('/').length;
+  const top = Math.min(...all.map(depth));
+  const found = all.filter((n) => depth(n) === top);
+  if (found.length === 0)
+    throw new MochiError('E_MODEL_IMPORT', `${path} holds no .model3.json; it is not a model zip.`);
+  if (found.length > 1)
+    throw new MochiError(
+      'E_MODEL_IMPORT',
+      `${path} holds ${found.length} .model3.json files (${found.join(', ')}); unzip it and name the one to import.`,
+    );
+  return found[0]!;
+}
+
+/** A model zip, within LIMITS.model: the zip itself, and its entries with Mochi2D's zip reader. */
+async function readModelZip(fs: FileSystem, path: string): Promise<ModelFolder> {
+  const caps = LIMITS.model;
+  const bytes = await readCapped(fs, path, caps.maxTotalBytes, path);
+  const files = await readZip(path, bytes, caps);
+  return { root: path, settings: zipSettings(path, [...files.keys()]), files };
+}
+
 export async function readModelFolder(fs: FileSystem, path: string): Promise<ModelFolder> {
   const clean = path.replace(/\\/g, '/').replace(/\/+$/, '');
+  if (clean.toLowerCase().endsWith('.zip')) {
+    if (!(await fs.exists(clean)))
+      throw new MochiError('E_MODEL_IMPORT', `${path} does not exist.`);
+    return readModelZip(fs, clean);
+  }
   let root = clean;
   let settings: string | null = null;
   if (clean.toLowerCase().endsWith('.model3.json')) {

@@ -315,7 +315,7 @@ mochi-maker validate <project> [--export] [--target-version auto|3|4|5]
 mochi-maker export <project> --out <dir|file.zip> [--moc-version auto|3|4|5] [--atlas N] [--stem S] [--force]
 mochi-maker history <project>
 mochi-maker import-physics <project> <file.physics3.json> [--dry-run]
-mochi-maker import-model <model folder|file.model3.json> <new project dir>
+mochi-maker import-model <model folder|file.model3.json|model.zip> <new project dir>
 mochi-maker export-template <project> --out <file.mochitemplate> [--name N] [--description D] [--author A] [--no-physics] [--thumbnail file.png]
 mochi-maker apply-template <project> <file.mochitemplate> [--targets ref,…] [--draw-order template|keep] [--redivide] [--no-masks] [--parameters merge|add] [--physics merge|add|none] [--dry-run]
 mochi-maker conformance-pack <project…> --out <dir> [--versions 3,4,5] [--seed N] [--random N] [--no-renders] [--force]

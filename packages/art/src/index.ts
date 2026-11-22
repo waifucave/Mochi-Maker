@@ -7,6 +7,7 @@ export { checkPng, decodePng, encodePng, inflateCount, trimImage } from './png.j
 export { readPsdArt } from './psd.js';
 export { readOraArt } from './ora.js';
 export { openZip, readEntry, readZip, describeCaps } from './zip.js';
+export { FORMAT_NAMES, fromMochi2d, imageHeader } from './mochi2d.js';
 export { readPngFolderArt } from './folder.js';
 export { parseXml, type XmlElement } from './xml.js';
 export {

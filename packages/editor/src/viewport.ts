@@ -47,6 +47,7 @@ import {
 import {
   DeformerMapper,
   PreviewBuilder,
+  BUILD_TEXTURES,
   applyDataPatches,
   dataPatches,
   invertMap,
@@ -55,6 +56,7 @@ import {
   type PreviewTimings,
 } from '@mochi-maker/export';
 import { brushWeight } from '@mochi-maker/core';
+import { fromMochi2d } from '@mochi-maker/art';
 import type { Editor } from './editor.js';
 import type { Keymap } from './keymap.js';
 import { SettingsStore } from './settings.js';
@@ -514,6 +516,7 @@ export class Viewport {
         this.deformerIndex = new Map(build.lowered.uids.deformers.map((u, i) => [u, i]));
         this.shownDoc = job.doc;
         this.error = null;
+        this.reportWarnings();
         this.applyPose();
         const stats: BuildStats = {
           revision: this.editor.session.revision,
@@ -534,9 +537,27 @@ export class Viewport {
           if (this.dragFrames.length > 500) this.dragFrames.shift();
         }
       } catch (e) {
-        this.error = (e as Error).message;
-        this.editor.report(e);
+        // Mochi2D's refusals (a texture past its caps, a damaged one) in Mochi Maker's words.
+        const err = fromMochi2d(e, 'The preview');
+        this.error = (err as Error).message;
+        this.editor.report(err);
       }
+    }
+  }
+
+  /** Warnings of the shown model already told, so each is told once. */
+  private toldWarnings = new Set<string>();
+
+  /**
+   * Tells the person what Mochi2D warns about the shown model (a motion sound that won't play,
+   * an optional file it skipped), each warning once, in the message bar and the log. Also called
+   * when a motion starts, since a sound is checked when it is to play.
+   */
+  reportWarnings(): void {
+    for (const w of this.view.model?.warnings ?? []) {
+      if (this.toldWarnings.has(w)) continue;
+      this.toldWarnings.add(w);
+      this.editor.emit('message', { level: 'warning', text: `The preview: ${w}` });
     }
   }
 
@@ -581,6 +602,10 @@ export class Viewport {
         settings: build.settings,
         keepView: this.view.model !== null && !this.fitNext,
         moc: { data: build.lowered.data, version: build.version },
+        // What the export may hold (BUILD_TEXTURES); the person's own project, so its motion
+        // sounds play in any format the browser decodes.
+        textures: BUILD_TEXTURES,
+        sounds: { compressed: true },
       },
     );
     this.fitNext = false;

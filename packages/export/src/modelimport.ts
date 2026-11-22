@@ -68,6 +68,7 @@ import {
   parsePose,
   parseUserData,
   readMoc,
+  soundFormat,
   validateMoc,
   type MocData,
   type MocVersion,
@@ -181,6 +182,15 @@ const stemOf = (file: string, ext: string) => {
 
 type Json = Record<string, unknown>;
 const decoder = new TextDecoder();
+/** Compressed sound formats, as people know them. */
+const SOUND_NAMES: Record<string, string> = {
+  mp3: 'MP3',
+  ogg: 'Ogg',
+  flac: 'FLAC',
+  aac: 'AAC',
+  webm: 'WebM',
+};
+
 const jsonOf = (bytes: Uint8Array): Json => JSON.parse(decoder.decode(bytes).replace(/^﻿/, ''));
 const num = (v: unknown): number | null => (typeof v === 'number' ? v : null);
 
@@ -515,10 +525,10 @@ export async function importModel(
     const bytes = file(rel, 'texture');
     let img;
     try {
-      img = decodePng(bytes, rel, texturePixels);
+      img = decodePng(bytes, `The texture ${rel}`, texturePixels);
     } catch (e) {
       if (isTooLarge(e)) throw e;
-      throw new MochiError('E_MODEL_IMPORT', `${rel}: ${(e as Error).message}`);
+      throw new MochiError('E_MODEL_IMPORT', (e as Error).message);
     }
     const uid = d.allocate('layer');
     d.put({
@@ -1380,7 +1390,14 @@ export async function importModel(
             soundByPath.set(path, sound);
             soundOrder.push(sound);
           } catch (e) {
-            skipped.push({ what: `sound ${entry.sound}`, why: (e as Error).message });
+            const format = soundFormat(wav);
+            skipped.push({
+              what: `sound ${entry.sound}`,
+              why:
+                format !== 'wav' && format !== 'unknown'
+                  ? `It is ${SOUND_NAMES[format]} audio. A project keeps motion sounds as WAV files only (the preview and the export play WAV); convert it to WAV and add it to the motion.`
+                  : (e as Error).message,
+            });
           }
         }
       }

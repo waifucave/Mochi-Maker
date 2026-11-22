@@ -27,6 +27,7 @@ import {
   motionFile,
   retargetMotion,
   exportTemplate,
+  BUILD_TEXTURES,
   matchTemplate,
   readTemplate,
   templateZip,
@@ -571,7 +572,12 @@ async function buildPreview(
     box.append(cell);
     const v = new MochiView(canvas, { look: 'off', maxPixelRatio: 1 });
     const b = await new PreviewBuilder(assets).build(doc);
-    const model = await v.load({ files: b.files }, { settings: b.settings });
+    // A template from others: built here, so its textures are what an export may hold; its
+    // motion sounds play only as WAV (Mochi2D's default for models one did not make).
+    const model = await v.load(
+      { files: b.files },
+      { settings: b.settings, textures: BUILD_TEXTURES },
+    );
     for (const e of ['eyeBlink', 'breath', 'look', 'idle', 'lipSync', 'expressions'] as const)
       if (model.effectAvailable(e)) model.setEffect(e, false);
     return v;

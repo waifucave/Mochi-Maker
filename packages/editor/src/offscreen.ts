@@ -6,7 +6,7 @@
 import { MochiView } from 'mochi2d';
 import { makeView } from './noview.js';
 import { DocView, MochiError, type Document, type Uid } from '@mochi-maker/core';
-import { PreviewBuilder, type PreviewBuild } from '@mochi-maker/export';
+import { BUILD_TEXTURES, PreviewBuilder, type PreviewBuild } from '@mochi-maker/export';
 import type { AssetStore } from '@mochi-maker/core';
 
 const EFFECTS = [
@@ -87,7 +87,10 @@ export class Offscreen {
       throw new MochiError('E_EXPORT', 'The model has no art meshes, so there is nothing to show.');
     if (this.shown?.doc !== doc) {
       const build = await this.builder.build(doc);
-      const model = await this.view.load({ files: build.files }, { settings: build.settings });
+      const model = await this.view.load(
+        { files: build.files },
+        { settings: build.settings, textures: BUILD_TEXTURES, sounds: { compressed: true } },
+      );
       for (const e of EFFECTS) if (model.effectAvailable(e)) model.setEffect(e, false);
       this.shown = { doc, build };
     }

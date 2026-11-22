@@ -1,7 +1,7 @@
 {
   "format": "mochi2d-render/0",
   "scenario": "golden-13-sound.v6.render.default",
-  "producer": "mochi2d@0.23.0",
+  "producer": "mochi2d@0.24.0",
   "error": null,
   "png": "golden-13-sound.v6.render.default.png",
   "alpha": "premultiplied",

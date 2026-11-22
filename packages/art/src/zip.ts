@@ -5,30 +5,11 @@
  * Its errors become ours: passing a cap is `E_TOO_LARGE` ("too large"); anything else wrong with
  * the archive is `E_ASSET_FORMAT` ("damaged").
  */
-import { MochiError, formatSize, tooLarge, type ArchiveCaps } from '@mochi-maker/core';
-import {
-  ArchiveLimitError,
-  UnsupportedArchiveError,
-  ZipFormatError,
-  sourceFromZip,
-  type ZipFileSource,
-} from 'mochi2d/headless';
+import { formatSize, type ArchiveCaps } from '@mochi-maker/core';
+import { sourceFromZip, type ZipFileSource } from 'mochi2d/headless';
+import { fromMochi2d } from './mochi2d.js';
 
-function zipError(e: unknown, label: string): unknown {
-  if (e instanceof ArchiveLimitError) {
-    if (e.kind === 'entries') return tooLarge(label, e.size, e.limit, 'files');
-    if (e.kind === 'total') return tooLarge(`${label}, all files read together,`, e.size, e.limit);
-    return tooLarge(`${label}: ${e.path}`, e.size, e.limit);
-  }
-  if (e instanceof UnsupportedArchiveError)
-    return new MochiError('E_ASSET_FORMAT', `${label} is not a zip archive: ${e.message}`);
-  if (e instanceof ZipFormatError)
-    return new MochiError(
-      'E_ASSET_FORMAT',
-      `${label} is damaged or is not a zip archive: ${e.message}`,
-    );
-  return e;
-}
+const zipError = fromMochi2d;
 
 /** Opens an archive within the caps (its directory is read; nothing is inflated yet). */
 export function openZip(label: string, bytes: Uint8Array, caps: ArchiveCaps): ZipFileSource {

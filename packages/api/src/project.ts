@@ -48,9 +48,9 @@ import {
 import { readModelFolder } from './modelfolder.js';
 import { MemoryFileSource, scenarioResult } from 'mochi2d/headless';
 import { NodeRenderer } from 'mochi2d/node';
-import { decodePng, encodePng } from '@mochi-maker/art';
+import { decodePng, encodePng, fromMochi2d } from '@mochi-maker/art';
 import { contactSheet, difference, type DiffMetrics } from './images.js';
-import { exportModel as exportDocument } from '@mochi-maker/export';
+import { BUILD_TEXTURES, exportModel as exportDocument } from '@mochi-maker/export';
 import { diffDocuments, type DocumentDiff } from './diff.js';
 import { appendHistory, historyPath } from './history.js';
 import { txApi, type TxApi } from './methods.js';
@@ -549,14 +549,20 @@ export class Project {
     const renderer = await this.openRenderer();
     const stem = this.session.view.project().exportSettings.fileStem;
     const input = { source, settings: `${stem}.model3.json` };
-    const img = await renderer.render(input, {
-      width,
-      height,
-      parameters,
-      background: options.background,
-      view,
-      fast: options.reference ? false : true,
-    });
+    let img;
+    try {
+      img = await renderer.render(input, {
+        width,
+        height,
+        parameters,
+        background: options.background,
+        view,
+        fast: options.reference ? false : true,
+        textures: BUILD_TEXTURES,
+      });
+    } catch (e) {
+      throw fromMochi2d(e, 'The model');
+    }
     return {
       png: img.png,
       width: img.width,

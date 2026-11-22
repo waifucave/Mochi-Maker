@@ -3,7 +3,7 @@
  * render (headless Chromium with SwiftShader), with premultiplied alpha as conformance compares.
  */
 import { MOCHI2D_VERSION, MemoryFileSource, NodeRenderer } from 'mochi2d/node';
-import type { PackRenderer } from '@mochi-maker/export';
+import { BUILD_TEXTURES, type PackRenderer } from '@mochi-maker/export';
 
 /** Opens a renderer for `renderPack`; close it when done. Rejects when Chromium is missing. */
 export async function openPackRenderer(): Promise<PackRenderer & { close(): Promise<void> }> {
@@ -19,6 +19,7 @@ export async function openPackRenderer(): Promise<PackRenderer & { close(): Prom
           alpha: 'premultiplied',
           parameters: pose?.parameters ?? {},
           partOpacities: pose?.partOpacities ?? {},
+          textures: BUILD_TEXTURES,
         },
       );
       if (!img.reference) throw new Error('Mochi2D did not make a reference render.');

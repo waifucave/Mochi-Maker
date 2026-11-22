@@ -1,6 +1,6 @@
 {
   "format": "mochi2d-anim-result/0",
-  "producer": "mochi2d@0.23.0",
+  "producer": "mochi2d@0.24.0",
   "error": null,
   "warnings": [],
   "scenario": "golden-11-animation.v5.expression.frown",

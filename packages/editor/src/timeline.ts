@@ -266,12 +266,16 @@ export class Playback {
       if (!file) return;
       playback = await model.startMotionFile(file, { priority: 3, loop: m.loop });
     }
+    // A motion's sound is checked when it is to play: tell what Mochi2D warns, now and when the
+    // motion ends.
+    this.viewport?.reportWarnings();
     if (!playback) return;
     this.playing = true;
     // Mochi2D plays from the motion's (or the work area's) start, so the playhead does too.
     this.started = performance.now();
     this.time = wa ? wa.start : 0;
     void playback.ended.then(() => {
+      this.viewport?.reportWarnings();
       if (this.playing) this.stop(true);
     });
     const tick = () => {
