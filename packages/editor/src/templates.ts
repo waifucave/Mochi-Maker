@@ -13,6 +13,7 @@ import { fill, h } from './dom.js';
 import { askText, dialog } from './dialogs.js';
 import { lazyRender, popupMenu } from './panels.js';
 import type { Playback, TimelinePalette } from './timeline.js';
+import { fileText } from './limits.js';
 
 /** The template file: one template, or several (Export all). */
 export const TEMPLATE_FORMAT = 'mochi-maker-animation-template';
@@ -344,7 +345,7 @@ export class TemplatePalette {
   async importFiles(files: Iterable<File> = this.file.files ?? []): Promise<void> {
     const list: AnimationTemplate[] = [];
     try {
-      for (const f of files) list.push(...readTemplateFile(await f.text()));
+      for (const f of files) list.push(...readTemplateFile(await fileText(f)));
     } catch (e) {
       this.editor.emit('message', { level: 'error', text: (e as Error).message });
       return;

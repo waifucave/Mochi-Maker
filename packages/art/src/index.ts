@@ -3,9 +3,10 @@
  * (art.import, mesh.generate, mesh.regenerate).
  */
 export * from './art.js';
-export { decodePng, encodePng, trimImage } from './png.js';
+export { checkPng, decodePng, encodePng, inflateCount, trimImage } from './png.js';
 export { readPsdArt } from './psd.js';
 export { readOraArt } from './ora.js';
+export { openZip, readEntry, readZip, describeCaps } from './zip.js';
 export { readPngFolderArt } from './folder.js';
 export { parseXml, type XmlElement } from './xml.js';
 export {

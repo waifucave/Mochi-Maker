@@ -11,6 +11,7 @@ import { fill, h } from './dom.js';
 import { dialog, type Dialog } from './dialogs.js';
 import type { Tips } from './tips.js';
 import type { Viewport } from './viewport.js';
+import { fileText } from './limits.js';
 
 type Fields = Omit<PhysicsSetting, 'kind' | 'uid'>;
 type Particle = PhysicsSetting['particles'][number];
@@ -458,29 +459,32 @@ export class PhysicsDialog {
       const f = file.files?.[0];
       file.value = '';
       if (!f) return;
-      void f.text().then(async (text) => {
-        const r = await this.editor.runItems(`Import ${f.name}`, [
-          { name: 'physics.import', args: { text } },
-        ]);
-        const res = r?.itemResults[0] as
-          | {
-              added: string[];
-              replaced: string[];
-              unmatched: { setting: string; kind: string; parameter: string }[];
-            }
-          | undefined;
-        if (!res) return;
-        this.render();
-        const el = this.body.querySelector<HTMLElement>('[data-testid="physics-import-report"]');
-        if (el)
-          el.textContent = [
-            `${f.name}: ${res.added.length} group(s) added, ${res.replaced.length} replaced.`,
-            ...res.unmatched.map(
-              (u) =>
-                `${u.setting}: ${u.kind} ${u.parameter} has no parameter here and was left out.`,
-            ),
-          ].join(' ');
-      });
+      void fileText(f).then(
+        async (text) => {
+          const r = await this.editor.runItems(`Import ${f.name}`, [
+            { name: 'physics.import', args: { text } },
+          ]);
+          const res = r?.itemResults[0] as
+            | {
+                added: string[];
+                replaced: string[];
+                unmatched: { setting: string; kind: string; parameter: string }[];
+              }
+            | undefined;
+          if (!res) return;
+          this.render();
+          const el = this.body.querySelector<HTMLElement>('[data-testid="physics-import-report"]');
+          if (el)
+            el.textContent = [
+              `${f.name}: ${res.added.length} group(s) added, ${res.replaced.length} replaced.`,
+              ...res.unmatched.map(
+                (u) =>
+                  `${u.setting}: ${u.kind} ${u.parameter} has no parameter here and was left out.`,
+              ),
+            ].join(' ');
+        },
+        (e: unknown) => this.editor.report(e),
+      );
     });
     return h(
       'div.physics-import',

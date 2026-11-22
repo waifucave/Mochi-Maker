@@ -15,7 +15,7 @@
  * without physics and exporting again gives the file back byte for byte (`physicsimport.test.ts`).
  */
 import { Type } from '@sinclair/typebox';
-import { MochiError, defineOperation } from '@mochi-maker/core';
+import { defineOperation, LIMITS, MochiError, readCapped } from '@mochi-maker/core';
 import { parsePhysics } from 'mochi2d/headless';
 
 const Unmatched = Type.Object({
@@ -61,7 +61,7 @@ transaction; with dryRun, only the report.`,
           'E_ASSET_FORMAT',
           'Importing files needs file access, which this session does not have.',
         );
-      text = await ctx.fs.readText(a.path);
+      text = new TextDecoder().decode(await readCapped(ctx.fs, a.path, LIMITS.projectFileBytes));
     }
     let file;
     try {

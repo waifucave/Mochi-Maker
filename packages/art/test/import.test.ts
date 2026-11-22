@@ -71,8 +71,8 @@ describe('PSD', () => {
 });
 
 describe('OpenRaster', () => {
-  it('reads nested stacks bottom to top, with offsets, opacity, visibility and modes', () => {
-    const art = readOraArt(syntheticOra());
+  it('reads nested stacks bottom to top, with offsets, opacity, visibility and modes', async () => {
+    const art = await readOraArt(syntheticOra());
     expect(
       art.layers.map((l) => [
         [...l.group, l.name].join('/'),
@@ -92,7 +92,7 @@ describe('OpenRaster', () => {
 
   it('refuses a zip that is not OpenRaster', async () => {
     const { zipSync, strToU8 } = await import('fflate');
-    expect(() => readOraArt(zipSync({ mimetype: strToU8('application/zip') }))).toThrow(
+    await expect(readOraArt(zipSync({ mimetype: strToU8('application/zip') }))).rejects.toThrow(
       /not an OpenRaster/,
     );
   });

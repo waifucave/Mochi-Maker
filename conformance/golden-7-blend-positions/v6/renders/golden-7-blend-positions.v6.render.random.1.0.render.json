@@ -1,7 +1,7 @@
 {
   "format": "mochi2d-render/0",
   "scenario": "golden-7-blend-positions.v6.render.random.1.0",
-  "producer": "mochi2d@0.22.0",
+  "producer": "mochi2d@0.23.0",
   "error": null,
   "png": "golden-7-blend-positions.v6.render.random.1.0.png",
   "alpha": "premultiplied",

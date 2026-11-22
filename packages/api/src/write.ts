@@ -1,5 +1,12 @@
 /** Writing an export to disk: a folder or a deterministic zip (design 4.3, step 6). */
-import { MochiError, joinPath, parseJson, type FileSystem } from '@mochi-maker/core';
+import {
+  joinPath,
+  LIMITS,
+  MochiError,
+  parseJson,
+  readCapped,
+  type FileSystem,
+} from '@mochi-maker/core';
 import { reportText, type ExportResult } from '@mochi-maker/export';
 import { zipSync } from 'fflate';
 
@@ -28,7 +35,9 @@ export async function writeExport(
   const reportPath = joinPath(target, REPORT_FILE);
   let previous: string[] = [];
   if (await fs.exists(reportPath)) {
-    const old = parseJson(await fs.readText(reportPath)) as { files?: { path: string }[] };
+    const old = parseJson(
+      new TextDecoder().decode(await readCapped(fs, reportPath, LIMITS.projectFileBytes)),
+    ) as { files?: { path: string }[] };
     previous = (old.files ?? []).map((f) => f.path);
   } else if ((await fs.list(target)).length > 0 && !options.force)
     throw new MochiError(

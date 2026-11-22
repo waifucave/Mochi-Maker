@@ -9,7 +9,17 @@
  * Without either, files are taken in natural name order. Positions default to (0, 0), which suits
  * the common export of full-canvas layers; transparent borders are trimmed either way.
  */
-import { MochiError, joinPath, parseJson, type FileSystem } from '@mochi-maker/core';
+import {
+  Budget,
+  LIMITS,
+  MochiError,
+  checkImageSize,
+  joinPath,
+  parseJson,
+  readCapped,
+  tooLarge,
+  type FileSystem,
+} from '@mochi-maker/core';
 import { normalizeBlendMode, type ImportedArt, type ImportedLayer } from './art.js';
 import { decodePng, trimImage } from './png.js';
 
@@ -34,7 +44,10 @@ export async function readPngFolderArt(fs: FileSystem, dir: string): Promise<Imp
   let width: number | undefined;
   let height: number | undefined;
   if (await fs.exists(joinPath(dir, 'layers.json'))) {
-    const json = parseJson(await fs.readText(joinPath(dir, 'layers.json'))) as {
+    const text = new TextDecoder().decode(
+      await readCapped(fs, joinPath(dir, 'layers.json'), LIMITS.projectFileBytes),
+    );
+    const json = parseJson(text) as {
       width?: number;
       height?: number;
       layers?: Entry[];
@@ -48,7 +61,8 @@ export async function readPngFolderArt(fs: FileSystem, dir: string): Promise<Imp
     for (const n of names)
       if (!listed.has(n)) notes.push(`${n} is not listed in layers.json and was skipped.`);
   } else if (await fs.exists(joinPath(dir, 'order.txt'))) {
-    entries = (await fs.readText(joinPath(dir, 'order.txt')))
+    entries = new TextDecoder()
+      .decode(await readCapped(fs, joinPath(dir, 'order.txt'), LIMITS.projectFileBytes))
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter((l) => l !== '' && !l.startsWith('#'))
@@ -57,6 +71,8 @@ export async function readPngFolderArt(fs: FileSystem, dir: string): Promise<Imp
   if (entries.length === 0)
     throw new MochiError('E_ASSET_FORMAT', `${dir} contains no PNG layers.`);
 
+  if (entries.length > LIMITS.layers) throw tooLarge(dir, entries.length, LIMITS.layers, 'layers');
+  const pixels = new Budget(LIMITS.layerPixels, `${dir}'s layers, together,`, 'pixels');
   const layers: ImportedLayer[] = [];
   let maxX = 0;
   let maxY = 0;
@@ -66,7 +82,7 @@ export async function readPngFolderArt(fs: FileSystem, dir: string): Promise<Imp
       notes.push(`${e.file} does not exist and was skipped.`);
       continue;
     }
-    const img = decodePng(await fs.readBytes(path), e.file);
+    const img = decodePng(await readCapped(fs, path, LIMITS.fileBytes, e.file), e.file, pixels);
     maxX = Math.max(maxX, (e.x ?? 0) + img.width);
     maxY = Math.max(maxY, (e.y ?? 0) + img.height);
     const trimmed = trimImage(img);
@@ -87,5 +103,7 @@ export async function readPngFolderArt(fs: FileSystem, dir: string): Promise<Imp
       notes: [],
     });
   }
-  return { format: 'png-folder', width: width ?? maxX, height: height ?? maxY, layers, notes };
+  const canvas = { width: width ?? maxX, height: height ?? maxY };
+  checkImageSize(canvas.width, canvas.height, `${dir}'s canvas`);
+  return { format: 'png-folder', ...canvas, layers, notes };
 }

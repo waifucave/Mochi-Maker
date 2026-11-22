@@ -15,8 +15,9 @@
  *   parameters and physics settings that already exist;
  * - **Apply:** one undoable step, `modelTemplate.apply` (which agents run too).
  */
-import { unzipSync } from 'fflate';
-import { DocView, Session, runItems, type Uid } from '@mochi-maker/core';
+import { DocView, LIMITS, Session, runItems, type Uid } from '@mochi-maker/core';
+import { readZip } from '@mochi-maker/art';
+import { fileBytes } from './limits.js';
 import { MochiView } from 'mochi2d';
 import { parseMotion } from 'mochi2d/headless';
 import {
@@ -59,7 +60,7 @@ const b64 = (b: Uint8Array) => {
 
 /** Loads a .mochitemplate file's bytes into the session's list (replacing one of the same name). */
 export async function addTemplate(source: string, bytes: Uint8Array): Promise<TemplateEntry> {
-  const files = new Map(Object.entries(unzipSync(bytes)));
+  const files = await readZip(source, bytes, LIMITS.projectArchive);
   const template = await readTemplate(files);
   const entry: TemplateEntry = {
     source,
@@ -227,7 +228,7 @@ export function applyTemplateDialog(editor: Editor, viewport: Viewport): Dialog 
     const load = async (list: FileList | null) => {
       for (const f of [...(list ?? [])].filter((x) => x.name.endsWith('.mochitemplate')))
         try {
-          await addTemplate(f.name, new Uint8Array(await f.arrayBuffer()));
+          await addTemplate(f.name, await fileBytes(f));
         } catch (e) {
           editor.report(e);
         }

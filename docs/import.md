@@ -29,6 +29,11 @@ Point at the folder or at its `.model3.json`. Nothing else is read: no archives,
 other folders. A folder with several `.model3.json` files at its top is refused; name the one to
 import.
 
+The folder is read within the caps Mochi2D suggests for models from strangers: 64 MiB a file,
+256 MiB in all, 2,000 files, each checked by its size before anything is read. Textures are
+checked against the image caps before they are decoded. A folder past a cap is refused as too
+large ([`limits.md`](limits.md)).
+
 - `.moc3` versions 3 to 6 are imported; versions 1 and 2 are refused. The version 6 import is
   tested only on the project's own files (every golden exported at version 6, the version 6 golden
   among them: exported, imported and exported again byte for byte), not on a model from other

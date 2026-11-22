@@ -129,6 +129,8 @@ npm run start -w @mochi-maker/desktop           # or package:linux for an unsign
 - [`docs/editor.md`](docs/editor.md): the editor and `window.mochi`
 - [`docs/desktop.md`](docs/desktop.md): the desktop app, its files, auto-saves, bridge and security
 - [`docs/bridge.md`](docs/bridge.md): the live bridge, tokens, the control lease and `mcp --bridge`
+- [`docs/limits.md`](docs/limits.md): the limits on files from others, and what is refused as too
+  large
 - [`docs/design.md`](docs/design.md): the design
 - [`docs/agent-api-design.md`](docs/agent-api-design.md): the agent interface
 - [`docs/roadmap.md`](docs/roadmap.md): milestones
@@ -160,7 +162,7 @@ Packages live in `packages/`:
 - `editor`: the web app (Vite);
 - `desktop`: the desktop app (Electron).
 
-Mochi2D is pinned as `vendor/mochi2d-0.22.0.tgz`. Third-party packages are
+Mochi2D is pinned as `vendor/mochi2d-0.23.0.tgz`. Third-party packages are
 listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 **How it was made.** Most of this code was written by AI coding agents (Anthropic's Claude) under the direction of the project's maintainer, through the clean-room process in [CLEANROOM.md](CLEANROOM.md). Copyright may not subsist in every part of it. To the extent it does, it is licensed under the MIT License. Either way, it is provided as is, without warranty. Third-party code keeps its own licenses ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).

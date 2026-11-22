@@ -175,6 +175,10 @@ export class BridgeServer {
     if (!this.originAllowed(req.headers.origin, path === '/host'))
       return refuse(403, `origin ${req.headers.origin ?? '(none)'}`);
     this.wss.handleUpgrade(req, socket, head, (ws) => {
+      // A peer that breaks the protocol (a message past MAX_MESSAGE, a bad frame) gets its
+      // connection closed by ws, with a close code; without a listener, the error would be
+      // thrown and stop the bridge.
+      ws.on('error', () => ws.terminate());
       if (path === '/host') this.onHost({ ws, role: 'host', welcomed: false });
       else this.onClient({ ws, role: 'api', subscriptions: [], calls: [] });
     });

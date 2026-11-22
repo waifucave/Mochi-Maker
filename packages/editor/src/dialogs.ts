@@ -25,6 +25,7 @@ import type { Category, Keymap } from './keymap.js';
 import { DEFAULT_SETTINGS, store, type Settings, type SettingsStore } from './settings.js';
 import type { Tips } from './tips.js';
 import { TERM, label } from './panels.js';
+import { fileText } from './limits.js';
 
 export interface Dialog {
   el: HTMLElement;
@@ -397,7 +398,7 @@ export function shortcutsDialog(keymap: Keymap): Dialog {
     const f = file.files?.[0];
     if (!f) return;
     try {
-      const n = keymap.importFile(JSON.parse(await f.text()));
+      const n = keymap.importFile(JSON.parse(await fileText(f)));
       message.textContent = `Imported the keys of ${n} commands.`;
       render();
     } catch (e) {

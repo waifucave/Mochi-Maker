@@ -16,6 +16,10 @@ document in one transaction made of ordinary commands. So the import is one
 undo step, `--dry-run` shows the result without committing it, and the log
 replays without the source file.
 
+Art files are read within caps on their size, their images, their layers and what their
+compressed data may inflate to; a file past one is refused as too large, which is not the same as
+damaged ([`limits.md`](limits.md)).
+
 | Source | Read with | What is kept |
 |---|---|---|
 | PSD (`.psd`, `.psb`) | ag-psd | groups (nested), layer position, visibility (also hidden through a group), opacity, blend mode, clipping; 16-bit channels are reduced to 8 bits |

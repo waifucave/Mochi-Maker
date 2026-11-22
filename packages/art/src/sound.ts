@@ -4,7 +4,7 @@
  * 16, 24 or 32 bits, or 32-bit floats, any channel count.
  */
 import { Type } from '@sinclair/typebox';
-import { MochiError, defineOperation } from '@mochi-maker/core';
+import { defineOperation, LIMITS, MochiError, readCapped } from '@mochi-maker/core';
 
 export interface WavInfo {
   sampleRate: number;
@@ -81,7 +81,7 @@ extension. Attach it to a motion with motion.update { target, sound }.`,
         'E_ASSET_FORMAT',
         'Importing files needs file access, which this session does not have.',
       );
-    const bytes = await ctx.fs.readBytes(a.path);
+    const bytes = await readCapped(ctx.fs, a.path, LIMITS.fileBytes);
     const info = readWavInfo(bytes, a.path);
     const asset = await ctx.assets.put(bytes);
     const name =

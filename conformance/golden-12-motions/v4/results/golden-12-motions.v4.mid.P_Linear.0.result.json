@@ -1,7 +1,7 @@
 {
   "format": "mochi2d-result/0",
   "scenario": "golden-12-motions.v4.mid.P_Linear.0",
-  "producer": "mochi2d@0.22.0",
+  "producer": "mochi2d@0.23.0",
   "error": null,
   "canvas": {
     "width": 200,

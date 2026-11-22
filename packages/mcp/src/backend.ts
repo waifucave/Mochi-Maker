@@ -7,9 +7,11 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { basename, join, relative } from 'node:path';
 import {
+  LIMITS,
   MochiError,
   errorCodes,
   objectSchema,
+  tooLarge,
   type CommandCall,
   type Kind,
   type QueryOptions,
@@ -25,7 +27,7 @@ import {
   type RenderResult,
 } from '@mochi-maker/api';
 import type { ExportOptions, ExportProblem, ExportReport } from '@mochi-maker/export';
-import { BridgeCallError, BridgeClient, type BridgeEvent } from '@mochi-maker/bridge';
+import { BridgeCallError, BridgeClient, MAX_MESSAGE, type BridgeEvent } from '@mochi-maker/bridge';
 
 type Json = Record<string, unknown>;
 
@@ -414,23 +416,43 @@ export class BridgeBackend implements Backend {
     return this.call('validate', targetVersion === undefined ? {} : { targetVersion });
   }
 
-  /** Reads the art here (inside the allowed directories), as base64 files under its base name. */
+  /**
+   * Reads the art here (inside the allowed directories), as base64 files under its base name.
+   * The files are counted and their sizes summed before any is read: the art caps apply (as for
+   * art read directly), and the files must fit in one bridge message.
+   */
   private async artFiles(path: string): Promise<{ files: Record<string, string>; name: string }> {
     const files: Record<string, string> = {};
     const name = basename(path);
+    const found: [string, string][] = [];
     if ((await stat(path)).isDirectory()) {
       const walk = async (dir: string) => {
         for (const entry of await readdir(dir)) {
           const p = join(dir, entry);
           if ((await stat(p)).isDirectory()) await walk(p);
-          else
-            files[`${name}/${relative(path, p).split('\\').join('/')}`] = (
-              await readFile(p)
-            ).toString('base64');
+          else {
+            found.push([`${name}/${relative(path, p).split('\\').join('/')}`, p]);
+            if (found.length > LIMITS.layers + 2)
+              throw tooLarge(path, found.length, LIMITS.layers + 2, 'files');
+          }
         }
       };
       await walk(path);
-    } else files[name] = (await readFile(path)).toString('base64');
+    } else found.push([name, path]);
+    // Base64 takes 4 bytes for 3, and the message has some JSON around the files.
+    const room = Math.floor(((MAX_MESSAGE - 64 * 1024) * 3) / 4);
+    let total = 0;
+    for (const [, p] of found) {
+      const n = (await stat(p)).size;
+      if (n > LIMITS.fileBytes) throw tooLarge(p, n, LIMITS.fileBytes);
+      total += n;
+    }
+    if (total > room) {
+      const e = tooLarge(`${path}, sent through the bridge,`, total, room);
+      e.message += ' Import it in the editor, or use the MCP server without the bridge.';
+      throw e;
+    }
+    for (const [key, p] of found) files[key] = (await readFile(p)).toString('base64');
     return { files, name };
   }
 

@@ -163,6 +163,10 @@ running `mochi-maker bridge`, the app starts without its own bridge and says so 
     nearest existing ancestor).
   - Writes take only project file names (`mochi-project.json`, `meshes/…json`,
     `assets/sha256-….png` and the like) or relative export paths without `..`.
+- **Sizes checked before reading.** A project or model folder is listed and its files' sizes
+  summed from the disk before any file is read, and an art or physics file is checked by its size,
+  against the caps on files from others ([`limits.md`](limits.md)); one past a cap is refused as
+  too large.
 - **The app's own scheme.** The page is served from `mochi://app/`, with this content security
   policy:
 

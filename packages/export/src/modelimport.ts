@@ -34,7 +34,10 @@
 import {
   DocView,
   Draft,
+  Budget,
+  LIMITS,
   MochiError,
+  isTooLarge,
   checkInvariants,
   emptyDocument,
   f32,
@@ -507,12 +510,14 @@ export async function importModel(
 
   // ---------------------------------------------------------------- textures
   const textures: { uid: Uid; width: number; height: number }[] = [];
+  const texturePixels = new Budget(LIMITS.layerPixels, "The model's textures, together,", 'pixels');
   for (const [i, rel] of settings.textures.entries()) {
     const bytes = file(rel, 'texture');
     let img;
     try {
-      img = decodePng(bytes, rel);
+      img = decodePng(bytes, rel, texturePixels);
     } catch (e) {
+      if (isTooLarge(e)) throw e;
       throw new MochiError('E_MODEL_IMPORT', `${rel}: ${(e as Error).message}`);
     }
     const uid = d.allocate('layer');

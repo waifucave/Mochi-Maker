@@ -5,9 +5,11 @@
  */
 import { Type, type Static } from '@sinclair/typebox';
 import {
+  LIMITS,
   MochiError,
   RefOf,
   defineOperation,
+  readCapped,
   type Draft,
   type Kind,
   type OperationContext,
@@ -311,11 +313,11 @@ export async function readArt(
           : (await fs.list(path)).length > 0
             ? 'folder'
             : undefined);
-  if (kind === 'psd') return readPsdArt(await fs.readBytes(path), path);
-  if (kind === 'ora') return readOraArt(await fs.readBytes(path), path);
+  if (kind === 'psd') return readPsdArt(await readCapped(fs, path, LIMITS.fileBytes), path);
+  if (kind === 'ora') return readOraArt(await readCapped(fs, path, LIMITS.fileBytes), path);
   if (kind === 'folder') return readPngFolderArt(fs, path);
   if (kind === 'png') {
-    const img = decodePng(await fs.readBytes(path), path);
+    const img = decodePng(await readCapped(fs, path, LIMITS.fileBytes), path);
     const t = trimImage(img);
     const name = path
       .split('/')

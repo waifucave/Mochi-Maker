@@ -3,6 +3,7 @@
  * Paths use '/' separators.
  */
 import { MochiError } from './errors.js';
+import { LIMITS, readCapped } from './limits.js';
 
 export interface FileSystem {
   readText(path: string): Promise<string>;
@@ -14,6 +15,8 @@ export interface FileSystem {
   list(dir: string): Promise<string[]>;
   remove(path: string): Promise<void>;
   mkdir(path: string): Promise<void>;
+  /** A file's size in bytes without reading it, where the file system can tell; else undefined. */
+  size?(path: string): Promise<number | undefined>;
 }
 
 export function joinPath(...parts: string[]): string {
@@ -61,6 +64,9 @@ export class MemoryFileSystem implements FileSystem {
   }
   async remove(path: string): Promise<void> {
     this.files.delete(this.norm(path));
+  }
+  async size(path: string): Promise<number | undefined> {
+    return this.files.get(this.norm(path))?.length;
   }
   async mkdir(path: string): Promise<void> {
     const parts = this.norm(path).split('/');
@@ -121,7 +127,7 @@ export class FolderAssetStore implements AssetStore {
     const p = await this.path(hash);
     if (p === undefined)
       throw new MochiError('E_ASSET_MISSING', `Asset ${hash} is not in the project.`);
-    return this.fs.readBytes(p);
+    return readCapped(this.fs, p, LIMITS.fileBytes, `The asset ${p}`);
   }
   async put(bytes: Uint8Array): Promise<string> {
     return this.added.put(bytes);

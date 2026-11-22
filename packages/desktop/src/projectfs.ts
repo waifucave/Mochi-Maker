@@ -19,10 +19,63 @@ async function walk(dir: string, base = dir, out: string[] = []): Promise<string
   return out;
 }
 
-/** Every file of a folder, by its path inside it (with /). */
-export async function readFolder(dir: string): Promise<[string, Uint8Array][]> {
+const MiB = 2 ** 20;
+
+/** Caps on a folder read whole: the number of files, each file's size, and all of them. */
+export interface FolderCaps {
+  maxEntries: number;
+  maxEntryBytes: number;
+  maxTotalBytes: number;
+}
+
+/**
+ * The caps on files from others, as the core's LIMITS has them (test/limits.test.ts checks that
+ * they are the same): a project folder, a model folder, and one art file.
+ */
+export const CAPS = {
+  project: { maxEntryBytes: 256 * MiB, maxTotalBytes: 1024 * MiB, maxEntries: 50_000 },
+  model: { maxEntryBytes: 64 * MiB, maxTotalBytes: 256 * MiB, maxEntries: 2000 },
+  fileBytes: 512 * MiB,
+} as const;
+
+const size = (n: number) => `${Math.round((n / MiB) * 10) / 10} MiB`;
+
+/** The refusal for a cap, in the words the rest of Mochi Maker uses ("too large"). */
+export function tooLarge(what: string, n: string, limit: string): Error {
+  return new Error(`${what} is too large: ${n}, more than the ${limit} Mochi Maker accepts.`);
+}
+
+/** Refuses a file larger than `limit` bytes, by its size on disk, before it is read. */
+export async function checkFileSize(path: string, limit: number = CAPS.fileBytes): Promise<void> {
+  const s = await stat(path);
+  if (s.size > limit) throw tooLarge(path, size(s.size), size(limit));
+}
+
+/**
+ * Every file of a folder, by its path inside it (with /), within `caps`: the files are counted
+ * and their sizes summed from the disk before any is read.
+ */
+export async function readFolder(
+  dir: string,
+  caps: FolderCaps = CAPS.project,
+): Promise<[string, Uint8Array][]> {
+  const paths = await walk(dir);
+  if (paths.length > caps.maxEntries)
+    throw tooLarge(
+      dir,
+      `${paths.length.toLocaleString('en-US')} files`,
+      `${caps.maxEntries.toLocaleString('en-US')} files`,
+    );
+  let total = 0;
+  for (const p of paths) {
+    const n = (await stat(join(dir, p))).size;
+    if (n > caps.maxEntryBytes) throw tooLarge(`${dir}: ${p}`, size(n), size(caps.maxEntryBytes));
+    total += n;
+  }
+  if (total > caps.maxTotalBytes)
+    throw tooLarge(`${dir}, all files together,`, size(total), size(caps.maxTotalBytes));
   const out: [string, Uint8Array][] = [];
-  for (const p of await walk(dir)) out.push([p, new Uint8Array(await readFile(join(dir, p)))]);
+  for (const p of paths) out.push([p, new Uint8Array(await readFile(join(dir, p)))]);
   return out;
 }
 

@@ -1,6 +1,6 @@
 # Mochi Maker conformance pack
 
-Written by mochi-maker 0.0.0, with results from Mochi2D 0.22.0; random poses from seed 1.
+Written by mochi-maker 0.0.0, with results from Mochi2D 0.23.0; random poses from seed 1.
 
 60 exports (60 of 72 project × version pairs), 1857 static and 36 animation scenarios.
 

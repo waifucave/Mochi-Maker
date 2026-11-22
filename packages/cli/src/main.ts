@@ -10,14 +10,16 @@ import { homedir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import * as core from '@mochi-maker/core';
 import {
-  MochiError,
-  Session,
   describeCommand,
+  LIMITS,
   listCommands,
   loadProject,
+  MochiError,
   parseJson,
+  readCapped,
   saveProject,
   searchCommands,
+  Session,
   type CommandCall,
   type Kind,
 } from '@mochi-maker/core';
@@ -167,7 +169,7 @@ async function cmdNew(p: Parsed): Promise<number> {
 }
 
 async function loadCalls(file: string): Promise<CommandCall[]> {
-  const text = await fs.readText(file);
+  const text = new TextDecoder().decode(await readCapped(fs, file, LIMITS.projectBytes));
   if (file.endsWith('.jsonl'))
     return text
       .split('\n')
@@ -373,7 +375,7 @@ async function cmdExportTemplate(p: Parsed): Promise<number> {
     description: opt(p, 'description') ?? '',
     author: opt(p, 'author') ?? '',
     physics: !p.flags.has('no-physics'),
-    thumbnail: thumb ? await fs.readBytes(thumb) : null,
+    thumbnail: thumb ? await readCapped(fs, thumb, LIMITS.fileBytes) : null,
   });
   await fs.writeBytes(target, templateZip(files));
   const meta = JSON.parse(new TextDecoder().decode(files.get('template.json')!)) as {

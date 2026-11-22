@@ -18,6 +18,7 @@ import { dialog, type Dialog } from './dialogs.js';
 import { fill, h } from './dom.js';
 import type { Editor } from './editor.js';
 import type { Viewport } from './viewport.js';
+import { fileBytes } from './limits.js';
 
 export function motionSyncDialog(editor: Editor, viewport: Viewport): Dialog {
   const body = h('div.motion-sync');
@@ -65,7 +66,7 @@ export function motionSyncDialog(editor: Editor, viewport: Viewport): Dialog {
       return;
     }
     try {
-      rt.startMotionSync(new Uint8Array(await file.arrayBuffer()), { setting: s.name });
+      rt.startMotionSync(await fileBytes(file), { setting: s.name });
     } catch (e) {
       status.textContent = (e as Error).message;
       return;

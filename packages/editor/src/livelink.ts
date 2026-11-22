@@ -10,6 +10,7 @@
 import type { ReimportResult } from '@mochi-maker/art';
 import { OPERATIONS } from '@mochi-maker/export';
 import { runItems } from '@mochi-maker/core';
+import { fileBytes } from './limits.js';
 import { Emitter, type Editor } from './editor.js';
 
 /** What the link needs from a file: its name, and its current contents. */
@@ -165,7 +166,7 @@ export class LiveLink extends Emitter<LinkEvents> {
     try {
       const path = LiveLink.pathFor(f.name);
       this.phase = 'reading';
-      await this.editor.fs.writeBytes(path, new Uint8Array(await f.arrayBuffer()));
+      await this.editor.fs.writeBytes(path, await fileBytes(f));
       this.phase = 'dry run';
       const label = `${how === 'import' ? 'Import' : 'Re-import'} ${f.name}${this.file ? ' (live link)' : ''}`;
       const ctx = { session: this.editor.session, assets: this.editor.assets, fs: this.editor.fs };

@@ -28,7 +28,14 @@ import { Autosaves } from './autosave.js';
 import { APP_ORIGIN, startBridge, type DesktopBridge } from './bridge.js';
 import { PathGuard } from './guard.js';
 import { applyIdentity } from './identity.js';
-import { isFolder, readFolder, writeFolder, writeProject } from './projectfs.js';
+import {
+  CAPS,
+  checkFileSize,
+  isFolder,
+  readFolder,
+  writeFolder,
+  writeProject,
+} from './projectfs.js';
 import { Recent } from './recent.js';
 
 const here = import.meta.dirname;
@@ -195,9 +202,7 @@ const handlers: Record<string, (e: IpcMainInvokeEvent, a: Record<string, unknown
     const dir = await pick('folder', { title: 'Import Model Folder' });
     if (!dir) return null;
     if (!(await isFolder(dir))) throw new Error(`${dir} is not a folder.`);
-    const files = await readFolder(dir);
-    if (files.length > 4096)
-      throw new Error(`${dir} holds more than 4096 files; choose the model's own folder.`);
+    const files = await readFolder(dir, CAPS.model);
     return { dir, name: basename(dir), files };
   },
   'art:pick': async () => {
@@ -207,6 +212,7 @@ const handlers: Record<string, (e: IpcMainInvokeEvent, a: Record<string, unknown
     });
     if (!p) return null;
     await guard.allow(p);
+    await checkFileSize(p);
     const s = await stat(p);
     return {
       path: p,
@@ -217,6 +223,7 @@ const handlers: Record<string, (e: IpcMainInvokeEvent, a: Record<string, unknown
   },
   'art:read': async (_e, a) => {
     const p = await guard.check(a.path);
+    await checkFileSize(p);
     const s = await stat(p);
     return { bytes: new Uint8Array(await readFile(p)), mtime: s.mtimeMs, size: s.size };
   },
@@ -243,6 +250,7 @@ const handlers: Record<string, (e: IpcMainInvokeEvent, a: Record<string, unknown
     });
     if (!p) return null;
     await guard.allow(p);
+    await checkFileSize(p, CAPS.model.maxEntryBytes);
     return { path: p, name: basename(p), text: await readFile(p, 'utf8') };
   },
   'export:folder': async (_e, a) => {

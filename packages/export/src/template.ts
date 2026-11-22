@@ -29,14 +29,17 @@
  * own part tree), motions. Label colors are not carried either: Mochi Maker has none.
  */
 import { Type, type Static } from '@sinclair/typebox';
-import { unzipSync, zipSync } from 'fflate';
+import { zipSync } from 'fflate';
+import { readZip } from '@mochi-maker/art';
 import {
+  defineOperation,
   DocView,
+  LIMITS,
+  loadProject,
   MemoryAssetStore,
   MemoryFileSystem,
   MochiError,
-  defineOperation,
-  loadProject,
+  readCapped,
   rig as grid,
   saveProject,
   type ArtMesh,
@@ -151,11 +154,7 @@ export async function readTemplate(
 ): Promise<LoadedTemplate> {
   let files: Map<string, Uint8Array>;
   if (input instanceof Uint8Array) {
-    try {
-      files = new Map(Object.entries(unzipSync(input)));
-    } catch {
-      throw new MochiError('E_ASSET_FORMAT', 'This is not a template file (not a zip).');
-    }
+    files = await readZip('The template', input, LIMITS.projectArchive);
   } else files = input;
   // A zip may hold the files inside one folder.
   const metaPath = [...files.keys()]
@@ -457,7 +456,7 @@ async function loadArg(ctx: OperationContext, a: TemplateApplyArgs): Promise<Loa
       'E_ASSET_FORMAT',
       'Reading a template needs file access, which this session does not have.',
     );
-  return readTemplate(await ctx.fs.readBytes(a.path));
+  return readTemplate(await readCapped(ctx.fs, a.path, LIMITS.fileBytes));
 }
 
 type Space = 'canvas' | 'unit' | 'rot';

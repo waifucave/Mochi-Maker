@@ -5,6 +5,7 @@
  * Node file-system access is in '@mochi-maker/core/node'.
  */
 export * from './errors.js';
+export * from './limits.js';
 export * from './f32.js';
 export * from './schema.js';
 export * from './model.js';

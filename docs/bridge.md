@@ -135,7 +135,7 @@ editor's document:
 | **Scopes** | They are checked by the bridge, then again by the editor. MCP sessions are limited by the token's scopes. |
 | **No file access beyond the scopes** | File paths never cross the bridge. Import sends bytes (edit scope); export returns bytes (export scope), written by the agent side inside its allowed directories. |
 | **Visible and recoverable** | The band shows connected agents and what they run. Every agent change is in the history with its author and can be undone. |
-| **Limits** | Messages up to 16 MiB, 30 commands per second per client, and 10 000 commands per transaction. |
+| **Limits** | Messages up to 16 MiB (a longer one closes its connection with code 1009; the bridge goes on), 30 commands per second per client, and 10 000 commands per transaction. Art sent through the bridge must fit in one message; [`limits.md`](limits.md) lists every cap. |
 
 ## Tests
 

@@ -8,9 +8,11 @@
  * detected instead of silently replayed wrong.
  */
 import {
-  MochiError,
   documentHash,
   joinPath,
+  LIMITS,
+  MochiError,
+  readCapped,
   replay,
   type Document,
   type FileSystem,
@@ -25,7 +27,7 @@ export function historyPath(project: string): string {
 
 export async function readHistory(fs: FileSystem, path: string): Promise<LogEntry[]> {
   if (!(await fs.exists(path))) return [];
-  const text = await fs.readText(path);
+  const text = new TextDecoder().decode(await readCapped(fs, path, LIMITS.projectBytes));
   return text
     .split('\n')
     .filter((l) => l.trim() !== '')

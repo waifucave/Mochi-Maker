@@ -71,6 +71,8 @@ export class BridgeClient {
         ),
       );
     });
+    // A broken connection is reported by its close (below); the error alone must not throw.
+    ws.on('error', () => undefined);
     ws.on('message', (d) => client.onMessage(JSON.parse(d.toString()) as Record<string, unknown>));
     ws.on('close', (code, reason) => {
       client.connected = false;

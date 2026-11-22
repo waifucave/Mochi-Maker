@@ -8,7 +8,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request } from 'node:http';
 import { WebSocket } from 'ws';
-import { BridgeClient, BridgeCallError, BridgeServer, type CommandInfo } from '@mochi-maker/bridge';
+import {
+  BridgeClient,
+  BridgeCallError,
+  BridgeServer,
+  MAX_MESSAGE,
+  type CommandInfo,
+} from '@mochi-maker/bridge';
 
 const servers: BridgeServer[] = [];
 const sockets: WebSocket[] = [];
@@ -135,6 +141,19 @@ describe('the bridge', () => {
     await socket(`${url}/host`, { origin: 'http://127.0.0.1:4173' });
     const allowed = await bridge({ allowOrigins: ['app://mochi-maker'] });
     await socket(`ws://127.0.0.1:${allowed.port}/host`, { origin: 'app://mochi-maker' });
+  });
+
+  it('closes a connection that sends a message past MAX_MESSAGE, on hosts and clients', async () => {
+    const b = await bridge();
+    const url = `ws://127.0.0.1:${b.port}`;
+    for (const [path, headers] of [
+      ['/api', {}],
+      ['/host', { origin: 'http://localhost:5173' }],
+    ] as const) {
+      const s = await socket(`${url}${path}`, headers);
+      s.ws.send(Buffer.alloc(MAX_MESSAGE + 1, 0x20));
+      expect(await s.closed).toBe(1009); // the WebSocket code for a message too big
+    }
   });
 
   it('pairs a host once, then welcomes it by its token; a newer host replaces the older', async () => {

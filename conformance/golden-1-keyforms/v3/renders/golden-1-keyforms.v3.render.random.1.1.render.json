@@ -1,7 +1,7 @@
 {
   "format": "mochi2d-render/0",
   "scenario": "golden-1-keyforms.v3.render.random.1.1",
-  "producer": "mochi2d@0.22.0",
+  "producer": "mochi2d@0.23.0",
   "error": null,
   "png": "golden-1-keyforms.v3.render.random.1.1.png",
   "alpha": "premultiplied",

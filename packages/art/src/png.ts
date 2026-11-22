@@ -1,9 +1,117 @@
-/** PNG decoding and encoding to and from 8-bit straight-alpha RGBA, through fast-png (MIT). */
-import { MochiError } from '@mochi-maker/core';
+/**
+ * PNG decoding and encoding to and from 8-bit straight-alpha RGBA, through fast-png (MIT).
+ *
+ * Before decoding, a PNG's chunks are checked here: its declared size against the image caps
+ * (LIMITS), and its compressed data, inflated in small steps and counted but not kept, against
+ * what that size holds. fast-png inflates all of it at once, so without this check a small file
+ * could inflate to gigabytes.
+ */
+import { LIMITS, MochiError, checkImageSize, tooLarge, type Budget } from '@mochi-maker/core';
 import type { Image } from '@mochi-maker/geometry';
 import { convertIndexedToRgb, decode, encode } from 'fast-png';
+import { Unzlib } from 'fflate';
 
-export function decodePng(bytes: Uint8Array, what = 'PNG'): Image {
+const SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
+const CHANNELS: Record<number, number> = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 };
+/** Adam7 passes: x start, y start, x step, y step. */
+const ADAM7 = [
+  [0, 0, 8, 8],
+  [4, 0, 8, 8],
+  [0, 4, 4, 8],
+  [2, 0, 4, 4],
+  [0, 2, 2, 4],
+  [1, 0, 2, 2],
+  [0, 1, 1, 2],
+] as const;
+
+/** The bytes a PNG's image data inflates to, by its header: rows with their filter bytes. */
+function rawSize(w: number, h: number, depth: number, channels: number, interlace: number) {
+  const row = (pw: number) => 1 + Math.ceil((pw * depth * channels) / 8);
+  if (interlace !== 1) return h * row(w);
+  let n = 0;
+  for (const [x0, y0, dx, dy] of ADAM7) {
+    const pw = Math.ceil((w - x0) / dx);
+    const ph = Math.ceil((h - y0) / dy);
+    if (pw > 0 && ph > 0) n += ph * row(pw);
+  }
+  return n;
+}
+
+/**
+ * Inflates zlib data in small steps, counting what comes out without keeping it, and calls
+ * `over` (which throws) the moment the count passes `max`. A step's input is 16 KiB, so its
+ * output is at most about 16 MiB (deflate inflates at most about 1,032 times).
+ */
+export function inflateCount(parts: Uint8Array[], max: number, over: (n: number) => never): number {
+  let n = 0;
+  const z = new Unzlib((chunk) => {
+    n += chunk.length;
+    if (n > max) over(n);
+  });
+  const STEP = 16384;
+  try {
+    for (const p of parts)
+      for (let i = 0; i < p.length; i += STEP) z.push(p.subarray(i, i + STEP), false);
+    z.push(new Uint8Array(0), true);
+  } catch (e) {
+    if (e instanceof MochiError) throw e;
+    // A damaged stream: fast-png reports it in its own words.
+  }
+  return n;
+}
+
+/**
+ * Checks a PNG before it is decoded (module comment): its size against the caps, and its image
+ * data and color profile against what they may inflate to. Data that is not a PNG is left for the
+ * decoder to refuse.
+ */
+export function checkPng(bytes: Uint8Array, what = 'PNG', budget?: Budget): void {
+  if (bytes.length < 33 || SIGNATURE.some((b, i) => bytes[i] !== b)) return;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const type = (o: number) => String.fromCharCode(...bytes.subarray(o + 4, o + 8));
+  if (type(8) !== 'IHDR') return;
+  const width = view.getUint32(16);
+  const height = view.getUint32(20);
+  const depth = bytes[24]!;
+  const channels = CHANNELS[bytes[25]!] ?? 4;
+  const interlace = bytes[28]!;
+  checkImageSize(width, height, what);
+  budget?.take(width * height);
+  const idat: Uint8Array[] = [];
+  let profile: Uint8Array | undefined;
+  for (let o = 8; o + 12 <= bytes.length;) {
+    const len = view.getUint32(o);
+    const t = type(o);
+    const data = bytes.subarray(o + 8, Math.min(bytes.length, o + 8 + len));
+    if (t === 'IHDR' && o !== 8)
+      throw new MochiError('E_ASSET_FORMAT', `${what} is damaged: it has more than one header.`);
+    if (t === 'IDAT') idat.push(data);
+    if (t === 'iCCP' && !profile) {
+      const z = data.indexOf(0);
+      if (z >= 0) profile = data.subarray(z + 2);
+    }
+    if (t === 'IEND') break;
+    o += 12 + len;
+  }
+  const raw = rawSize(width, height, depth, channels, interlace);
+  inflateCount(idat, raw, () => {
+    throw new MochiError(
+      'E_ASSET_FORMAT',
+      `${what} is damaged or crafted: its image data inflates to more than a ${width} × ${height} image holds.`,
+    );
+  });
+  if (profile)
+    inflateCount([profile], LIMITS.pngProfileBytes, (n) => {
+      throw tooLarge(`${what}'s embedded color profile`, n, LIMITS.pngProfileBytes);
+    });
+}
+
+/**
+ * Decodes a PNG to 8-bit RGBA, within the image caps; `budget` also counts its pixels toward a
+ * total (an art file's layers).
+ */
+export function decodePng(bytes: Uint8Array, what = 'PNG', budget?: Budget): Image {
+  checkPng(bytes, what, budget);
   let png;
   try {
     png = decode(bytes);

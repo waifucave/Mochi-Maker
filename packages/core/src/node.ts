@@ -39,6 +39,14 @@ export class NodeFileSystem implements FileSystem {
       return [];
     }
   }
+  async size(path: string): Promise<number | undefined> {
+    try {
+      const s = await stat(path);
+      return s.isFile() ? s.size : undefined;
+    } catch {
+      return undefined;
+    }
+  }
   async remove(path: string): Promise<void> {
     await rm(path, { force: true });
   }

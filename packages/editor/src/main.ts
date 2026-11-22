@@ -5,8 +5,10 @@
  * area in the middle with its tabs and the draw-order strip, and dockable palettes around it,
  * laid out per workspace.
  */
-import { unzipSync, zipSync } from 'fflate';
-import type { ArtMesh, Rotation, Uid, Warp } from '@mochi-maker/core';
+import { zipSync } from 'fflate';
+import { LIMITS, type ArtMesh, type Rotation, type Uid, type Warp } from '@mochi-maker/core';
+import { readZip } from '@mochi-maker/art';
+import { fileBytes, folderBytes } from './limits.js';
 import { exportModel, importReportText, MODEL_IMPORT_NOTICE } from '@mochi-maker/export';
 import { Editor, type EditLevel } from './editor.js';
 import { Viewport, type Tool } from './viewport.js';
@@ -219,14 +221,12 @@ editor.on('project', () => {
 });
 
 async function openFileList(files: File[]): Promise<void> {
-  const map = new Map<string, Uint8Array>();
-  for (const f of files) {
-    const bytes = new Uint8Array(await f.arrayBuffer());
-    if (f.name.toLowerCase().endsWith('.zip') && files.length === 1)
-      for (const [p, b] of Object.entries(unzipSync(bytes))) map.set(p, b);
-    else map.set(f.webkitRelativePath || f.name, bytes);
-  }
   try {
+    let map: Map<string, Uint8Array>;
+    const one = files.length === 1 ? files[0]! : undefined;
+    if (one && one.name.toLowerCase().endsWith('.zip'))
+      map = await readZip(one.name, await fileBytes(one), LIMITS.projectArchive);
+    else map = await folderBytes(files, LIMITS.projectArchive, 'The project folder');
     await editor.openFiles(map);
     remember(editor.name);
     closeHomeOnOpen();
@@ -315,10 +315,14 @@ async function importModelFiles(
   }
 }
 modelInput.addEventListener('change', async () => {
-  const map = new Map<string, Uint8Array>();
-  for (const f of [...(modelInput.files ?? [])])
-    map.set(f.webkitRelativePath || f.name, new Uint8Array(await f.arrayBuffer()));
+  const files = [...(modelInput.files ?? [])];
   modelInput.value = '';
+  let map: Map<string, Uint8Array>;
+  try {
+    map = await folderBytes(files, LIMITS.model, 'The model folder');
+  } catch (e) {
+    return editor.report(e);
+  }
   await importModelFiles(map);
 });
 zipInput.addEventListener('change', () => void openFileList([...(zipInput.files ?? [])]));
@@ -326,9 +330,9 @@ zipInput.addEventListener('change', () => void openFileList([...(zipInput.files 
 /** Imports an art file into the open model (a new mesh per layer). */
 async function importArt(file: File): Promise<void> {
   const path = `import/${file.name}`;
-  await editor.fs.writeBytes(path, new Uint8Array(await file.arrayBuffer()));
   closeHomeOnOpen();
   try {
+    await editor.fs.writeBytes(path, await fileBytes(file));
     await agent.run(`Import ${file.name}`, [{ name: 'art.import', args: { path } }], {
       author: 'person',
     });

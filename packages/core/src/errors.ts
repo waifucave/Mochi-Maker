@@ -38,6 +38,8 @@ export const ERROR_CODES = {
   E_TOPOLOGY: 'The mesh operation is not possible on this mesh (for example, a point outside it).',
   E_BUSY: 'Another transaction is still running in this session.',
   E_ASSET_FORMAT: 'An asset or imported file could not be decoded.',
+  E_TOO_LARGE:
+    'A file, archive or message is larger than Mochi Maker accepts (docs/limits.md lists the caps); it may be fine, but it is not read.',
   E_EXPORT: 'The document cannot be exported as it is; the details list each problem.',
   E_MODEL_IMPORT:
     'The model folder cannot be imported: an unsupported .moc3 version, a missing or unreadable file, or data the document cannot hold.',

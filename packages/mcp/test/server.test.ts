@@ -543,8 +543,9 @@ describe('MCP server', () => {
       .trim()
       .split('\n')
       .map((l) => JSON.parse(l));
-    expect(lines.map((l) => l.id)).toEqual([null, 1, 2]);
-    expect(lines[0].error.code).toBe(-32700);
+    // Replies follow the input, the error for the line that is not JSON included.
+    expect(lines.map((l) => l.id)).toEqual([1, null, 2]);
+    expect(lines[1].error.code).toBe(-32700);
     expect(lines[2].result.tools.length).toBe(16);
   });
 });

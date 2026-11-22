@@ -15,6 +15,7 @@
 import { decode, encode, type JsonTree } from './codec.js';
 import { DocView, compareUids, type Document } from './document.js';
 import { MochiError } from './errors.js';
+import { Budget, LIMITS, isTooLarge, readCapped, tooLarge } from './limits.js';
 import { FolderAssetStore, joinPath, type AssetStore, type FileSystem } from './fs.js';
 import { checkInvariants } from './invariants.js';
 import { parseJson, stringifyJson } from './json.js';
@@ -305,28 +306,59 @@ export async function saveProject(
   return report;
 }
 
-async function readJson(fs: FileSystem, path: string): Promise<unknown> {
+/** One JSON file within its cap; `budget` counts its bytes where they were not counted before. */
+async function readJson(fs: FileSystem, path: string, budget?: Budget): Promise<unknown> {
+  let text: string;
   try {
-    return parseJson(await fs.readText(path));
+    const bytes = await readCapped(fs, path, LIMITS.projectFileBytes);
+    budget?.take(bytes.length);
+    text = new TextDecoder().decode(bytes);
   } catch (e) {
+    if (isTooLarge(e)) throw e;
     if (e instanceof MochiError)
       throw new MochiError('E_PROJECT_FORMAT', `Missing project file: ${path}`);
+    throw e;
+  }
+  try {
+    return parseJson(text);
+  } catch (e) {
     throw new MochiError('E_PROJECT_FORMAT', `${path} is not valid JSON: ${(e as Error).message}`);
   }
 }
 
-/** Reads every project file into a bundle. */
+/**
+ * Reads every project file into a bundle, within the caps on a project folder (LIMITS: each JSON
+ * file, all of them together, and the number of object files). The files are listed and their
+ * sizes summed first, where the file system can tell them, so a folder over a cap is refused
+ * before any of it is read.
+ */
 export async function readBundle(fs: FileSystem, dir: string): Promise<ProjectBundle> {
-  const bundle: ProjectBundle = new Map();
-  bundle.set(MANIFEST, await readJson(fs, joinPath(dir, MANIFEST)));
+  const paths: [key: string, path: string][] = [[MANIFEST, joinPath(dir, MANIFEST)]];
   for (const file of Object.keys(COLLECTION_FILES)) {
     const path = joinPath(dir, file);
-    if (await fs.exists(path)) bundle.set(file, await readJson(fs, path));
+    if (await fs.exists(path)) paths.push([file, path]);
   }
+  let objects = 0;
   for (const sub of Object.keys(OBJECT_DIRS))
     for (const name of await fs.list(joinPath(dir, sub)))
-      if (name.endsWith('.json'))
-        bundle.set(`${sub}/${name}`, await readJson(fs, joinPath(dir, sub, name)));
+      if (name.endsWith('.json')) {
+        if (++objects > LIMITS.projectFiles)
+          throw tooLarge(`The project ${dir}`, objects, LIMITS.projectFiles, 'object files');
+        paths.push([`${sub}/${name}`, joinPath(dir, sub, name)]);
+      }
+  const what = `The project ${dir}, all its files together,`;
+  const sized = new Budget(LIMITS.projectBytes, what);
+  if (fs.size)
+    for (const [, path] of paths) {
+      const n = await fs.size(path);
+      if (n !== undefined) {
+        if (n > LIMITS.projectFileBytes) throw tooLarge(path, n, LIMITS.projectFileBytes);
+        sized.take(n);
+      }
+    }
+  const unsized = fs.size ? undefined : new Budget(LIMITS.projectBytes, what);
+  const bundle: ProjectBundle = new Map();
+  for (const [key, path] of paths) bundle.set(key, await readJson(fs, path, unsized));
   return bundle;
 }
 

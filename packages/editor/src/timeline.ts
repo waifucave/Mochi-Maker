@@ -28,6 +28,7 @@ import { askText, dialog } from './dialogs.js';
 import type { Viewport } from './viewport.js';
 import type { Keymap } from './keymap.js';
 import { lazyRender, popupMenu } from './panels.js';
+import { fileBytes } from './limits.js';
 
 export const INTERP_LABEL: Record<Interpolation, string> = {
   linear: 'Linear',
@@ -573,7 +574,11 @@ export class TimelinePalette {
           input.value = '';
           if (!f) return;
           const path = `import/${f.name}`;
-          await this.editor.fs.writeBytes(path, new Uint8Array(await f.arrayBuffer()));
+          try {
+            await this.editor.fs.writeBytes(path, await fileBytes(f));
+          } catch (e) {
+            return this.editor.report(e);
+          }
           await this.editor.runItems(`Sound ${f.name}`, [
             { name: 'sound.import', args: { path } },
             { name: 'motion.update', args: { target: m.uid, sound: '$0' } },

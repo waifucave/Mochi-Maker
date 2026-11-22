@@ -59,7 +59,10 @@ With `--bridge`, the tools work on the document open in a running editor, throug
 - files are read and written only on the agent's side, inside `--allow-dir`.
 
 Newline-delimited JSON-RPC 2.0 on stdio, MCP protocol versions 2025-06-18, 2025-03-26 and
-2024-11-05. Requests are handled one at a time, in order.
+2024-11-05. Requests are handled one at a time, in order, and the replies follow the input (an
+error for a line that is not JSON included). A message longer than 64 MiB is not kept: it is
+answered with an error that says it is too large. Files the tools read are read within the caps
+on files from others, and one past a cap is refused with `E_TOO_LARGE` ([`limits.md`](limits.md)).
 
 | Tool | Purpose |
 |---|---|
