@@ -22,6 +22,7 @@ import {
   Session,
   type CommandCall,
   type Kind,
+  VERSION,
 } from '@mochi-maker/core';
 import { NodeFileSystem } from '@mochi-maker/core/node';
 import type { ReimportResult } from '@mochi-maker/art';
@@ -53,7 +54,6 @@ import {
   Project,
 } from '@mochi-maker/api';
 
-const VERSION = '0.0.0';
 const fs = new NodeFileSystem();
 
 class UsageError extends Error {}

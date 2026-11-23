@@ -9,9 +9,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Server } from 'node:http';
 import { join } from 'node:path';
-import { buildEditor, launch, serve, type Browser } from './harness.js';
+import { buildEditor, launch, serve, type Browser, type Page } from './harness.js';
 
 const required = process.env.MOCHI_MAKER_REQUIRE_RENDER === '1';
+/** For what follows a command that builds or exports: the condition, with room for a slow run. */
+const POLL = { timeout: 30_000 };
 const MODEL = join(import.meta.dirname, '../../../conformance/golden-5-glue/v5/model');
 let browser: Browser | null = null;
 let server: Server | undefined;
@@ -34,6 +36,21 @@ afterAll(async () => {
   server?.close();
 });
 
+/**
+ * Waits for the page's next model import to finish (with its report or a refusal), however long
+ * it takes, and returns how long it took: an import waits behind the preview build of the one
+ * before, which under load took up to about 0.9 s here. What follows an import is then checked
+ * at once, not polled for a time.
+ */
+async function imported(p: Page, before: number): Promise<number> {
+  const t = Date.now();
+  await p.waitForFunction((n) => window.mochiEditor.importsDone() > n, before, {
+    timeout: 120_000,
+  });
+  return Date.now() - t;
+}
+const importsDone = (p: Page) => p.evaluate(() => window.mochiEditor.importsDone());
+
 describe('model import in the editor', () => {
   it('shows the notice once, opens the folder as a project, and reports what it uses', async () => {
     if (!browser) return;
@@ -54,8 +71,10 @@ describe('model import in the editor', () => {
       p.waitForEvent('filechooser'),
       p.getByTestId('model-notice-ok').click(),
     ]);
+    let done = await importsDone(p);
     await chooser.setFiles(MODEL);
-    await expect.poll(() => p.getByTestId('import-report').count()).toBe(1);
+    await imported(p, done++);
+    expect(await p.getByTestId('import-report').count()).toBe(1);
     const report = (await p.getByTestId('import-report').textContent())!;
     expect(report).toMatch(/Imported golden5\.model3\.json \(\.moc3 version 5\)/);
     expect(report).toMatch(
@@ -64,10 +83,10 @@ describe('model import in the editor', () => {
     expect(await p.evaluate(() => window.mochiEditor.editor.name)).toBe('golden5');
     // Escape closes the report: it has the focus after the folder dialog.
     await p.keyboard.press('Escape');
-    await expect.poll(() => p.getByTestId('import-report').count()).toBe(0);
+    expect(await p.getByTestId('import-report').count()).toBe(0);
     // Where it came from, in the Project palette.
     await p.evaluate(() => window.mochiEditor.dock.show('project'));
-    await expect.poll(() => p.getByTestId('project-origin').count()).toBe(1);
+    await expect.poll(() => p.getByTestId('project-origin').count(), POLL).toBe(1);
     expect(await p.getByTestId('project-origin').textContent()).toMatch(
       /Imported from a \.moc3.*version 5/,
     );
@@ -82,7 +101,7 @@ describe('model import in the editor', () => {
     );
     await p.evaluate(() => window.mochiEditor.keymap.run('file.exportMoc'));
     await expect
-      .poll(() => p.getByTestId('status').textContent())
+      .poll(() => p.getByTestId('status').textContent(), POLL)
       .toMatch(/Glue is not available in this build\./);
     // The second import: no notice, straight to the folder dialog.
     const [again] = await Promise.all([
@@ -91,7 +110,8 @@ describe('model import in the editor', () => {
     ]);
     expect(await p.getByTestId('model-notice').count()).toBe(0);
     await again.setFiles(MODEL);
-    await expect.poll(() => p.getByTestId('import-report').count()).toBe(1);
+    await imported(p, done++);
+    expect(await p.getByTestId('import-report').count()).toBe(1);
     // An import while a report is still open replaces it: one report, the new one.
     await p.evaluate(() =>
       document.querySelector('[data-testid="import-report"]')!.setAttribute('data-old', ''),
@@ -101,7 +121,8 @@ describe('model import in the editor', () => {
       p.evaluate(() => window.mochiEditor.keymap.run('file.importModel')),
     ]);
     await third.setFiles(MODEL);
-    await expect.poll(() => p.locator('[data-testid="import-report"][data-old]').count()).toBe(0);
+    await imported(p, done++);
+    expect(await p.locator('[data-testid="import-report"][data-old]').count()).toBe(0);
     expect(await p.getByTestId('import-report').count()).toBe(1);
     expect(errors).toEqual([]);
     await p.close();

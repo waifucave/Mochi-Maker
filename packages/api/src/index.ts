@@ -31,6 +31,8 @@ export {
 export { contactSheet, difference, type DiffMetrics } from './images.js';
 export { openPackRenderer } from './conformance.js';
 export { readModelFolder, type ModelFolder } from './modelfolder.js';
+/** Mochi Maker's version (the API's, as every package's). */
+export { VERSION } from '@mochi-maker/core';
 // The standard parameter and parameter-group IDs, for agents that create parameters.
 export {
   STANDARD_ID_NOTE,

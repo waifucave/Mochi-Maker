@@ -1,7 +1,7 @@
 {
   "format": "mochi2d-result/0",
   "scenario": "golden-11-animation.v4.parts.half",
-  "producer": "mochi2d@0.24.0",
+  "producer": "mochi2d@0.24.1",
   "error": null,
   "canvas": {
     "width": 200,

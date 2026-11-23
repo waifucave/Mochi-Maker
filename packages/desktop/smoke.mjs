@@ -12,7 +12,9 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { _electron } from 'playwright-core';
-import { APP_ID } from './identity.mjs';
+import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { APP_ID, APP_VERSION } from './identity.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const platform = process.argv[2] ?? process.platform;
@@ -35,6 +37,15 @@ async function executable() {
 
 const t0 = Date.now();
 const step = (what) => console.log(`[${((Date.now() - t0) / 1000).toFixed(1)} s] ${what}`);
+/** A command's standard output, trimmed (60 s at most). */
+function output(cmd, args) {
+  return new Promise((resolve, reject) =>
+    execFile(cmd, args, { timeout: 60_000 }, (e, stdout) =>
+      e ? reject(new Error(`${cmd} ${args.join(' ')}: ${e.message}`)) : resolve(stdout.trim()),
+    ),
+  );
+}
+
 async function until(what, fn, timeout = 60_000) {
   const end = Date.now() + timeout;
   for (;;) {
@@ -60,6 +71,32 @@ try {
   ])
     if (!existsSync(join(folder, 'licenses', f))) throw new Error(`licenses/${f} is missing`);
   step('notices and license texts are in licenses/');
+  // The version: `--version` prints package.json's, and so do the bundle and the file properties.
+  const printed = await output(exe, [
+    '--version',
+    ...(platform === 'linux' ? ['--no-sandbox', '--ozone-platform=headless'] : []),
+  ]);
+  if (printed !== APP_VERSION)
+    throw new Error(`--version printed "${printed}", not ${APP_VERSION}`);
+  if (platform === 'darwin') {
+    const plist = await readFile(join(exe, '..', '..', 'Info.plist'), 'utf8');
+    const short = plist.match(/<key>CFBundleShortVersionString<\/key>\s*<string>([^<]*)</)?.[1];
+    if (short !== APP_VERSION)
+      throw new Error(`The bundle's version is ${short}, not ${APP_VERSION}`);
+  }
+  if (platform === 'win32') {
+    const props = await output('powershell', [
+      '-NoProfile',
+      '-Command',
+      `$v = (Get-Item -LiteralPath '${exe}').VersionInfo; "$($v.FileVersion)|$($v.ProductVersion)"`,
+    ]);
+    for (const v of props.split('|'))
+      if (!v.startsWith(APP_VERSION))
+        throw new Error(`The file properties say ${props}, not ${APP_VERSION}`);
+  }
+  step(
+    `version ${APP_VERSION}: --version${platform === 'darwin' ? ', the bundle' : ''}${platform === 'win32' ? ', the file properties' : ''}`,
+  );
   // macOS: the bundle carries the app identifier, and every helper's identifier derives from it.
   if (platform === 'darwin') {
     const contents = join(exe, '..', '..');
@@ -128,6 +165,43 @@ try {
   if (identity?.appUserModelId !== want)
     throw new Error(`AppUserModelID ${identity?.appUserModelId}, expected ${want}`);
   step(`AppUserModelID: ${identity.appUserModelId ?? 'not set (not Windows)'}`);
+  // The app's own icon, not Electron's: the window's on every system (read in the app, from its
+  // asar), the bundle's on macOS, and the executable's on Windows.
+  const sha = async (path) =>
+    createHash('sha256')
+      .update(await readFile(path))
+      .digest('hex');
+  const windowIcon = await app.evaluate((_electron, path) => {
+    const bytes = process.getBuiltinModule('node:fs').readFileSync(path);
+    return process.getBuiltinModule('node:crypto').createHash('sha256').update(bytes).digest('hex');
+  }, identity.windowIcon);
+  if (windowIcon !== (await sha(join(here, 'icons', 'icon-512.png'))))
+    throw new Error(`The window's icon (${identity.windowIcon}) is not the app's icon`);
+  let iconNote = 'the window';
+  if (platform === 'darwin') {
+    const contents = join(exe, '..', '..');
+    const plist = await readFile(join(contents, 'Info.plist'), 'utf8');
+    const file = plist.match(/<key>CFBundleIconFile<\/key>\s*<string>([^<]*)</)?.[1];
+    const icns = join(contents, 'Resources', file?.endsWith('.icns') ? file : `${file}.icns`);
+    if (!file || (await sha(icns)) !== (await sha(join(here, 'icons', 'mochi-maker.icns'))))
+      throw new Error(`The bundle's icon (${file}) is not the app's icon`);
+    iconNote += `, the bundle (${file})`;
+  }
+  if (platform === 'win32') {
+    // The executable's icon as Windows shows it, 32 × 32: white mochi in the middle, green above.
+    const px = await output('powershell', [
+      '-NoProfile',
+      '-Command',
+      `Add-Type -AssemblyName System.Drawing; $b = [System.Drawing.Icon]::ExtractAssociatedIcon('${exe}').ToBitmap(); foreach ($p in @(@(16,18), @(16,6))) { $c = $b.GetPixel($p[0], $p[1]); "$($c.R),$($c.G),$($c.B),$($c.A)" }`,
+    ]);
+    const [mid, top] = px.split(/\s+/).map((l) => l.split(',').map(Number));
+    const white = mid.slice(0, 3).every((v) => v > 230) && mid[3] > 230;
+    const green = top[1] > top[0] + 40 && top[1] > top[2] + 40 && top[3] > 230;
+    if (!white || !green)
+      throw new Error(`The executable's icon is not the app's (pixels ${px.replace(/\s+/g, ' ')})`);
+    iconNote += ', the executable';
+  }
+  step(`the app's icon: ${iconNote}`);
   await page.waitForFunction(() => window.mochi !== undefined, null, { timeout: 120_000 });
   step(`started: ${page.url()}`);
   // Glue and blend-shape authoring are off by default in every build.

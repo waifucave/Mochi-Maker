@@ -186,8 +186,7 @@ tested for:
 
 - the project's own exports: every golden project at versions 3, 4 and 5;
 - the synthetic models in the repository, written with Mochi2D's writer the way other software
-  might write them;
-- a real model checked locally by the project (not in the repository).
+  might write them.
 
 It is not promised for every file from other software. What is tested:
 

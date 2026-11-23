@@ -1,6 +1,6 @@
 {
   "name": "@mochi-maker/mcp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Mochi Maker's MCP server: few general tools plus discovery, resources and prompts, over stdio",
   "license": "MIT",
   "type": "module",
@@ -16,10 +16,10 @@
     "dist"
   ],
   "dependencies": {
-    "@mochi-maker/api": "0.0.0",
-    "@mochi-maker/art": "0.0.0",
-    "@mochi-maker/bridge": "0.0.0",
-    "@mochi-maker/core": "0.0.0",
-    "@mochi-maker/export": "0.0.0"
+    "@mochi-maker/api": "0.1.0",
+    "@mochi-maker/art": "0.1.0",
+    "@mochi-maker/bridge": "0.1.0",
+    "@mochi-maker/core": "0.1.0",
+    "@mochi-maker/export": "0.1.0"
   }
 }

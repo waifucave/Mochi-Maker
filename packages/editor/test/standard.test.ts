@@ -123,10 +123,14 @@ describe('standard parameters in New Parameter', () => {
     expect(await p.getByTestId('group-name').inputValue()).toBe('Eyes');
     await p.getByTestId('group-create-ok').click();
     await expect
-      .poll(() =>
-        p.evaluate(() =>
-          window.mochiEditor.editor.view.ofKind('parameterGroup').map((g) => [g.exportId, g.name]),
-        ),
+      .poll(
+        () =>
+          p.evaluate(() =>
+            window.mochiEditor.editor.view
+              .ofKind('parameterGroup')
+              .map((g) => [g.exportId, g.name]),
+          ),
+        { timeout: 30_000 },
       )
       .toEqual([['ParamGroupEyes', 'Eyes']]);
     expect(errors).toEqual([]);

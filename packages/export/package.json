@@ -1,6 +1,6 @@
 {
   "name": "@mochi-maker/export",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Mochi Maker's exporter: lowering to Mochi2D model data, texture atlas, runtime files, validation and the export report",
   "license": "MIT",
   "type": "module",
@@ -16,11 +16,11 @@
     "dist"
   ],
   "dependencies": {
-    "@mochi-maker/art": "0.0.0",
-    "@mochi-maker/core": "0.0.0",
-    "@mochi-maker/geometry": "0.0.0",
+    "@mochi-maker/art": "0.1.0",
+    "@mochi-maker/core": "0.1.0",
+    "@mochi-maker/geometry": "0.1.0",
     "@sinclair/typebox": "^0.34.52",
     "fflate": "0.8.3",
-    "mochi2d": "file:../../vendor/mochi2d-0.24.0.tgz"
+    "mochi2d": "file:../../vendor/mochi2d-0.24.1.tgz"
   }
 }

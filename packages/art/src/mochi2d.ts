@@ -30,38 +30,53 @@ export const FORMAT_NAMES: Record<TextureHeader['format'], string> = {
  * Mochi2D's error as a MochiError where it is one of its refusals (anything else is returned
  * as it is). `label` names what was read (an archive, a model).
  */
+/** `e` as an instance of `cls`, or an Error of the same name (module comment), or null. */
+function as<T>(e: unknown, cls: abstract new (...a: never[]) => T, name: string): T | null {
+  return e instanceof cls || (e instanceof Error && e.name === name) ? (e as T) : null;
+}
+
 export function fromMochi2d(e: unknown, label: string): unknown {
-  if (e instanceof ArchiveLimitError) {
-    if (e.kind === 'entries') return tooLarge(label, e.size, e.limit, 'files');
-    if (e.kind === 'total') return tooLarge(`${label}, all files read together,`, e.size, e.limit);
-    return tooLarge(`${label}: ${e.path}`, e.size, e.limit);
+  // Errors from Mochi2D's Node renderer are rebuilt in Node by name, from another bundle than
+  // mochi2d/headless: the same name and fields, another class. So the name is matched too.
+  const archive = as(e, ArchiveLimitError, 'ArchiveLimitError');
+  if (archive) {
+    const { kind, size, limit, path } = archive;
+    if (kind === 'entries') return tooLarge(label, size, limit, 'files');
+    if (kind === 'total') return tooLarge(`${label}, all files read together,`, size, limit);
+    return tooLarge(`${label}: ${path}`, size, limit);
   }
-  if (e instanceof FileLimitError) {
-    if (e.kind === 'total') return tooLarge(`${label}, all files together,`, e.size, e.limit);
-    return tooLarge(`${label}: ${e.path}`, e.size, e.limit);
+  const file = as(e, FileLimitError, 'FileLimitError');
+  if (file) {
+    if (file.kind === 'total')
+      return tooLarge(`${label}, all files together,`, file.size, file.limit);
+    return tooLarge(`${label}: ${file.path}`, file.size, file.limit);
   }
-  if (e instanceof TextureLimitError) {
-    const what = `${label}: the texture ${e.path}`;
-    const dims = `${e.width} × ${e.height} pixels`;
-    const err =
-      e.kind === 'total'
-        ? tooLarge(`${label}'s textures, together,`, e.size, e.limit, 'pixels')
-        : e.kind === 'side'
-          ? new MochiError(
-              'E_TOO_LARGE',
-              `${what} is too large: ${dims}, more than the ${e.limit} pixels a side Mochi Maker accepts.`,
-            )
-          : tooLarge(`${what} (${dims})`, e.size, e.limit, 'pixels');
-    return err;
+  const texture = as(e, TextureLimitError, 'TextureLimitError');
+  if (texture) {
+    const { kind, size, limit, path, width, height } = texture;
+    const what = `${label}: the texture ${path}`;
+    const dims = `${width} × ${height} pixels`;
+    if (kind === 'total') return tooLarge(`${label}'s textures, together,`, size, limit, 'pixels');
+    if (kind === 'side')
+      return new MochiError(
+        'E_TOO_LARGE',
+        `${what} is too large: ${dims}, more than the ${limit} pixels a side Mochi Maker accepts.`,
+      );
+    return tooLarge(`${what} (${dims})`, size, limit, 'pixels');
   }
-  if (e instanceof TextureFormatError)
-    return new MochiError('E_ASSET_FORMAT', `${label}: ${e.message}`);
-  if (e instanceof UnsupportedArchiveError)
-    return new MochiError('E_ASSET_FORMAT', `${label} is not a zip archive: ${e.message}`);
-  if (e instanceof ZipFormatError)
+  const format = as(e, TextureFormatError, 'TextureFormatError');
+  if (format) return new MochiError('E_ASSET_FORMAT', `${label}: ${format.message}`);
+  const unsupported = as(e, UnsupportedArchiveError, 'UnsupportedArchiveError');
+  if (unsupported)
     return new MochiError(
       'E_ASSET_FORMAT',
-      `${label} is damaged or is not a zip archive: ${e.message}`,
+      `${label} is not a zip archive: ${unsupported.message}`,
+    );
+  const zip = as(e, ZipFormatError, 'ZipFormatError');
+  if (zip)
+    return new MochiError(
+      'E_ASSET_FORMAT',
+      `${label} is damaged or is not a zip archive: ${zip.message}`,
     );
   return e;
 }

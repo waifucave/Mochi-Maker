@@ -86,8 +86,13 @@ describe('textures from others in the editor', () => {
             await p.getByTestId('model-notice-ok').click();
         })(),
       ]);
+      // Wait for the import itself (with its refusal), then check what it left.
+      const before = await p.evaluate(() => window.mochiEditor.importsDone());
       await chooser.setFiles(craftedModel(texture));
-      await expect.poll(() => status(p), { timeout: 30_000 }).toMatch(words);
+      await p.waitForFunction((n) => window.mochiEditor.importsDone() > n, before, {
+        timeout: 120_000,
+      });
+      expect(await status(p)).toMatch(words);
       expect(await p.getByTestId('import-report').count()).toBe(0);
     }
     expect(errors).toEqual([]);

@@ -5,6 +5,8 @@ import { build } from 'vite';
 import { cp, mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { builtinModules } from 'node:module';
+import { APP_VERSION } from './identity.mjs';
+import { ICON_DIR, buildIcons } from './icons.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const app = `${here}app`;
@@ -27,6 +29,9 @@ const lib = (entry, fileName, format) =>
     },
     ssr: { noExternal: true },
   });
+// The app icon, from its one source (icons.mjs): icons/ for the packager, and the window's own.
+await buildIcons();
+await cp(`${ICON_DIR}/icon-512.png`, `${app}/icon.png`);
 await lib('main.ts', 'main.js', 'es');
 await lib('preload.ts', 'preload.cjs', 'cjs');
 // The editor, built by its own config (npm run build:editor).
@@ -66,8 +71,8 @@ await writeFile(
     {
       name: 'mochi-maker',
       productName: 'Mochi Maker',
-      // The release's version on a tag (MOCHI_APP_VERSION, from v1.2.3), else 0.0.0.
-      version: (process.env.MOCHI_APP_VERSION || '0.0.0').replace(/^v/, ''),
+      // Mochi Maker's version (identity.mjs: the root package.json's).
+      version: APP_VERSION,
       // Windows packages need an author (the executable's company name).
       author: 'Mochi Maker contributors',
       type: 'module',

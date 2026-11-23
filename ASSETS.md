@@ -14,7 +14,8 @@ sample or website. No third-party art, models or sounds are committed.
 | The sample model «Mochi»: model settings, `.moc3`, texture, display info, physics and an idle motion | `samples/mochi/` | `packages/mcp/test/guide.test.ts`, which builds the guide's model through the MCP tools, adds the idle motion and exports it; `UPDATE_GUIDE=1` rewrites it, and the test fails when the committed folder differs from the export |
 | Sounds: golden 13's `voice.wav` (also in the pack) | `packages/export/test/golden/golden-13-sound.mochi/assets/`, `conformance/golden-13-sound/*/model/sounds/` | `squareWav` in `packages/export/test/golden.ts`, a one-second square wave |
 | Sounds made during tests (vowels for motion sync, lip sync) | not committed | the tests themselves (`packages/export/test/motionsync.test.ts` and others) |
+| The app icon: a white mochi on a green rounded square | `packages/editor/public/mochi-maker.svg` | written by hand for this project, as SVG source (no font, no third-party art, nothing traced). The editor uses it as its favicon; `packages/desktop/icons.mjs` rasterizes it into the desktop app's PNG, `.ico` and `.icns` at build time (not committed) |
 
-The editor and the desktop app ship no image, icon or sound files: the editor draws its interface
-with HTML, CSS and canvas code, and the desktop app uses Electron's default icon.
+Apart from that icon, the editor and the desktop app ship no image, icon or sound files: the editor
+draws its interface with HTML, CSS and canvas code.
 

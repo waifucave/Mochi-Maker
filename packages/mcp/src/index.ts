@@ -8,6 +8,7 @@ export {
   MAX_COMMANDS,
   PROTOCOL_VERSIONS,
   SERVER_NAME,
+  SERVER_VERSION,
   type ServerOptions,
 } from './server.js';
 export { serveStdio } from './stdio.js';

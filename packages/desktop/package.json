@@ -1,6 +1,6 @@
 {
   "name": "@mochi-maker/desktop",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Mochi Maker's desktop build: the editor in Electron, with files on disk and the bridge in the main process",
   "license": "MIT",
@@ -14,11 +14,12 @@
     "smoke": "node smoke.mjs"
   },
   "dependencies": {
-    "@mochi-maker/bridge": "0.0.0"
+    "@mochi-maker/bridge": "0.1.0"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",
     "electron": "44.9.2",
+    "fast-png": "8.0.0",
     "playwright-core": "1.63.0"
   }
 }

@@ -1,3 +1,4 @@
+import { VERSION } from '@mochi-maker/core';
 import { mkdtemp, readFile, rm, writeFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -149,7 +150,7 @@ describe('mochi-maker', () => {
       at: 0,
     });
     expect((await cli('frobnicate')).code).toBe(2);
-    expect(await cli('--version')).toMatchObject({ code: 0, stdout: '0.0.0\n' });
+    expect(await cli('--version')).toMatchObject({ code: 0, stdout: `${VERSION}\n` });
     expect((await cli('--help')).code).toBe(0);
     expect((await cli()).code).toBe(2);
     expect((await cli('run', p)).code).toBe(2);

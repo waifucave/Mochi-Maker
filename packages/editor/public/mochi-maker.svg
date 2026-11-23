@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Mochi Maker's icon, drawn by hand for the project (MIT License, as the rest of it): a white
+       mochi, a soft dome wider than tall, on a flat green rounded square. The desktop build
+       rasterizes this file (packages/desktop/icons.mjs), which reads only these two shapes. -->
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="#3f9b5a"/>
+  <path d="M 196 640 C 196 696 228 724 288 724 L 736 724 C 796 724 828 696 828 640 C 828 460 690 364 512 364 C 334 364 196 460 196 640 Z" fill="#ffffff"/>
+</svg>

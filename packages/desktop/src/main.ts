@@ -68,9 +68,20 @@ const TYPES: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 
+// `mochi-maker --version`: print the version (package.json's, through the build) and quit, before
+// anything opens.
+if (process.argv.slice(1).includes('--version')) {
+  process.stdout.write(`${app.getVersion()}\n`);
+  app.exit(0);
+}
+
 // The app identifier (Windows: before any window). The smoke test reads what was set.
 const appUserModelId = applyIdentity(app);
-(globalThis as { mochiDesktopIdentity?: unknown }).mochiDesktopIdentity = { appUserModelId };
+const WINDOW_ICON = join(here, 'icon.png');
+(globalThis as { mochiDesktopIdentity?: unknown }).mochiDesktopIdentity = {
+  appUserModelId,
+  windowIcon: WINDOW_ICON,
+};
 
 // Where the app keeps its data (auto-saves, recent projects, bridge tokens): MOCHI_DESKTOP_USER_DATA
 // moves it, for tests and portable use.
@@ -337,6 +348,8 @@ function createWindow(): BrowserWindow {
     width: 1400,
     height: 900,
     title: 'Mochi Maker',
+    // The app's icon (build.mjs): the window's and the taskbar's on Windows and Linux.
+    icon: WINDOW_ICON,
     show: process.env.MOCHI_DESKTOP_HIDDEN !== '1',
     webPreferences: {
       preload: join(here, 'preload.cjs'),

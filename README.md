@@ -44,17 +44,22 @@ The model in these pictures is «Mochi», the getting-started guide's example. I
 - model import: a `.moc3` model folder (versions 3 to 6) opens as an editable project, from the
   File menu, the command line (`mochi-maker import-model`), the API and the MCP server; exported
   again without an edit, it evaluates as the file did in the cases the tests cover: the project's
-  own exports, synthetic models from other writers, and a real model checked locally
-  ([`docs/import.md`](docs/import.md));
+  own exports, and synthetic models from other writers ([`docs/import.md`](docs/import.md));
 - a command-line tool.
 
 Glue and blend-shape authoring are not available in this build. Their code and tests are in the
 repository behind the feature flags `glue` and `blendShapes`, which are off by default
 ([`docs/core.md`](docs/core.md#feature-flags)). Projects that hold glue or blend shapes still open,
-but they do not export while the flags are off. Version 6 (offscreens and blend modes) is not
-started.
+but they do not export while the flags are off.
 
 See [`docs/roadmap.md`](docs/roadmap.md) for each milestone.
+
+## Download
+
+The desktop app for Windows, macOS and Linux is on the repository's
+[Releases page](../../releases): download the zip for your system, unzip it and start the app.
+The apps are pre-releases and not signed yet, so your system warns the first time you open one;
+each release's notes say what to do. To build from source instead, see below.
 
 ## Quick start
 
@@ -162,7 +167,7 @@ Packages live in `packages/`:
 - `editor`: the web app (Vite);
 - `desktop`: the desktop app (Electron).
 
-Mochi2D is pinned as `vendor/mochi2d-0.24.0.tgz`. Third-party packages are
+Mochi2D is pinned as `vendor/mochi2d-0.24.1.tgz`. Third-party packages are
 listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 **How it was made.** Most of this code was written by AI coding agents (Anthropic's Claude) under the direction of the project's maintainer, through the clean-room process in [CLEANROOM.md](CLEANROOM.md). Copyright may not subsist in every part of it. To the extent it does, it is licensed under the MIT License. Either way, it is provided as is, without warranty. Third-party code keeps its own licenses ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).

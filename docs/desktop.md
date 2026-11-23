@@ -20,6 +20,14 @@ must be) with Vite. Only `electron` and Node's built-in modules stay outside, so
 `out/Mochi Maker-<platform>-<arch>/`, with the app in `resources/app.asar`, Electron's `LICENSE`
 and `LICENSES.chromium.html` beside the executable, and no signature.
 
+**The icon.** The app's icon has one source, `packages/editor/public/mochi-maker.svg`, written by
+hand: a white mochi on a green rounded square. The editor uses it as its favicon. `build.mjs` runs
+`icons.mjs`, which rasterizes that file with its own small rasterizer (it reads only the file's
+rounded rectangle and paths) and fast-png. It writes `icons/`: PNGs from 16 to 1024 pixels, the
+Windows `.ico` and the macOS `.icns`. The packager embeds the `.ico` or `.icns`, and the window
+sets the 512-pixel PNG as its own icon (Linux has no icon in the file). The smoke test checks the
+window's icon on every system, the bundle's on macOS and the executable's on Windows.
+
 ### Windows and macOS: the Desktop workflow
 
 `.github/workflows/desktop.yml` builds the app on each system's own runner: Windows x64
@@ -43,20 +51,31 @@ The builds are unsigned:
 
 - **Windows:** SmartScreen warns on first start until the person chooses "Run anyway". An installer
   (Squirrel or MSI) is a later step.
-- **macOS:** an un-notarized app is quarantined when downloaded: the person opens it with
-  right-click › Open, or removes the flag (`xattr -dr com.apple.quarantine "Mochi Maker.app"`). A
+- **macOS:** an un-notarized app is quarantined when downloaded: the person allows it in System
+  Settings › Privacy & Security › Open Anyway (macOS 15 and later), opens it with right-click ›
+  Open (earlier versions), or removes the flag (`xattr -dr com.apple.quarantine "Mochi Maker.app"`). A
   universal build would join both architectures with `@electron/universal`.
 
-**Releases**. A version tag (`v0.1.0`) runs the four builds with the tag's version
-(`MOCHI_APP_VERSION`, the tag without its «v»), then the `release` job publishes a GitHub release:
+**Releases**. Mochi Maker has one version, the one in the root `package.json` (every package,
+the app's About and file properties through `identity.mjs`, the command line's `--version`, the
+MCP server, the bridge's host, and the files it writes; `packages/cli/test/version.test.ts` checks
+they agree). A release's tag is `v` plus that version:
 
-- a pre-release, while the apps are unsigned, titled «Mochi Maker 0.1.0»;
-- the four zipped apps;
-- the notes from `packages/desktop/release-notes.md`: what each zip is, and how to open an unsigned
-  app on each system.
+- the `check` job runs `packages/desktop/release-check.mjs` first: it fails, before anything is
+  built, unless the tag is `v` plus the version and `CHANGELOG.md` has a section for it;
+- the four builds follow, then the `release` job runs the same check again and publishes a GitHub
+  release:
+  - a pre-release, while the apps are unsigned, titled «Mochi Maker 0.1.0»;
+  - the four zipped apps;
+  - the notes from `packages/desktop/release-notes.md`: what Mochi Maker is, the four zips, what
+    each system says about an unsigned app and what to do, what works and what is switched off,
+    and where to report a problem.
 
-The repository is private, so its releases are too. To release: `git tag v0.1.0 && git push
-origin v0.1.0`.
+`mochi-maker --version` (the packaged app) prints the version and quits; the smoke test checks it,
+with the macOS bundle's version and the Windows file properties.
+
+To release, set the version in `package.json` (all packages), add its section to `CHANGELOG.md`,
+and push the tag `v<version>` on that commit.
 
 **Signing, for later.** Running the workflow by hand with «sign» checked runs the signing steps
 instead of the ad-hoc signature. They need these repository secrets, and fail naming the first one

@@ -116,6 +116,11 @@ declare global {
       expressions: ExpressionPalette;
       parts: PartsPalette;
       openFiles(files: Record<string, Uint8Array>, name?: string): Promise<void>;
+      /**
+       * How many model imports (File › Import Model…) have finished, with a report or a refusal:
+       * for tests, which wait for the next one rather than for a time.
+       */
+      importsDone(): number;
     };
   }
 }
@@ -284,6 +289,9 @@ function importModelCommand(): void {
 }
 let importReport: Dialog | null = null;
 /** Opens a model folder's files as a new project, and shows the import report. */
+/** Model imports finished, with a report or a refusal (window.mochiEditor.importsDone). */
+let importsDone = 0;
+
 async function importModelFiles(
   files: Map<string, Uint8Array>,
   fromDesktop = false,
@@ -312,6 +320,8 @@ async function importModelFiles(
     );
   } catch (e) {
     editor.report(e);
+  } finally {
+    importsDone++;
   }
 }
 modelInput.addEventListener('change', async () => {
@@ -321,6 +331,7 @@ modelInput.addEventListener('change', async () => {
   try {
     map = await folderBytes(files, LIMITS.model, 'The model folder');
   } catch (e) {
+    importsDone++;
     return editor.report(e);
   }
   await importModelFiles(map);
@@ -2804,6 +2815,7 @@ window.mochiEditor = {
     closeHomeOnOpen();
     await viewport.idle();
   },
+  importsDone: () => importsDone,
 };
 setTool('arrow');
 viewport.request(editor.doc, false);

@@ -1,7 +1,7 @@
 {
   "format": "mochi-maker-project",
   "version": 15,
-  "writer": "@mochi-maker/core 0.0.0",
+  "writer": "@mochi-maker/core 0.1.0",
   "seq": 21,
   "project": {
     "kind": "project",

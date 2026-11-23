@@ -1,6 +1,6 @@
 {
   "name": "@mochi-maker/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Mochi Maker's headless document core: model, commands, transactions, history and the project format",
   "license": "MIT",
   "type": "module",
@@ -21,6 +21,6 @@
   ],
   "dependencies": {
     "@sinclair/typebox": "^0.34.52",
-    "@mochi-maker/geometry": "0.0.0"
+    "@mochi-maker/geometry": "0.1.0"
   }
 }

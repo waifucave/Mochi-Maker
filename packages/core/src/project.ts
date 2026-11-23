@@ -15,6 +15,7 @@
 import { decode, encode, type JsonTree } from './codec.js';
 import { DocView, compareUids, type Document } from './document.js';
 import { MochiError } from './errors.js';
+import { VERSION } from './version.js';
 import { Budget, LIMITS, isTooLarge, readCapped, tooLarge } from './limits.js';
 import { FolderAssetStore, joinPath, type AssetStore, type FileSystem } from './fs.js';
 import { checkInvariants } from './invariants.js';
@@ -24,7 +25,7 @@ import type { Kind } from './schema.js';
 
 export const PROJECT_FORMAT = 'mochi-maker-project';
 export const PROJECT_VERSION = 15;
-export const WRITER = '@mochi-maker/core 0.0.0';
+export const WRITER = `@mochi-maker/core ${VERSION}`;
 export const MANIFEST = 'mochi-project.json';
 
 /** Files of one project version, as parsed JSON by relative path. Migrations edit it in place. */

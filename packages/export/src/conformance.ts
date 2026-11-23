@@ -12,7 +12,7 @@
  * (`render.random.<seed>.<i>`). Animations run where the project has them: each motion, each
  * expression, physics (with wind), and the pose, at 30 frames a second.
  */
-import { DocView, sha256Hex, type AssetStore, type Document } from '@mochi-maker/core';
+import { DocView, sha256Hex, type AssetStore, type Document, VERSION } from '@mochi-maker/core';
 import { MOCHI2D_VERSION, formatResultJson, readMoc, scenarioResult } from 'mochi2d/headless';
 import { exportModel, type ExportResult } from './export.js';
 
@@ -553,7 +553,7 @@ export async function conformancePack(
   const seed = options.seed ?? 1;
   const randomPoses = options.randomPoses ?? 8;
   const renderPoses = Math.min(options.renderPoses ?? 3, randomPoses);
-  const producer = options.producer ?? '@mochi-maker/export 0.0.0';
+  const producer = options.producer ?? `@mochi-maker/export ${VERSION}`;
   const files = new Map<string, Uint8Array>();
   const entries: PackEntry[] = [];
   for (const project of projects) {

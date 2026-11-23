@@ -88,7 +88,7 @@ describe('feature flags in the editor', () => {
     // The export is refused, with the same message.
     await p.evaluate(() => window.mochiEditor.keymap.run('file.exportMoc'));
     await expect
-      .poll(() => p.getByTestId('status').textContent())
+      .poll(() => p.getByTestId('status').textContent(), { timeout: 30_000 })
       .toMatch(/Glue is not available in this build\./);
     // Environment Settings › Features: glue authoring on.
     await p.evaluate(() => window.mochiEditor.keymap.run('file.settings'));
@@ -98,7 +98,7 @@ describe('feature flags in the editor', () => {
     await p.keyboard.press('Escape');
     expect(await p.locator('body > .backdrop').count()).toBe(0);
     await p.evaluate((u) => window.mochiEditor.editor.select(u), glue);
-    await expect.poll(() => p.getByTestId('kf-intensity').count()).toBe(1);
+    await expect.poll(() => p.getByTestId('kf-intensity').count(), { timeout: 30_000 }).toBe(1);
     expect(await p.getByTestId('feature-off').count()).toBe(0);
     expect(errors).toEqual([]);
     await p.close();

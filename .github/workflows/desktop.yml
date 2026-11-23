@@ -26,7 +26,19 @@ permissions:
   contents: read
 
 jobs:
+  # The release gate, before anything is built: the version in package.json has a section in
+  # CHANGELOG.md, and on a tag, the tag is v plus that version (packages/desktop/release-check.mjs).
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release check
+        env:
+          TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
+        run: node packages/desktop/release-check.mjs "$TAG"
+
   package:
+    needs: check
     name: ${{ matrix.platform }}-${{ matrix.arch }}
     strategy:
       fail-fast: false
@@ -42,8 +54,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
-      # On a version tag, the app's version (the tag v0.1.0; the scripts drop the v); otherwise 0.0.0.
-      MOCHI_APP_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+      # The app's version is package.json's (packages/desktop/identity.mjs); a tag must match it.
       APP_DIR: packages/desktop/out/Mochi Maker-${{ matrix.platform }}-${{ matrix.arch }}
       ARCHIVE: mochi-maker-${{ matrix.platform }}-${{ matrix.arch }}.zip
     steps:
@@ -141,7 +152,7 @@ jobs:
   # On a version tag: a GitHub release (a pre-release, while the apps are unsigned) with the four
   # zipped apps and the notes in packages/desktop/release-notes.md.
   release:
-    needs: package
+    needs: [check, package]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
@@ -153,6 +164,11 @@ jobs:
           pattern: mochi-maker-*
           path: dist
           merge-multiple: true
+      # Again, right before publishing: nothing is published unless the tag is the version.
+      - name: Release check
+        env:
+          TAG: ${{ github.ref_name }}
+        run: node packages/desktop/release-check.mjs "$TAG"
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}

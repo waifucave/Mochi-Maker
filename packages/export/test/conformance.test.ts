@@ -2,6 +2,7 @@
  * The conformance pack (M12): every golden at versions 3, 4 and 5, scenarios in
  * Mochi2D's catalog formats with Mochi2D's results, and coverage of every writer path.
  */
+import { VERSION } from '@mochi-maker/core';
 import { describe, expect, it } from 'vitest';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -17,7 +18,7 @@ import { GOLDENS, golden1, golden16 } from './golden.js';
 
 /** The committed pack, for other implementations: `UPDATE_PACK=1` rewrites it from the goldens. */
 const PACK_DIR = join(import.meta.dirname, '../../../conformance');
-const PRODUCER = 'mochi-maker 0.0.0';
+const PRODUCER = `mochi-maker ${VERSION}`;
 
 let all: Promise<Pack> | undefined;
 const pack = () =>

@@ -1,6 +1,6 @@
 {
   "format": "mochi2d-anim-result/0",
-  "producer": "mochi2d@0.24.0",
+  "producer": "mochi2d@0.24.1",
   "error": null,
   "warnings": [],
   "scenario": "golden-12-motions.v3.motion.TapBody.0",

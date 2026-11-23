@@ -14,6 +14,7 @@ import {
   type CommandCall,
   type Kind,
   type QueryOptions,
+  VERSION,
 } from '@mochi-maker/core';
 import { diffDocuments, errorJson } from '@mochi-maker/api/browser';
 import { exportModel, type ExportOptions } from '@mochi-maker/export';
@@ -204,7 +205,7 @@ export class BridgeHost extends Emitter<HostEvents> {
           type: 'host_hello',
           protocol: PROTOCOL,
           app: 'mochi-maker',
-          version: '0.0.0',
+          version: VERSION,
         };
         const token = this.storedToken();
         if (token) hello.hostToken = token;

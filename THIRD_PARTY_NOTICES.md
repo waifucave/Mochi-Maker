@@ -4,17 +4,21 @@ Mochi Maker uses the following open-source packages at run time. Each is used
 as published on npm, unmodified. Their full license texts are in their packages
 (`node_modules/<name>/LICENSE`), and every desktop package carries them in its `licenses/` folder.
 
+The app icon (`packages/editor/public/mochi-maker.svg`, and the PNG, `.ico` and `.icns` files the
+desktop build makes from it) is the project's own, drawn for it, under the project's license
+([MIT](LICENSE)); `ASSETS.md` says how it is made.
+
 | Package | Version | License | Copyright | Used by | Purpose |
 |---|---|---|---|---|---|
 | [@sinclair/typebox](https://github.com/sinclairzx81/typebox) | 0.34.52 | MIT | Copyright (c) 2017-2026 Haydn Paterson | core, art | JSON Schema and static types for commands and the document |
 | [ag-psd](https://github.com/Agamnentzar/ag-psd) | 31.0.3 | MIT | Copyright (c) 2016 Agamnentzar | art, editor | reading PSD files; writing the PSD of the pose |
 | [pako](https://github.com/nodeca/pako) | 2.1.0 | MIT AND Zlib | Copyright (C) 2014-2017 by Vitaly Puzrin and Andrei Tuputcyn | art (through ag-psd) | zlib decompression |
 | [base64-js](https://github.com/beatgammit/base64-js) | 1.5.1 | MIT | Copyright (c) 2014 Jameson Little | art (through ag-psd) | base64 |
-| [fast-png](https://github.com/image-js/fast-png) | 8.0.0 | MIT | Copyright (c) 2015 Michaël Zasso | art | PNG decoding and encoding |
+| [fast-png](https://github.com/image-js/fast-png) | 8.0.0 | MIT | Copyright (c) 2015 Michaël Zasso | art, desktop (build) | PNG decoding and encoding; the app icon's PNGs at build time |
 | [iobuffer](https://github.com/image-js/iobuffer) | 6.0.1 | MIT | Copyright (c) 2015 Michaël Zasso | art (through fast-png) | binary buffers |
-| [fflate](https://github.com/101arrowz/fflate) | 0.8.3 | MIT | Copyright (c) 2026 Arjun Barrett | art, export, cli, editor | unzipping OpenRaster files; deflate for PNG; zipped exports; opening and saving zipped projects in the editor |
+| [fflate](https://github.com/101arrowz/fflate) | 0.8.3 | MIT | Copyright (c) 2026 Arjun Barrett | art, export, cli, editor | deflate for PNG; zipped exports; saving zipped projects in the editor |
 | [ws](https://github.com/websockets/ws) | 8.22.0 | MIT | Copyright (c) 2011 Einar Otto Stangvik, (c) 2013 Arnout Kazemier and contributors, (c) 2016 Luigi Pinca and contributors | bridge, mcp, cli | the live bridge's WebSocket server and Node client |
-| Mochi2D | 0.24.0 | MIT | Copyright (c) 2026 Mochi2D contributors | art, export, api, cli, editor | model data, writer, validator, loading and evaluation; zip reading; the editor’s view (its browser bundle) |
+| Mochi2D | 0.24.1 | MIT | Copyright (c) 2026 Mochi2D contributors | art, export, api, cli, editor | model data, writer, validator, loading and evaluation; zip reading; the editor’s view (its browser bundle) |
 | [mp4-muxer](https://github.com/Vanilagy/mp4-muxer) | 5.2.2 | MIT | Copyright (c) 2023 Vanilagy | editor | MP4 files for the video export |
 | [Electron](https://github.com/electron/electron) | 44.9.2 | MIT | Copyright (c) Electron contributors, Copyright (c) 2013-2020 GitHub Inc. | desktop | the desktop app's shell |
 

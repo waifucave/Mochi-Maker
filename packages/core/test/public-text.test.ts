@@ -49,6 +49,11 @@ const PATTERNS: [RegExp, string][] = [
     'wording to keep out of model import',
   ],
   [/Cubism 5\.1/, 'a product version used as a reference'],
+  // What the project states in public rests on what the repository holds and tests.
+  [
+    /\breal models? checked locally\b|\bchecked locally by the project\b/i,
+    'a check the repository does not hold',
+  ],
   [/\bclone of\b|\balternative to\b|\bdrop-in replacement\b/i, 'a description to avoid'],
   [
     /\bofficial (runtime|editor|sdk|software|documentation|manual|renderer|viewer|app)\b/i,

@@ -1,6 +1,6 @@
 {
   "name": "@mochi-maker/geometry",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Mochi Maker's geometry: contour tracing, simplification, constrained Delaunay triangulation and mesh topology operations",
   "license": "MIT",
   "type": "module",

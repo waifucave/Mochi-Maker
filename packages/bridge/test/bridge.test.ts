@@ -12,6 +12,7 @@ import {
   BridgeClient,
   BridgeCallError,
   BridgeServer,
+  BRIDGE_VERSION,
   MAX_MESSAGE,
   type CommandInfo,
 } from '@mochi-maker/bridge';
@@ -125,7 +126,7 @@ describe('the bridge', () => {
     );
     expect(info).toEqual({
       app: 'mochi-maker',
-      version: '0.0.0',
+      version: BRIDGE_VERSION,
       protocol: 1,
       studio: { connected: false },
       endpoints: { host: '/host', api: '/api' },

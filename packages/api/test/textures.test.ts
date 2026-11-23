@@ -14,7 +14,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 import { zipSync } from 'fflate';
 import { LIMITS, MemoryAssetStore, MochiError, saveProject } from '@mochi-maker/core';
 import { NodeFileSystem } from '@mochi-maker/core/node';
-import { decodePng, readArt } from '@mochi-maker/art';
+import { decodePng, fromMochi2d, readArt } from '@mochi-maker/art';
 import { BUILD_TEXTURES, exportModel, importModel, type ExportProblem } from '@mochi-maker/export';
 import { Project } from '@mochi-maker/api';
 import { MochiMcpServer } from '@mochi-maker/mcp';
@@ -288,5 +288,67 @@ describe.runIf(renderer !== null || required)('Mochi2D’s render, with the caps
     const lie = await model(LIE);
     const f = await renderer!.render(lie.files, lie.settings, size).catch((x: unknown) => x);
     expect(f).toMatchObject({ name: 'TextureFormatError' });
+    // The renderer's errors are rebuilt in Node by name, from another bundle than the one
+    // Mochi Maker imports: fromMochi2d still knows them, by name.
+    expect(fromMochi2d(e, 'The model')).toMatchObject({
+      code: 'E_TOO_LARGE',
+      message: expect.stringMatching(/texture_00\.png \(16384 × 16384 pixels\) is too large/),
+    });
+    expect(fromMochi2d(f, 'The model')).toMatchObject({
+      code: 'E_ASSET_FORMAT',
+      message: expect.stringMatching(/declares 8000×8000 pixels but is \d+ bytes/),
+    });
   }, 120_000);
+});
+
+describe('Mochi2D’s refusals by name', () => {
+  /** An error as Mochi2D's Node renderer hands it back: a plain Error with the name and fields. */
+  const named = (name: string, fields: Record<string, unknown>) =>
+    Object.assign(new Error(`${name} from the page`), { name, ...fields });
+
+  it('maps every refusal by its name, whatever its class', () => {
+    const cases: [Error, string, RegExp][] = [
+      [
+        named('FileLimitError', { kind: 'file', path: 'a.png', limit: 64, size: 99 }),
+        'E_TOO_LARGE',
+        /m: a\.png is too large: 99 bytes/,
+      ],
+      [
+        named('FileLimitError', { kind: 'total', path: 'm', limit: 64, size: 99 }),
+        'E_TOO_LARGE',
+        /all files together, is too large/,
+      ],
+      [
+        named('ArchiveLimitError', { kind: 'entries', path: 'm', limit: 2, size: 3 }),
+        'E_TOO_LARGE',
+        /3 files, more than the 2 files/,
+      ],
+      [
+        named('TextureLimitError', {
+          kind: 'side',
+          path: 't.png',
+          limit: 16384,
+          size: 20000,
+          width: 20000,
+          height: 1,
+        }),
+        'E_TOO_LARGE',
+        /t\.png is too large: 20000 × 1 pixels/,
+      ],
+      [
+        named('TextureFormatError', { path: 't.png' }),
+        'E_ASSET_FORMAT',
+        /TextureFormatError from the page/,
+      ],
+      [named('ZipFormatError', {}), 'E_ASSET_FORMAT', /damaged or is not a zip archive/],
+    ];
+    for (const [e, code, words] of cases)
+      expect(fromMochi2d(e, 'm'), e.name).toMatchObject({
+        code,
+        message: expect.stringMatching(words),
+      });
+    // Anything else is left as it is.
+    const other = new Error('something else');
+    expect(fromMochi2d(other, 'm')).toBe(other);
+  });
 });

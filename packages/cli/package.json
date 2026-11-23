@@ -1,6 +1,6 @@
 {
   "name": "@mochi-maker/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The mochi-maker command-line tool",
   "license": "MIT",
   "type": "module",
@@ -12,12 +12,12 @@
     "dist"
   ],
   "dependencies": {
-    "@mochi-maker/api": "0.0.0",
-    "@mochi-maker/art": "0.0.0",
-    "@mochi-maker/bridge": "0.0.0",
-    "@mochi-maker/core": "0.0.0",
-    "@mochi-maker/export": "0.0.0",
-    "@mochi-maker/mcp": "0.0.0",
+    "@mochi-maker/api": "0.1.0",
+    "@mochi-maker/art": "0.1.0",
+    "@mochi-maker/bridge": "0.1.0",
+    "@mochi-maker/core": "0.1.0",
+    "@mochi-maker/export": "0.1.0",
+    "@mochi-maker/mcp": "0.1.0",
     "fflate": "0.8.3"
   }
 }

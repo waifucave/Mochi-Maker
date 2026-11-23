@@ -15,6 +15,7 @@ import {
   objectSchema,
   type CommandScope,
   type Kind,
+  VERSION,
 } from '@mochi-maker/core';
 import {
   OBJECT_SCHEMAS,
@@ -29,7 +30,7 @@ import { PathPolicy } from './paths.js';
 import { PROMPTS } from './prompts.js';
 
 export const SERVER_NAME = 'mochi-maker';
-export const SERVER_VERSION = '0.0.0';
+export const SERVER_VERSION = VERSION;
 export const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 export const MAX_COMMANDS = 10_000;
 export const MAX_CALLS_PER_SECOND = 30;

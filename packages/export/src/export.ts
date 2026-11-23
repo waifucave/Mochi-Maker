@@ -20,6 +20,7 @@ import {
   type Document,
   type DocReader,
   type Uid,
+  VERSION,
 } from '@mochi-maker/core';
 import { decodePng, encodePng } from '@mochi-maker/art';
 import type { Image } from '@mochi-maker/geometry';
@@ -533,7 +534,7 @@ export async function exportModel(
   const report: ExportReport = {
     format: EXPORT_REPORT_FORMAT,
     version: 1,
-    producer: `@mochi-maker/export 0.0.0 with mochi2d ${MOCHI2D_VERSION}`,
+    producer: `@mochi-maker/export ${VERSION} with mochi2d ${MOCHI2D_VERSION}`,
     mocVersion: version,
     versionReason,
     files: fileList,

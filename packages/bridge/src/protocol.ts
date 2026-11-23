@@ -7,7 +7,8 @@
 export const PROTOCOL = 1;
 export const DEFAULT_PORT = 47831;
 export const APP = 'mochi-maker';
-export const BRIDGE_VERSION = '0.0.0';
+/** Mochi Maker's version (core's VERSION; the bridge does not depend on the core). */
+export const BRIDGE_VERSION = '0.1.0';
 /** Largest message, in bytes. */
 export const MAX_MESSAGE = 16 * 1024 * 1024;
 /** A client must say hello within this time. */

@@ -1,6 +1,6 @@
 {
   "name": "mochi-maker-workspace",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Mochi Maker: an agent-first editor that exports models for Live2D Cubism-compatible apps",
   "license": "MIT",
@@ -33,7 +33,7 @@
     "build:editor": "npm run build -w @mochi-maker/editor"
   },
   "dependencies": {
-    "mochi2d": "file:vendor/mochi2d-0.24.0.tgz"
+    "mochi2d": "file:vendor/mochi2d-0.24.1.tgz"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

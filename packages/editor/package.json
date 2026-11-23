@@ -1,6 +1,6 @@
 {
   "name": "@mochi-maker/editor",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Mochi Maker's editor: a web app over the command layer, previewing through Mochi2D",
   "license": "MIT",
@@ -10,14 +10,14 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@mochi-maker/api": "0.0.0",
-    "@mochi-maker/art": "0.0.0",
-    "@mochi-maker/core": "0.0.0",
-    "@mochi-maker/export": "0.0.0",
-    "@mochi-maker/geometry": "0.0.0",
+    "@mochi-maker/api": "0.1.0",
+    "@mochi-maker/art": "0.1.0",
+    "@mochi-maker/core": "0.1.0",
+    "@mochi-maker/export": "0.1.0",
+    "@mochi-maker/geometry": "0.1.0",
     "ag-psd": "31.0.3",
     "fflate": "0.8.3",
-    "mochi2d": "file:../../vendor/mochi2d-0.24.0.tgz",
+    "mochi2d": "file:../../vendor/mochi2d-0.24.1.tgz",
     "mp4-muxer": "5.2.2"
   },
   "devDependencies": {

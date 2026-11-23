@@ -10,7 +10,7 @@ import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { APP_ID, MAC_CATEGORY } from './identity.mjs';
+import { APP_ID, APP_VERSION, MAC_CATEGORY } from './identity.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -28,13 +28,16 @@ const paths = await packager({
   out: join(here, 'out'),
   name: 'Mochi Maker',
   executableName: 'mochi-maker',
-  appVersion: (process.env.MOCHI_APP_VERSION || '0.0.0').replace(/^v/, ''),
+  appVersion: APP_VERSION,
   appCopyright: 'Mochi Maker contributors, MIT License',
   electronVersion,
   platform,
   arch,
   // macOS: the bundle ID; the helpers' IDs derive from it (<id>.helper…, <id>.loginhelper).
   appBundleId: APP_ID,
+  // The app icon (build.mjs makes it): the packager takes the .icns on macOS and the .ico on
+  // Windows; Linux has none in the file, and the window sets its own (main.ts).
+  icon: join(here, 'icons', 'mochi-maker'),
   appCategoryType: MAC_CATEGORY,
   asar: true,
   overwrite: true,

@@ -6,6 +6,7 @@
  */
 export * from './errors.js';
 export * from './limits.js';
+export { VERSION } from './version.js';
 export * from './f32.js';
 export * from './schema.js';
 export * from './model.js';
