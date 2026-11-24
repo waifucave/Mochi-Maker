@@ -19,6 +19,10 @@ on:
         description: 'Also build the macOS x64 app (always on tags; macOS minutes cost ten times)'
         type: boolean
         default: false
+      release:
+        description: 'Make the release: create the tag v<version> and the pre-release at this commit (on main only)'
+        type: boolean
+        default: false
   push:
     tags: ['v*']
 
@@ -26,16 +30,22 @@ permissions:
   contents: read
 
 jobs:
-  # The release gate, before anything is built: the version in package.json has a section in
-  # CHANGELOG.md, and on a tag, the tag is v plus that version (packages/desktop/release-check.mjs).
+  # The release gate, before anything is built (packages/desktop/release-check.mjs): the version
+  # in package.json has a section in CHANGELOG.md, and when the run makes a release, either the
+  # pushed tag is v plus that version, or (by hand, with «release») the run is on main and the tag
+  # does not exist yet; in both, no release for it exists, published or draft. Write access only
+  # so that the token can see draft releases; this job changes nothing.
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Release check
         env:
-          TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
-        run: node packages/desktop/release-check.mjs "$TAG"
+          GH_TOKEN: ${{ github.token }}
+          RELEASE: ${{ inputs.release }}
+        run: node packages/desktop/release-check.mjs --github
 
   package:
     needs: check
@@ -48,7 +58,7 @@ jobs:
       # entry, so the list itself is chosen.
       matrix:
         include: >-
-          ${{ fromJSON((startsWith(github.ref, 'refs/tags/v') || inputs.macos_x64)
+          ${{ fromJSON((startsWith(github.ref, 'refs/tags/v') || inputs.macos_x64 || inputs.release)
           && '[{"os":"windows-latest","platform":"win32","arch":"x64"},{"os":"macos-15","platform":"darwin","arch":"arm64"},{"os":"macos-15","platform":"darwin","arch":"x64"},{"os":"ubuntu-latest","platform":"linux","arch":"x64"}]'
           || '[{"os":"windows-latest","platform":"win32","arch":"x64"},{"os":"macos-15","platform":"darwin","arch":"arm64"},{"os":"ubuntu-latest","platform":"linux","arch":"x64"}]') }}
     runs-on: ${{ matrix.os }}
@@ -149,14 +159,26 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  # On a version tag: a GitHub release (a pre-release, while the apps are unsigned) with the four
-  # zipped apps and the notes in packages/desktop/release-notes.md.
+  # The release, when the run makes one: on a pushed tag v<version>, or by hand with «release»
+  # (the tag is then created with the release, at the run's commit). One path for both starts:
+  # the gate again, a draft pre-release with the four zips and the notes, every file downloaded
+  # back and compared with what was built, then published. Only the draft's creation differs: a
+  # pushed tag must exist (--verify-tag); by hand, the release names its commit (--target).
+  # Nothing half-made is left: a draft that fails is deleted, and a release published by this run
+  # that fails its last check is deleted with the tag it created. A tag made with the run's own
+  # token starts no workflow run, so publishing does not start this workflow again.
   release:
     needs: [check, package]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release)
     runs-on: ubuntu-latest
+    # Two release runs never overlap: the second waits, then stops at the gate.
+    concurrency:
+      group: desktop-release
+      cancel-in-progress: false
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -164,17 +186,61 @@ jobs:
           pattern: mochi-maker-*
           path: dist
           merge-multiple: true
-      # Again, right before publishing: nothing is published unless the tag is the version.
+      # Again, right before the release is created.
       - name: Release check
+        id: gate
         env:
-          TAG: ${{ github.ref_name }}
-        run: node packages/desktop/release-check.mjs "$TAG"
-      - name: Publish the release
+          RELEASE: ${{ inputs.release }}
+        run: node packages/desktop/release-check.mjs --github
+      - name: Create the draft
         env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ steps.gate.outputs.tag }}
+          VERSION: ${{ steps.gate.outputs.version }}
+          START: ${{ steps.gate.outputs.start }}
         run: |
           ls -l dist
-          sed "s/{{version}}/${TAG#v}/g" packages/desktop/release-notes.md > notes.md
-          gh release create "$TAG" dist/*.zip --prerelease --verify-tag \
-            --title "Mochi Maker ${TAG#v}" --notes-file notes.md
+          test "$(ls dist/*.zip | wc -l)" = 4
+          sed "s/{{version}}/$VERSION/g" packages/desktop/release-notes.md > notes.md
+          if [ "$START" = tag ]; then where=(--verify-tag); else where=(--target "$GITHUB_SHA"); fi
+          gh release create "$TAG" dist/*.zip --draft --prerelease "${where[@]}" \
+            --title "Mochi Maker $VERSION" --notes-file notes.md
+      - name: Check the draft's files against the build
+        env:
+          TAG: ${{ steps.gate.outputs.tag }}
+        run: |
+          gh release download "$TAG" --dir back
+          (cd dist && sha256sum *.zip) > built.sha256
+          (cd back && sha256sum *) > back.sha256
+          diff built.sha256 back.sha256
+          cat back.sha256
+      - name: Publish
+        id: publish
+        env:
+          TAG: ${{ steps.gate.outputs.tag }}
+        run: |
+          gh release edit "$TAG" --draft=false
+          echo "published=true" >> "$GITHUB_OUTPUT"
+      - name: Check the tag and the release
+        env:
+          TAG: ${{ steps.gate.outputs.tag }}
+        run: |
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)
+          test "$sha" = "$GITHUB_SHA" || { echo "The tag $TAG is at $sha, not $GITHUB_SHA"; exit 1; }
+          gh release view "$TAG" --json isDraft,isPrerelease,tagName,name \
+            --jq 'if .isDraft or (.isPrerelease | not) then error("not a published pre-release") else . end'
+      # Whatever failed: no draft left, and no release (or tag) this run made public.
+      - name: Clean up after a failure
+        if: failure()
+        env:
+          TAG: ${{ steps.gate.outputs.tag }}
+          START: ${{ steps.gate.outputs.start }}
+          PUBLISHED: ${{ steps.publish.outputs.published }}
+        run: |
+          [ -n "$TAG" ] || exit 0
+          draft=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"$TAG\" and .draft) | .id")
+          for id in $draft; do gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"; done
+          if [ "$PUBLISHED" = true ]; then
+            if [ "$START" = dispatch ]; then gh release delete "$TAG" --yes --cleanup-tag
+            else gh release delete "$TAG" --yes; fi
+          fi

@@ -35,7 +35,7 @@ window's icon on every system, the bundle's on macOS and the executable's on Win
 is smoke-tested under Rosetta 2: the Intel runner (`macos-15-intel`) has no GPU, and there the
 editor's view finds no WebGL2 (software GL does not start on that VM either), so the editor does
 not come up. It runs by hand (Actions › Desktop › Run workflow) and on version tags (`v*`). The macOS x64 job runs
-on tags, and by hand only with «macos_x64» checked, since macOS minutes cost ten times a
+on tags, and by hand only with «macos_x64» or «release» checked, since macOS minutes cost ten times a
 Linux minute. Each job:
 
 1. installs, builds the packages and the editor, and packages the app with `package.mjs`;
@@ -59,23 +59,58 @@ The builds are unsigned:
 **Releases**. Mochi Maker has one version, the one in the root `package.json` (every package,
 the app's About and file properties through `identity.mjs`, the command line's `--version`, the
 MCP server, the bridge's host, and the files it writes; `packages/cli/test/version.test.ts` checks
-they agree). A release's tag is `v` plus that version:
+they agree). A release's tag is `v` plus that version.
 
-- the `check` job runs `packages/desktop/release-check.mjs` first: it fails, before anything is
-  built, unless the tag is `v` plus the version and `CHANGELOG.md` has a section for it;
-- the four builds follow, then the `release` job runs the same check again and publishes a GitHub
-  release:
-  - a pre-release, while the apps are unsigned, titled «Mochi Maker 0.1.0»;
-  - the four zipped apps;
-  - the notes from `packages/desktop/release-notes.md`: what Mochi Maker is, the four zips, what
-    each system says about an unsigned app and what to do, what works and what is switched off,
-    and where to report a problem.
+**Making a release.** Set the version in `package.json` (all packages) and add its section to
+`CHANGELOG.md`, on `main`. Then start the release in one of two ways:
+
+- **From the Actions page:** only people with write access to the repository can run a workflow
+  by hand. Open **Actions**, choose the **Desktop** workflow, and choose **Run workflow** on the
+  branch `main` with «release» checked. The release creates the tag `v<version>` itself, at the
+  commit the run started on.
+- **With a tag:** push the tag `v<version>` on that commit.
+
+A run by hand without «release» builds and smoke-tests the apps, and releases nothing.
+
+**The gate.** The `check` job runs `packages/desktop/release-check.mjs --github` before anything
+is built. It fails, and nothing is built, unless:
+
+- `CHANGELOG.md` has a section for the version;
+- on a pushed tag, the tag is `v` plus the version;
+- by hand with «release», the run is on `main`, and the tag `v<version>` does not exist yet;
+- in both, no release exists for the tag, published or draft.
+
+Each problem is named: for example «The tag v0.1.0 exists already: the release exists, or was made
+by a tag. Nothing is built.» A run by hand without «release» checks only the version and the
+changelog.
+
+**The release job.** After the four builds (the macOS x64 app is always built for a release), it:
+
+1. runs the same gate again;
+2. creates a draft pre-release with the four zipped apps, titled «Mochi Maker 0.1.0», and the
+   notes from `packages/desktop/release-notes.md`: what Mochi Maker is, the four zips, what each
+   system says about an unsigned app and what to do, what works and what is switched off, and
+   where to report a problem;
+3. downloads every file of the draft back and compares it, by SHA-256, with what was built;
+4. publishes it (a pre-release, while the apps are unsigned);
+5. checks that the tag points at the run's commit and that the release is a published
+   pre-release.
+
+The two starts take the same path. The one difference is how the draft is created
+(`gh release create`): on a pushed tag it names the existing tag (`--verify-tag`); by hand it names
+the run's commit (`--target`), and the tag comes into being when the draft is published.
+
+**Nothing half-made.** Until step 4 the release is a draft, which only people with write access
+see, and by hand no tag exists yet. If any step fails, the job deletes the draft. If the last check
+fails after publishing, it deletes the release, and by hand also the tag it created. A pushed tag
+is left as it was pushed. Two release runs never overlap: the second waits, then stops at the gate.
+
+**No second run.** The tag that a release by hand creates is made with the run's own token, and
+GitHub starts no workflow run for that. So the Desktop workflow does not start again on its tag,
+and no workflow listens to releases being published.
 
 `mochi-maker --version` (the packaged app) prints the version and quits; the smoke test checks it,
 with the macOS bundle's version and the Windows file properties.
-
-To release, set the version in `package.json` (all packages), add its section to `CHANGELOG.md`,
-and push the tag `v<version>` on that commit.
 
 **Signing, for later.** Running the workflow by hand with «sign» checked runs the signing steps
 instead of the ad-hoc signature. They need these repository secrets, and fail naming the first one
