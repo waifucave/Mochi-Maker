@@ -1,16 +1,17 @@
 /**
  * The release: the gate the Desktop workflow runs before building and before the release is
- * created (release-check.mjs), the release job's steps, and the
- * release notes, which must name the zips the workflow makes and use the README's own words
- * about what is switched off.
+ * created (release-check.mjs), the release job's steps (release.mjs), run against a stand-in for
+ * GitHub's API, and the release notes, which must name the zips the workflow makes and use the
+ * README's own words about what is switched off.
  */
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { createServer, type Server } from 'node:http';
 import { execFile } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { releaseProblems } from '../release-check.mjs';
+import { releaseProblems, startOf } from '../release-check.mjs';
+import { cleanupPlan, RELEASE_FILES, steps, tagProblems } from '../release.mjs';
+import { fakeGitHub, type FakeHooks, type FakeRelease, type FakeState } from './fake-github.js';
 
 const ROOT = join(import.meta.dirname, '../../..');
 const read = (p: string) => readFileSync(join(ROOT, p), 'utf8');
@@ -42,10 +43,10 @@ describe('the release gate', () => {
     const main = { ...base, ref: 'refs/heads/main', tagExists: false, releases: [] };
     expect(releaseProblems(main)).toEqual([]);
     expect(releaseProblems({ ...main, ref: 'refs/heads/feature' })).toEqual([
-      expect.stringMatching(/started on the branch main, not on refs\/heads\/feature/),
+      expect.stringMatching(/A release by hand is made from main, not from refs\/heads\/feature/),
     ]);
     expect(releaseProblems({ ...main, ref: 'refs/tags/v0.1.0' })).toEqual([
-      expect.stringMatching(/branch main/),
+      expect.stringMatching(/A release by hand is made from main, not from refs\/tags\/v0\.1\.0/),
     ]);
     expect(releaseProblems({ ...main, tagExists: true })).toEqual([
       expect.stringMatching(/The tag v0\.1\.0 exists already/),
@@ -82,27 +83,65 @@ describe('the release gate', () => {
     const wf = read('.github/workflows/desktop.yml');
     expect(wf).toMatch(/release:\n\s+description: .*\n\s+type: boolean\n\s+default: false/);
     expect(wf).toMatch(/check:\n[\s\S]*?node packages\/desktop\/release-check\.mjs --github/);
+    // The gate's start decides the rest of the run: the macOS x64 build and the release job.
+    expect(wf).toMatch(/outputs:\n\s+start: \$\{\{ steps\.gate\.outputs\.start \}\}/);
     expect(wf).toMatch(/package:\n\s+needs: check/);
+    expect(wf).toMatch(
+      /fromJSON\(\(needs\.check\.outputs\.start != 'none' \|\| inputs\.macos_x64\)/,
+    );
     const release = wf.slice(wf.indexOf('  release:\n    needs'));
     expect(release).toMatch(/needs: \[check, package\]/);
     expect(release).toMatch(
-      /if: startsWith\(github\.ref, 'refs\/tags\/v'\) \|\| \(github\.event_name == 'workflow_dispatch' && inputs\.release\)/,
+      /if: >-\n\s+needs\.check\.outputs\.start == 'tag' \|\| needs\.check\.outputs\.start == 'dispatch' \|\|\n\s+needs\.check\.outputs\.start == 'rehearsal'/,
     );
-    // The gate, then a draft, its files checked, then published.
+    // A rehearsal: its own box, passed to both gates, and its last step after verify.
+    expect(wf).toMatch(/rehearsal:\n\s+description: .*\n\s+type: boolean\n\s+default: false/);
+    expect(wf.match(/REHEARSAL: \$\{\{ inputs\.rehearsal \}\}/g)?.length).toBe(2);
+    expect(release.indexOf('release.mjs remove')).toBeGreaterThan(
+      release.indexOf('release.mjs verify'),
+    );
+    expect(release).toMatch(
+      /if: steps\.gate\.outputs\.start == 'rehearsal'\n[\s\S]*?release\.mjs remove/,
+    );
+    expect(wf).not.toMatch(/startsWith\(github\.ref/);
+    // A run without a release downloads the artifacts as the release job does, and checks them.
+    const download = (job: string) => {
+      const at = wf.indexOf(`  ${job}:\n    needs`);
+      return wf.slice(at, wf.indexOf('merge-multiple: true', at));
+    };
+    expect(download('artifacts')).toMatch(/if: needs\.check\.outputs\.start == 'none'/);
+    expect(download('artifacts').slice(download('artifacts').indexOf('uses:'))).toBe(
+      download('release').slice(download('release').indexOf('uses: actions/download')),
+    );
+    // The gate, then a draft, its files checked, the tag read again and published, then checked.
     const order = [
       'release-check.mjs --github',
-      'gh release create',
-      'gh release download',
-      '--draft=false',
+      'release.mjs draft',
+      'release.mjs files',
+      'release.mjs publish',
+      'release.mjs verify',
     ];
     const at = order.map((x) => release.indexOf(x));
     expect(at.every((i) => i > 0)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
-    // The two starts differ only in where the draft points: an existing tag, or the run's commit.
-    expect(release).toMatch(/--draft --prerelease "\$\{where\[@\]\}"/);
-    expect(release).toMatch(/where=\(--verify-tag\); else where=\(--target "\$GITHUB_SHA"\)/);
-    // A failure leaves no draft, and no release or tag this run published.
-    expect(release).toMatch(/if: failure\(\)[\s\S]*--cleanup-tag/);
+    // A failure: only release.mjs's cleanup deletes, and nothing else in the workflow does.
+    expect(release).toMatch(/if: failure\(\)[\s\S]*release\.mjs cleanup/);
+    expect(wf).not.toMatch(/gh release (delete|create|edit)|--cleanup-tag|-X DELETE/);
+  });
+
+  it('uses the current major version of each action, in every workflow', () => {
+    const current: Record<string, string> = {
+      'actions/checkout': 'v7',
+      'actions/setup-node': 'v7',
+      'actions/upload-artifact': 'v7',
+      'actions/download-artifact': 'v8',
+    };
+    for (const f of ['ci.yml', 'desktop.yml']) {
+      const uses = [...read(`.github/workflows/${f}`).matchAll(/uses: ([\w-]+\/[\w-]+)@(\S+)/g)];
+      expect(uses.length, f).toBeGreaterThan(0);
+      for (const [, action, version] of uses)
+        expect(`${action}@${version}`, f).toBe(`${action}@${current[action!]}`);
+    }
   });
 
   it('starts no second run: only a pushed tag and a run by hand start the workflow', () => {
@@ -123,42 +162,26 @@ describe('the gate in the workflow (--github), against a stand-in for GitHub’s
     env: Record<string, string>,
     state: { tag: boolean; releases: { tag_name: string; draft: boolean }[] },
   ) {
-    const seen: string[] = [];
-    const server: Server = createServer((req, res) => {
-      seen.push(`${req.method} ${req.url} ${req.headers.authorization ?? ''}`);
-      if (req.url?.startsWith('/repos/o/r/git/ref/tags/')) {
-        const ref = `refs/tags/${decodeURIComponent(req.url.split('/tags/')[1]!)}`;
-        res.writeHead(state.tag ? 200 : 404, { 'content-type': 'application/json' });
-        return res.end(JSON.stringify(state.tag ? { ref } : { message: 'Not Found' }));
-      }
-      if (req.url?.startsWith('/repos/o/r/releases')) {
-        res.writeHead(200, { 'content-type': 'application/json' });
-        return res.end(JSON.stringify(state.releases));
-      }
-      res.writeHead(500).end();
+    const fake = await fakeGitHub({
+      tags: state.tag ? { 'v0.1.0': 'c'.repeat(40) } : {},
+      releases: state.releases.map((r, k) => ({
+        ...release(r.tag_name),
+        id: k + 1,
+        draft: r.draft,
+      })),
     });
-    await new Promise<void>((r) => server.listen(0, '127.0.0.1', () => r()));
-    const port = (server.address() as { port: number }).port;
     const out = join(mkdtempSync(join(tmpdir(), 'gate-')), 'output');
     writeFileSync(out, '');
     const r = await new Promise<{ code: number; stdout: string; stderr: string }>((resolve) =>
       execFile(
         process.execPath,
         [join(ROOT, 'packages/desktop/release-check.mjs'), '--github'],
-        {
-          env: {
-            PATH: process.env.PATH,
-            GITHUB_API_URL: `http://127.0.0.1:${port}`,
-            GITHUB_REPOSITORY: 'o/r',
-            GH_TOKEN: 'token-123',
-            GITHUB_OUTPUT: out,
-            ...env,
-          },
-        },
+        { env: { PATH: process.env.PATH, ...fake.env, GITHUB_OUTPUT: out, ...env } },
         (e, stdout, stderr) => resolve({ code: e ? (e.code as number) : 0, stdout, stderr }),
       ),
     );
-    server.close();
+    await fake.close();
+    const seen = fake.seen.map((x) => `${x.method} ${x.url} ${x.authorization ?? ''}`);
     return { ...r, output: readFileSync(out, 'utf8'), seen };
   }
   const byHand = {
@@ -197,7 +220,7 @@ describe('the gate in the workflow (--github), against a stand-in for GitHub’s
       { ...byHand, GITHUB_REF: 'refs/heads/next', GITHUB_REF_NAME: 'next' },
       { tag: false, releases: [] },
     );
-    expect(other.stderr).toMatch(/must be started on the branch main, not on refs\/heads\/next/);
+    expect(other.stderr).toMatch(/A release by hand is made from main, not from refs\/heads\/next/);
   });
 
   it('lets a pushed tag go ahead, and a run by hand without «release» only checks', async () => {
@@ -208,6 +231,525 @@ describe('the gate in the workflow (--github), against a stand-in for GitHub’s
     expect([tag.code, tag.output]).toEqual([0, 'version=0.1.0\ntag=v0.1.0\nstart=tag\n']);
     const plain = await gate({ ...byHand, RELEASE: 'false' }, { tag: true, releases: [] });
     expect([plain.code, plain.stdout, plain.seen]).toEqual([0, '0.1.0 (release: no)\n', []]);
+  });
+});
+
+describe('a release by a tag means a tag was pushed', () => {
+  const tagRef = { GITHUB_REF: 'refs/tags/v0.1.0', GITHUB_REF_NAME: 'v0.1.0' };
+
+  it('starts by tag only on a push; a run by hand from a tag ref is by hand', () => {
+    expect(startOf({ ...tagRef, GITHUB_EVENT_NAME: 'push' })).toBe('tag');
+    expect(startOf({ ...tagRef, GITHUB_EVENT_NAME: 'workflow_dispatch', RELEASE: 'false' })).toBe(
+      undefined,
+    );
+    expect(startOf({ ...tagRef, GITHUB_EVENT_NAME: 'workflow_dispatch', RELEASE: 'true' })).toBe(
+      'dispatch',
+    );
+    expect(startOf({ ...tagRef, GITHUB_EVENT_NAME: 'workflow_dispatch' })).toBe(undefined);
+  });
+
+  it('a run by hand from a tag ref makes nothing without «release», and is refused with it', async () => {
+    const run = async (release: string) => {
+      const fake = await fakeGitHub({ tags: { 'v0.1.0': 'c'.repeat(40) } });
+      const out = join(mkdtempSync(join(tmpdir(), 'gate-')), 'output');
+      writeFileSync(out, '');
+      const r = await new Promise<{ code: number; stdout: string; stderr: string }>((resolve) =>
+        execFile(
+          process.execPath,
+          [join(ROOT, 'packages/desktop/release-check.mjs'), '--github'],
+          {
+            env: {
+              PATH: process.env.PATH,
+              ...fake.env,
+              GITHUB_OUTPUT: out,
+              ...tagRef,
+              GITHUB_EVENT_NAME: 'workflow_dispatch',
+              RELEASE: release,
+            },
+          },
+          (e, stdout, stderr) => resolve({ code: e ? (e.code as number) : 0, stdout, stderr }),
+        ),
+      );
+      await fake.close();
+      return { ...r, output: readFileSync(out, 'utf8'), requests: fake.seen.length };
+    };
+    const off = await run('false');
+    expect([off.code, off.stdout, off.requests]).toEqual([0, '0.1.0 (release: no)\n', 0]);
+    // start=none: the workflow then skips the release job and builds no macOS x64 app.
+    expect(off.output).toBe('version=0.1.0\ntag=v0.1.0\nstart=none\n');
+    const on = await run('true');
+    expect(on.code).toBe(1);
+    expect(on.stderr).toMatch(
+      /A release by hand is made from main, not from refs\/tags\/v0\.1\.0\./,
+    );
+    expect(on.output).toBe('');
+  });
+});
+
+/** A release as the stand-in keeps it. */
+function release(tag_name: string): FakeRelease {
+  return {
+    id: 1,
+    tag_name,
+    target_commitish: 'main',
+    name: tag_name,
+    body: '',
+    draft: false,
+    prerelease: false,
+    assets: [],
+  };
+}
+
+describe('the release steps (release.mjs), against a stand-in for GitHub', () => {
+  const SHA = 'a'.repeat(40);
+  const OTHER = 'b'.repeat(40);
+  const OLD = { ...release('v0.0.9'), id: 7 };
+
+  function dist() {
+    const dir = mkdtempSync(join(tmpdir(), 'dist-'));
+    for (const name of RELEASE_FILES)
+      writeFileSync(join(dir, name), `the zip ${name}\n`.repeat(50));
+    return dir;
+  }
+
+  /**
+   * Runs the release job's steps as the workflow does: draft, files, publish, verify, and the
+   * cleanup when one fails. `between` runs before publish (a person pushing a tag meanwhile).
+   */
+  async function releaseJob(
+    start: 'tag' | 'dispatch',
+    init: Partial<FakeState>,
+    { hooks, between }: { hooks?: FakeHooks; between?: (s: FakeState) => void } = {},
+  ) {
+    const fake = await fakeGitHub(
+      { ...init, releases: [{ ...OLD }, ...(init.releases ?? [])] },
+      hooks,
+    );
+    const out = join(mkdtempSync(join(tmpdir(), 'out-')), 'output');
+    writeFileSync(out, '');
+    const env: Record<string, string> = {
+      ...fake.env,
+      TAG: 'v0.1.0',
+      VERSION: '0.1.0',
+      START: start,
+      GITHUB_SHA: SHA,
+      DIST: dist(),
+      GITHUB_OUTPUT: out,
+    };
+    const log: string[] = [];
+    let failed: { step: string; message: string } | undefined;
+    for (const step of ['draft', 'files', 'publish', 'verify'] as const) {
+      if (step === 'publish') between?.(fake.state);
+      const id = readFileSync(out, 'utf8').match(/^id=(\d+)$/m)?.[1];
+      try {
+        await steps[step]({ ...env, ...(id ? { RELEASE_ID: id } : {}) }, (l) => log.push(l));
+      } catch (e) {
+        failed = { step, message: (e as Error).message };
+        await steps.cleanup({ ...env, ...(id ? { RELEASE_ID: id } : {}) }, (l) => log.push(l));
+        break;
+      }
+    }
+    await fake.close();
+    return { failed, log, state: fake.state, seen: fake.seen };
+  }
+  const left = (state: FakeState) =>
+    state.releases.map((r) => `${r.tag_name} ${r.draft ? 'draft' : 'published'}`);
+
+  it('a release by hand: the draft, its files, then published, with the tag at the run’s commit', async () => {
+    const r = await releaseJob('dispatch', {});
+    expect(r.failed).toBe(undefined);
+    expect(r.state.tags).toEqual({ 'v0.1.0': SHA });
+    const made = r.state.releases.find((x) => x.tag_name === 'v0.1.0')!;
+    expect(made).toMatchObject({
+      name: 'Mochi Maker 0.1.0',
+      target_commitish: SHA,
+      draft: false,
+      prerelease: true,
+    });
+    expect(made.body).toBe(
+      read('packages/desktop/release-notes.md').replaceAll('{{version}}', '0.1.0'),
+    );
+    expect(made.assets.map((a) => a.name)).toEqual(RELEASE_FILES);
+    expect(made.assets.map((a) => a.data.toString())).toEqual(
+      RELEASE_FILES.map((n) => `the zip ${n}\n`.repeat(50)),
+    );
+    // Each upload states its length (GitHub refuses a chunked upload); the stored files are
+    // fetched from the redirect without the token.
+    const uploads = r.seen.filter((x) => x.url.startsWith('/uploads/'));
+    expect(uploads.map((x) => [x.contentLength, x.transferEncoding])).toEqual(
+      RELEASE_FILES.map((n) => [String(`the zip ${n}\n`.repeat(50).length), undefined]),
+    );
+    const storage = r.seen.filter((x) => x.url.startsWith('/storage/'));
+    expect(storage.length).toBe(4);
+    expect(storage.every((x) => x.authorization === undefined)).toBe(true);
+    expect(r.log.filter((l) => /^[0-9a-f]{64}  /.test(l)).length).toBe(4);
+    expect(left(r.state)).toEqual(['v0.0.9 published', 'v0.1.0 published']);
+  });
+
+  it('a pushed tag: the same steps, and the tag stays as it was pushed', async () => {
+    const r = await releaseJob('tag', { tags: { 'v0.1.0': SHA } });
+    expect(r.failed).toBe(undefined);
+    expect(r.state.tags).toEqual({ 'v0.1.0': SHA });
+    expect(left(r.state)).toEqual(['v0.0.9 published', 'v0.1.0 published']);
+    // The two starts make the same calls.
+    const calls = (s: typeof r.seen) => s.map((x) => `${x.method} ${x.url.replace(/\d{4}/g, 'N')}`);
+    expect(calls(r.seen)).toEqual(calls((await releaseJob('dispatch', {})).seen));
+  });
+
+  it('a pushed tag that is not at the run’s commit: nothing is created', async () => {
+    const r = await releaseJob('tag', { tags: { 'v0.1.0': OTHER } });
+    expect(r.failed).toMatchObject({
+      step: 'draft',
+      message: expect.stringMatching(/points at b{40}, not at this run's commit/),
+    });
+    expect(left(r.state)).toEqual(['v0.0.9 published']);
+    expect(r.state.tags).toEqual({ 'v0.1.0': OTHER });
+  });
+
+  it('by hand, a tag pushed by a person after the gate: not published, and the tag is kept', async () => {
+    // The case: the gate passed; before publishing, someone pushes v0.1.0 at another commit.
+    const r = await releaseJob('dispatch', {}, { between: (s) => (s.tags['v0.1.0'] = OTHER) });
+    expect(r.failed).toMatchObject({
+      step: 'publish',
+      message: expect.stringMatching(/The tag v0\.1\.0 appeared after the gate, at b{40}/),
+    });
+    // Only the draft this run made is deleted; the person's tag stays where it was pushed.
+    expect(left(r.state)).toEqual(['v0.0.9 published']);
+    expect(r.state.tags).toEqual({ 'v0.1.0': OTHER });
+    expect(r.log).toContain(`kept the tag v0.1.0 (at ${OTHER})`);
+    expect(r.seen.some((x) => x.method === 'DELETE' && x.url.includes('/git/refs/'))).toBe(false);
+  });
+
+  it('by hand, a tag pushed in the very moment of publishing: the release goes, the tag stays', async () => {
+    // Too late for the read before publishing: the publish attaches to the person's tag, the
+    // last check fails, and the cleanup deletes the release but not a tag at another commit.
+    const r = await releaseJob(
+      'dispatch',
+      {},
+      { hooks: { beforePatch: (s) => (s.tags['v0.1.0'] = OTHER) } },
+    );
+    expect(r.failed).toMatchObject({
+      step: 'verify',
+      message: expect.stringMatching(/is at b{40}, not a{40}/),
+    });
+    expect(left(r.state)).toEqual(['v0.0.9 published']);
+    expect(r.state.tags).toEqual({ 'v0.1.0': OTHER });
+  });
+
+  it('by hand, a failure after publishing: the release and the tag this run made are deleted', async () => {
+    const r = await releaseJob(
+      'dispatch',
+      {},
+      {
+        hooks: { afterPatch: (_s, rel) => (rel.prerelease = false) },
+      },
+    );
+    expect(r.failed).toMatchObject({
+      step: 'verify',
+      message: expect.stringMatching(/not a published pre-release/),
+    });
+    expect(left(r.state)).toEqual(['v0.0.9 published']);
+    expect(r.state.tags).toEqual({});
+    expect(r.log).toContain(`deleted the tag v0.1.0, made by this run at ${SHA}`);
+  });
+
+  it('a pushed tag, a failure after publishing: the release is deleted, the pushed tag is not', async () => {
+    const r = await releaseJob(
+      'tag',
+      { tags: { 'v0.1.0': SHA } },
+      {
+        hooks: { afterPatch: (_s, rel) => (rel.prerelease = false) },
+      },
+    );
+    expect(r.failed?.step).toBe('verify');
+    expect(left(r.state)).toEqual(['v0.0.9 published']);
+    expect(r.state.tags).toEqual({ 'v0.1.0': SHA });
+  });
+
+  it('a file that comes back different: not published, the draft deleted', async () => {
+    const r = await releaseJob('dispatch', {}, { hooks: { corrupt: 'mochi-maker-linux-x64.zip' } });
+    expect(r.failed).toMatchObject({
+      step: 'files',
+      message: expect.stringMatching(
+        /mochi-maker-linux-x64\.zip in the draft is [0-9a-f]{64}, not the built/,
+      ),
+    });
+    expect(left(r.state)).toEqual(['v0.0.9 published']);
+    expect(r.state.tags).toEqual({});
+  });
+
+  it('the cleanup touches nothing it did not make', async () => {
+    // Someone else's draft for the same tag, and no release made by this run (no id).
+    const theirs = { ...release('v0.1.0'), id: 55, draft: true };
+    const fake = await fakeGitHub({ tags: { 'v0.1.0': SHA }, releases: [{ ...OLD }, theirs] });
+    const log: string[] = [];
+    const env = { ...fake.env, TAG: 'v0.1.0', START: 'dispatch', GITHUB_SHA: SHA };
+    await steps.cleanup(env, (l) => log.push(l));
+    expect(log).toEqual(['nothing to clean: this run created no release']);
+    // With an id that is not there any more: no release to delete, and the tag is not this run's.
+    await steps.cleanup({ ...env, RELEASE_ID: '999' }, (l) => log.push(l));
+    await fake.close();
+    expect(left(fake.state)).toEqual(['v0.0.9 published', 'v0.1.0 draft']);
+    expect(fake.state.tags).toEqual({ 'v0.1.0': SHA });
+    expect(fake.seen.filter((x) => x.method === 'DELETE')).toEqual([]);
+  });
+
+  it('the draft needs exactly the four zips', async () => {
+    const fake = await fakeGitHub();
+    const dir = dist();
+    writeFileSync(join(dir, 'extra.zip'), 'x');
+    const env = {
+      ...fake.env,
+      TAG: 'v0.1.0',
+      VERSION: '0.1.0',
+      START: 'dispatch',
+      GITHUB_SHA: SHA,
+      DIST: dir,
+    };
+    await expect(steps.draft(env, () => {})).rejects.toThrow(
+      /exactly the four zips: unexpected extra\.zip/,
+    );
+    await fake.close();
+    expect(fake.state.releases).toEqual([]);
+  });
+
+  it('the rules, as tables', () => {
+    const t = { tag: 'v0.1.0', sha: SHA };
+    expect(tagProblems({ ...t, start: 'tag', tagSha: SHA })).toEqual([]);
+    expect(tagProblems({ ...t, start: 'tag', tagSha: null })).toEqual([
+      expect.stringMatching(/is gone/),
+    ]);
+    expect(tagProblems({ ...t, start: 'dispatch', tagSha: null })).toEqual([]);
+    expect(tagProblems({ ...t, start: 'dispatch', tagSha: SHA })).toEqual([
+      expect.stringMatching(/appeared after the gate/),
+    ]);
+    expect(tagProblems({ ...t, start: undefined, tagSha: null })).toEqual([
+      expect.stringMatching(/makes no release/),
+    ]);
+    const plan = (start: string, release: { draft: boolean } | null, tagSha: string | null) =>
+      cleanupPlan({
+        start,
+        tag: 'v0.1.0',
+        sha: SHA,
+        release: release && { ...release, tag_name: 'v0.1.0' },
+        tagSha,
+      });
+    expect(plan('dispatch', { draft: true }, null)).toEqual({ release: true, tag: false });
+    expect(plan('dispatch', { draft: false }, SHA)).toEqual({ release: true, tag: true });
+    expect(plan('dispatch', { draft: false }, OTHER)).toEqual({ release: true, tag: false });
+    expect(plan('dispatch', { draft: true }, SHA)).toEqual({ release: true, tag: false });
+    expect(plan('dispatch', null, SHA)).toEqual({ release: false, tag: false });
+    expect(plan('tag', { draft: false }, SHA)).toEqual({ release: true, tag: false });
+    // A release that does not carry this run's tag is never this run's.
+    expect(
+      cleanupPlan({
+        start: 'dispatch',
+        tag: 'v0.1.0',
+        sha: SHA,
+        release: { draft: false, tag_name: 'v0.0.9' },
+        tagSha: SHA,
+      }),
+    ).toEqual({ release: false, tag: false });
+    // A rehearsal: like a run by hand, for its own tag only.
+    const r12 = { draft: false, tag_name: 'rehearsal-12' };
+    expect(
+      cleanupPlan({ start: 'rehearsal', tag: 'rehearsal-12', sha: SHA, release: r12, tagSha: SHA }),
+    ).toEqual({
+      release: true,
+      tag: true,
+    });
+    expect(
+      cleanupPlan({
+        start: 'rehearsal',
+        tag: 'v0.1.0',
+        sha: SHA,
+        release: { draft: false, tag_name: 'v0.1.0' },
+        tagSha: SHA,
+      }),
+    ).toEqual({ release: false, tag: false });
+    expect(
+      tagProblems({ start: 'rehearsal', tag: 'rehearsal-12', tagSha: null, sha: SHA }),
+    ).toEqual([]);
+    expect(tagProblems({ start: 'rehearsal', tag: 'v0.1.0', tagSha: null, sha: SHA })).toEqual([
+      expect.stringMatching(/only a tag rehearsal-<run number>, never v0\.1\.0/),
+    ]);
+  });
+});
+
+describe('a rehearsal: the release path with a throwaway tag, removed again', () => {
+  const SHA = 'a'.repeat(40);
+  const REAL_SHA = 'd'.repeat(40);
+  /** The real release, as round after round leaves it: it must stay exactly so. */
+  const real = (): FakeRelease => ({
+    ...release('v0.1.0'),
+    id: 9,
+    name: 'Mochi Maker 0.1.0',
+    target_commitish: REAL_SHA,
+    prerelease: true,
+    assets: [{ id: 91, name: 'mochi-maker-linux-x64.zip', size: 3, data: Buffer.from('zip') }],
+  });
+  const withReal = () => ({ tags: { 'v0.1.0': REAL_SHA }, releases: [real()] });
+  const byHand = {
+    GITHUB_EVENT_NAME: 'workflow_dispatch',
+    GITHUB_REF: 'refs/heads/main',
+    GITHUB_REF_NAME: 'main',
+    GITHUB_RUN_NUMBER: '12',
+    REHEARSAL: 'true',
+    RELEASE: 'false',
+  };
+
+  async function gate(env: Record<string, string>, init: Partial<FakeState>) {
+    const fake = await fakeGitHub(init);
+    const out = join(mkdtempSync(join(tmpdir(), 'gate-')), 'output');
+    writeFileSync(out, '');
+    const r = await new Promise<{ code: number; stdout: string; stderr: string }>((resolve) =>
+      execFile(
+        process.execPath,
+        [join(ROOT, 'packages/desktop/release-check.mjs'), '--github'],
+        { env: { PATH: process.env.PATH, ...fake.env, GITHUB_OUTPUT: out, ...env } },
+        (e, stdout, stderr) => resolve({ code: e ? (e.code as number) : 0, stdout, stderr }),
+      ),
+    );
+    await fake.close();
+    return {
+      ...r,
+      output: readFileSync(out, 'utf8'),
+      seen: fake.seen.map((x) => `${x.method} ${x.url}`),
+    };
+  }
+
+  it('the gate lets it go ahead in a private repository, past the real release, and looks only at its tag', async () => {
+    const r = await gate(byHand, withReal());
+    expect([r.code, r.stdout]).toEqual([0, '0.1.0 (release: a rehearsal, rehearsal-12)\n']);
+    expect(r.output).toBe('version=0.1.0\ntag=rehearsal-12\nstart=rehearsal\n');
+    expect(r.seen).toEqual([
+      'GET /repos/o/r',
+      'GET /repos/o/r/git/ref/tags/rehearsal-12',
+      'GET /repos/o/r/releases?per_page=100&page=1',
+    ]);
+  });
+
+  it('the gate refuses it in a public repository, with «release», and over a leftover', async () => {
+    const pub = await gate(byHand, { ...withReal(), private: false });
+    expect([pub.code, pub.output]).toEqual([1, '']);
+    expect(pub.stderr).toMatch(/A rehearsal is made only in a private repository/);
+    const both = await gate({ ...byHand, RELEASE: 'true' }, withReal());
+    expect(both.stderr).toMatch(/«rehearsal» and «release» cannot both be checked/);
+    const tag = await gate(byHand, { tags: { 'rehearsal-12': SHA } });
+    expect(tag.stderr).toMatch(/The tag rehearsal-12 exists already/);
+    const draft = await gate(byHand, { releases: [{ ...release('rehearsal-12'), draft: true }] });
+    expect(draft.stderr).toMatch(/A draft release for rehearsal-12 exists already/);
+    // On a push of a tag, «rehearsal» does not exist: the start is the tag's.
+    expect(
+      startOf({ GITHUB_EVENT_NAME: 'push', GITHUB_REF: 'refs/tags/v0.1.0', REHEARSAL: 'true' }),
+    ).toBe('tag');
+  });
+
+  /** The release job's steps for a rehearsal, as the workflow runs them. */
+  async function rehearse(init: Partial<FakeState>, hooks?: FakeHooks, tag = 'rehearsal-12') {
+    const fake = await fakeGitHub(init, hooks);
+    const out = join(mkdtempSync(join(tmpdir(), 'out-')), 'output');
+    writeFileSync(out, '');
+    const dir = mkdtempSync(join(tmpdir(), 'dist-'));
+    for (const name of RELEASE_FILES) writeFileSync(join(dir, name), `the zip ${name}\n`);
+    const env: Record<string, string> = {
+      ...fake.env,
+      TAG: tag,
+      VERSION: '0.1.0',
+      START: 'rehearsal',
+      GITHUB_SHA: SHA,
+      DIST: dir,
+      GITHUB_OUTPUT: out,
+      REMOVE_WAIT_MS: '1',
+    };
+    const log: string[] = [];
+    let failed: { step: string; message: string } | undefined;
+    for (const step of ['draft', 'files', 'publish', 'verify', 'remove'] as const) {
+      const id = readFileSync(out, 'utf8').match(/^id=(\d+)$/m)?.[1];
+      const e2 = { ...env, ...(id ? { RELEASE_ID: id } : {}) };
+      try {
+        await steps[step](e2, (l) => log.push(l));
+      } catch (e) {
+        failed = { step, message: (e as Error).message };
+        await steps.cleanup(e2, (l) => log.push(l));
+        break;
+      }
+    }
+    await fake.close();
+    return { failed, log, state: fake.state, seen: fake.seen };
+  }
+
+  it('goes the whole way, removes what it made, and leaves the real release as it was', async () => {
+    let published: FakeRelease | undefined;
+    const r = await rehearse(withReal(), { afterPatch: (_s, rel) => (published = { ...rel }) });
+    expect(r.failed).toBe(undefined);
+    // As published, before it was removed: a pre-release whose title says REHEARSAL, at the commit.
+    expect(published).toMatchObject({
+      tag_name: 'rehearsal-12',
+      target_commitish: SHA,
+      draft: false,
+      prerelease: true,
+      name: expect.stringMatching(/^REHEARSAL rehearsal-12: Mochi Maker 0\.1\.0/),
+    });
+    expect(published!.body).toMatch(/^\*\*REHEARSAL\*\* of the release path/);
+    // The calls, in order: created, uploaded, files checked, published, verified, deleted.
+    const calls = r.seen
+      .filter((x) => !(x.method === 'GET' && /\/(git\/ref\/tags|releases\?)/.test(x.url)))
+      .map((x) => `${x.method} ${x.url.replace(/\d{4}/g, 'N').replace(/\?name=.*/, '')}`);
+    expect(calls).toEqual([
+      'POST /repos/o/r/releases',
+      ...RELEASE_FILES.map(() => 'POST /uploads/repos/o/r/releases/N/assets'),
+      'GET /repos/o/r/releases/N/assets?per_page=100',
+      ...RELEASE_FILES.flatMap(() => ['GET /repos/o/r/releases/assets/N', 'GET /storage/N']),
+      'PATCH /repos/o/r/releases/N',
+      'GET /repos/o/r/releases/N',
+      'GET /repos/o/r/releases/N',
+      'DELETE /repos/o/r/releases/N',
+      'DELETE /repos/o/r/git/refs/tags/rehearsal-12',
+    ]);
+    expect(r.log).toContain('nothing left of rehearsal-12: no release, no draft, no tag');
+    // Exactly what was there before: the real release and its tag, untouched.
+    expect(r.state.tags).toEqual({ 'v0.1.0': REAL_SHA });
+    expect(r.state.releases).toEqual([real()]);
+    expect(r.seen.some((x) => x.url.includes('v0.1.0'))).toBe(false);
+  });
+
+  it('never touches the real version, whatever it is given', async () => {
+    // Told to rehearse with the real tag: every step refuses, and the cleanup deletes nothing.
+    const r = await rehearse(withReal(), {}, 'v0.1.0');
+    expect(r.failed).toMatchObject({
+      step: 'draft',
+      message: expect.stringMatching(/never v0\.1\.0/),
+    });
+    const fake = await fakeGitHub(withReal());
+    const env = { ...fake.env, START: 'rehearsal', GITHUB_SHA: REAL_SHA, REMOVE_WAIT_MS: '1' };
+    const log: string[] = [];
+    for (const step of ['publish', 'remove'] as const)
+      await expect(
+        steps[step]({ ...env, TAG: 'v0.1.0', RELEASE_ID: '9' }, (l) => log.push(l)),
+      ).rejects.toThrow(/never v0\.1\.0/);
+    await steps.cleanup({ ...env, TAG: 'v0.1.0', RELEASE_ID: '9' }, (l) => log.push(l));
+    // Its own tag, but the real release's id: the release does not carry its tag, so it stays.
+    await steps.cleanup({ ...env, TAG: 'rehearsal-12', RELEASE_ID: '9' }, (l) => log.push(l));
+    await fake.close();
+    expect(log).toContain('kept the release 9: its tag is v0.1.0, not rehearsal-12');
+    expect(fake.seen.filter((x) => x.method !== 'GET')).toEqual([]);
+    expect(fake.state.tags).toEqual({ 'v0.1.0': REAL_SHA });
+    expect(fake.state.releases).toEqual([real()]);
+  });
+
+  it('fails when it cannot clean up: something of its tag is left', async () => {
+    // Another draft for the same tag appears while it runs; the rehearsal deletes only its own,
+    // then finds the other left and fails.
+    const r = await rehearse(withReal(), {
+      afterPatch: (s) => s.releases.push({ ...release('rehearsal-12'), id: 77, draft: true }),
+    });
+    expect(r.failed).toMatchObject({
+      step: 'remove',
+      message: expect.stringMatching(/could not clean up: the draft 77 is left/),
+    });
+    expect(r.state.releases.map((x) => x.id)).toEqual([9, 77]);
+    expect(r.state.tags).toEqual({ 'v0.1.0': REAL_SHA });
   });
 });
 

@@ -70,7 +70,9 @@ they agree). A release's tag is `v` plus that version.
   commit the run started on.
 - **With a tag:** push the tag `v<version>` on that commit.
 
-A run by hand without «release» builds and smoke-tests the apps, and releases nothing.
+A run by hand without «release» builds and smoke-tests the apps, and releases nothing, whatever
+branch or tag it is started from. Only a pushed tag starts a release by tag; a run by hand with
+«release» from anything but `main` is refused («A release by hand is made from main»).
 
 **The gate.** The `check` job runs `packages/desktop/release-check.mjs --github` before anything
 is built. It fails, and nothing is built, unless:
@@ -84,26 +86,44 @@ Each problem is named: for example «The tag v0.1.0 exists already: the release 
 by a tag. Nothing is built.» A run by hand without «release» checks only the version and the
 changelog.
 
-**The release job.** After the four builds (the macOS x64 app is always built for a release), it:
+**The release job.** After the four builds (the macOS x64 app is always built for a release), it
+runs the same gate again, then the steps in `packages/desktop/release.mjs`:
 
-1. runs the same gate again;
-2. creates a draft pre-release with the four zipped apps, titled «Mochi Maker 0.1.0», and the
-   notes from `packages/desktop/release-notes.md`: what Mochi Maker is, the four zips, what each
-   system says about an unsigned app and what to do, what works and what is switched off, and
-   where to report a problem;
-3. downloads every file of the draft back and compares it, by SHA-256, with what was built;
-4. publishes it (a pre-release, while the apps are unsigned);
-5. checks that the tag points at the run's commit and that the release is a published
+1. `draft`: reads the tag (the tag rule below), then creates a draft pre-release at the run's
+   commit, titled «Mochi Maker 0.1.0», with the notes from `packages/desktop/release-notes.md`
+   (what Mochi Maker is, the four zips, what each system says about an unsigned app and what to
+   do, what works and what is switched off, and where to report a problem), and uploads the four
+   zipped apps to it;
+2. `files`: downloads every file of the draft back and compares it, by SHA-256, with what was
+   built;
+3. `publish`: reads the tag again, then publishes the draft (a pre-release, while the apps are
+   unsigned);
+4. `verify`: checks that the tag points at the run's commit and that the release is a published
    pre-release.
 
-The two starts take the same path. The one difference is how the draft is created
-(`gh release create`): on a pushed tag it names the existing tag (`--verify-tag`); by hand it names
-the run's commit (`--target`), and the tag comes into being when the draft is published.
+**The tag rule** is the one difference between the two starts; every call is the same. On a
+pushed tag, the tag must point at the run's commit. By hand, no tag may exist yet: publishing
+creates it, at the run's commit. If a person pushes the tag while a run by hand builds, the run
+stops before publishing.
 
-**Nothing half-made.** Until step 4 the release is a draft, which only people with write access
-see, and by hand no tag exists yet. If any step fails, the job deletes the draft. If the last check
-fails after publishing, it deletes the release, and by hand also the tag it created. A pushed tag
-is left as it was pushed. Two release runs never overlap: the second waits, then stops at the gate.
+**Nothing half-made.** Until step 3 the release is a draft, which only people with write access
+see, and by hand no tag exists yet. If any step fails, `release.mjs cleanup` deletes only what
+this run made:
+
+- the release this run created, by its id, a draft or published;
+- a tag only if the run was started by hand, this run published the release, and the tag points
+  at the run's commit. A tag that a person pushed is never deleted.
+
+Two release runs never overlap: the second waits, then stops at the gate.
+
+**A rehearsal.** In a private repository, **Run workflow** with «rehearsal» checked (and «release»
+not) rehearses the whole release path without touching a version: the same jobs, and the same
+steps of `release.mjs` in the same order, with a throwaway tag `rehearsal-<run number>` at the
+run's commit and a title that says REHEARSAL. Its last step, `remove`, deletes the release and the
+tag with the cleanup's own rule, and fails unless nothing of the rehearsal is left. The gate
+refuses it in a public repository, with «release» checked as well, or while its tag or a release
+for it exists. It never looks at `v<version>`, and every step refuses any other tag for it, so it
+cannot create, replace or delete the real release.
 
 **No second run.** The tag that a release by hand creates is made with the run's own token, and
 GitHub starts no workflow run for that. So the Desktop workflow does not start again on its tag,

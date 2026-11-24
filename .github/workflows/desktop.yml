@@ -16,11 +16,15 @@ on:
         type: boolean
         default: false
       macos_x64:
-        description: 'Also build the macOS x64 app (always on tags; macOS minutes cost ten times)'
+        description: 'Also build the macOS x64 app (always for a release; macOS minutes cost ten times)'
         type: boolean
         default: false
       release:
         description: 'Make the release: create the tag v<version> and the pre-release at this commit (on main only)'
+        type: boolean
+        default: false
+      rehearsal:
+        description: 'Rehearse the release with a throwaway tag rehearsal-<run number>, then remove it (private repository only; not with «release»)'
         type: boolean
         default: false
   push:
@@ -31,20 +35,27 @@ permissions:
 
 jobs:
   # The release gate, before anything is built (packages/desktop/release-check.mjs): the version
-  # in package.json has a section in CHANGELOG.md, and when the run makes a release, either the
-  # pushed tag is v plus that version, or (by hand, with «release») the run is on main and the tag
-  # does not exist yet; in both, no release for it exists, published or draft. Write access only
-  # so that the token can see draft releases; this job changes nothing.
+  # in package.json has a section in CHANGELOG.md, and when the run makes a release, either a
+  # pushed tag (a push event) is v plus that version, or (by hand, with «release») the run is on
+  # main and the tag does not exist yet; in both, no release for it exists, published or draft.
+  # By hand with «rehearsal» (in a private repository only), the run rehearses the release with a
+  # throwaway tag instead, and never looks at v<version>.
+  # Its `start` (tag, dispatch, rehearsal or none) decides the rest of the run. Write access only so that the
+  # token can see draft releases; this job changes nothing.
   check:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      start: ${{ steps.gate.outputs.start }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Release check
+        id: gate
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE: ${{ inputs.release }}
+          REHEARSAL: ${{ inputs.rehearsal }}
         run: node packages/desktop/release-check.mjs --github
 
   package:
@@ -53,12 +64,12 @@ jobs:
     strategy:
       fail-fast: false
       # The macOS x64 app (built and smoke-tested on Apple silicon, under Rosetta 2: the Intel runner
-      # has no GPU, and the editor's view needs WebGL2) only on tags, or by hand with «macos_x64»
-      #: macOS minutes cost ten times a Linux minute. `exclude` cannot drop an `include`
+      # has no GPU, and the editor's view needs WebGL2) only for a release, or by hand with
+      # «macos_x64»: macOS minutes cost ten times a Linux minute. `exclude` cannot drop an `include`
       # entry, so the list itself is chosen.
       matrix:
         include: >-
-          ${{ fromJSON((startsWith(github.ref, 'refs/tags/v') || inputs.macos_x64 || inputs.release)
+          ${{ fromJSON((needs.check.outputs.start != 'none' || inputs.macos_x64)
           && '[{"os":"windows-latest","platform":"win32","arch":"x64"},{"os":"macos-15","platform":"darwin","arch":"arm64"},{"os":"macos-15","platform":"darwin","arch":"x64"},{"os":"ubuntu-latest","platform":"linux","arch":"x64"}]'
           || '[{"os":"windows-latest","platform":"win32","arch":"x64"},{"os":"macos-15","platform":"darwin","arch":"arm64"},{"os":"ubuntu-latest","platform":"linux","arch":"x64"}]') }}
     runs-on: ${{ matrix.os }}
@@ -68,8 +79,8 @@ jobs:
       APP_DIR: packages/desktop/out/Mochi Maker-${{ matrix.platform }}-${{ matrix.arch }}
       ARCHIVE: mochi-maker-${{ matrix.platform }}-${{ matrix.arch }}.zip
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -152,24 +163,52 @@ jobs:
         run: |
           (cd packages/desktop/out && zip -qry "../../../$ARCHIVE" "Mochi Maker-linux-x64")
           ls -l "$ARCHIVE"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: mochi-maker-${{ matrix.platform }}-${{ matrix.arch }}
           path: ${{ env.ARCHIVE }}
           if-no-files-found: error
           retention-days: 30
 
+  # On a run that makes no release: the artifacts downloaded exactly as the release job reads
+  # them (one folder, merged), so that each run checks the download still gives the zips side by
+  # side, with nothing else.
+  artifacts:
+    needs: [check, package]
+    if: needs.check.outputs.start == 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: mochi-maker-*
+          path: dist
+          merge-multiple: true
+      - name: The zips, as the release job reads them
+        env:
+          X64: ${{ inputs.macos_x64 }}
+        run: |
+          find dist -exec ls -ld {} + | sort -k9
+          want="mochi-maker-win32-x64.zip mochi-maker-darwin-arm64.zip mochi-maker-linux-x64.zip"
+          if [ "$X64" = true ]; then want="$want mochi-maker-darwin-x64.zip"; fi
+          test "$(find dist -mindepth 1 | wc -l)" = "$(echo $want | wc -w)"
+          for f in $want; do test -f "dist/$f"; done
+          (cd dist && sha256sum *.zip)
+
   # The release, when the run makes one: on a pushed tag v<version>, or by hand with «release»
-  # (the tag is then created with the release, at the run's commit). One path for both starts:
-  # the gate again, a draft pre-release with the four zips and the notes, every file downloaded
-  # back and compared with what was built, then published. Only the draft's creation differs: a
-  # pushed tag must exist (--verify-tag); by hand, the release names its commit (--target).
-  # Nothing half-made is left: a draft that fails is deleted, and a release published by this run
-  # that fails its last check is deleted with the tag it created. A tag made with the run's own
-  # token starts no workflow run, so publishing does not start this workflow again.
+  # (the tag is then created with the release, at the run's commit). One path for both starts
+  # (packages/desktop/release.mjs): the gate again, a draft pre-release with the four zips and the
+  # notes, every file downloaded back and compared with what was built, the tag read again, then
+  # published. The starts differ only in the tag rule: a pushed tag must point at the run's
+  # commit; by hand, no tag may exist yet. Nothing half-made is left: after a failure, the release
+  # this run created is deleted (draft or published), and a tag only if this run made it by
+  # publishing (by hand, at the run's commit). A tag made with the run's own token starts no
+  # workflow run, so publishing does not start this workflow again. A rehearsal takes the same
+  # steps with its throwaway tag (the rule of a run by hand), then removes the release and the tag.
   release:
     needs: [check, package]
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release)
+    if: >-
+      needs.check.outputs.start == 'tag' || needs.check.outputs.start == 'dispatch' ||
+      needs.check.outputs.start == 'rehearsal'
     runs-on: ubuntu-latest
     # Two release runs never overlap: the second waits, then stops at the gate.
     concurrency:
@@ -180,8 +219,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: mochi-maker-*
           path: dist
@@ -191,56 +230,46 @@ jobs:
         id: gate
         env:
           RELEASE: ${{ inputs.release }}
+          REHEARSAL: ${{ inputs.rehearsal }}
         run: node packages/desktop/release-check.mjs --github
       - name: Create the draft
+        id: draft
         env:
           TAG: ${{ steps.gate.outputs.tag }}
           VERSION: ${{ steps.gate.outputs.version }}
           START: ${{ steps.gate.outputs.start }}
         run: |
           ls -l dist
-          test "$(ls dist/*.zip | wc -l)" = 4
-          sed "s/{{version}}/$VERSION/g" packages/desktop/release-notes.md > notes.md
-          if [ "$START" = tag ]; then where=(--verify-tag); else where=(--target "$GITHUB_SHA"); fi
-          gh release create "$TAG" dist/*.zip --draft --prerelease "${where[@]}" \
-            --title "Mochi Maker $VERSION" --notes-file notes.md
+          node packages/desktop/release.mjs draft
       - name: Check the draft's files against the build
         env:
-          TAG: ${{ steps.gate.outputs.tag }}
-        run: |
-          gh release download "$TAG" --dir back
-          (cd dist && sha256sum *.zip) > built.sha256
-          (cd back && sha256sum *) > back.sha256
-          diff built.sha256 back.sha256
-          cat back.sha256
-      - name: Publish
-        id: publish
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+        run: node packages/desktop/release.mjs files
+      - name: Publish (the tag read again first)
         env:
           TAG: ${{ steps.gate.outputs.tag }}
-        run: |
-          gh release edit "$TAG" --draft=false
-          echo "published=true" >> "$GITHUB_OUTPUT"
+          START: ${{ steps.gate.outputs.start }}
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+        run: node packages/desktop/release.mjs publish
       - name: Check the tag and the release
         env:
           TAG: ${{ steps.gate.outputs.tag }}
-        run: |
-          sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)
-          test "$sha" = "$GITHUB_SHA" || { echo "The tag $TAG is at $sha, not $GITHUB_SHA"; exit 1; }
-          gh release view "$TAG" --json isDraft,isPrerelease,tagName,name \
-            --jq 'if .isDraft or (.isPrerelease | not) then error("not a published pre-release") else . end'
-      # Whatever failed: no draft left, and no release (or tag) this run made public.
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+        run: node packages/desktop/release.mjs verify
+      # A rehearsal ends by removing what it made, with the cleanup's own code, and fails unless
+      # nothing of it is left.
+      - name: Remove the rehearsal
+        if: steps.gate.outputs.start == 'rehearsal'
+        env:
+          TAG: ${{ steps.gate.outputs.tag }}
+          START: ${{ steps.gate.outputs.start }}
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+        run: node packages/desktop/release.mjs remove
+      # Whatever failed: only what this run made is deleted.
       - name: Clean up after a failure
         if: failure()
         env:
           TAG: ${{ steps.gate.outputs.tag }}
           START: ${{ steps.gate.outputs.start }}
-          PUBLISHED: ${{ steps.publish.outputs.published }}
-        run: |
-          [ -n "$TAG" ] || exit 0
-          draft=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
-            --jq ".[] | select(.tag_name == \"$TAG\" and .draft) | .id")
-          for id in $draft; do gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"; done
-          if [ "$PUBLISHED" = true ]; then
-            if [ "$START" = dispatch ]; then gh release delete "$TAG" --yes --cleanup-tag
-            else gh release delete "$TAG" --yes; fi
-          fi
+          RELEASE_ID: ${{ steps.draft.outputs.id }}
+        run: node packages/desktop/release.mjs cleanup
