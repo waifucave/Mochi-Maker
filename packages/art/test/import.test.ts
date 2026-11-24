@@ -26,6 +26,12 @@ import { encode } from 'fast-png';
 import { shape, syntheticOra, syntheticPsd } from './synthetic.js';
 import { examplePsd } from '../../editor/test/guide-art.js';
 
+/**
+ * The limit for the tests here that import the guide's PSD with meshes, or several art files: the
+ * longest took 1.7 s on two busy cores (0.96 s alone), with the PSD built once a file.
+ */
+const WORK = 30_000;
+
 function context() {
   const session = Session.create();
   const fs = new MemoryFileSystem();
@@ -213,29 +219,33 @@ describe('art.import', () => {
     ]);
   });
 
-  it('puts the layers of art without groups into one part named after the file', async () => {
-    const ctx = context();
-    await ctx.fs.writeBytes('art/mochi.psd', examplePsd());
-    const r = await run(ctx, [{ name: 'art.import', args: { path: 'art/mochi.psd' } }]);
-    const res = r.itemResults[0] as { parts: string[]; meshes: string[] };
-    const v = ctx.session.view;
-    const parts = v.ofKind('part');
-    expect(parts.map((p) => [p.exportId, p.name, p.parent])).toEqual([
-      ['Part_mochi', 'mochi', null],
-    ]);
-    expect(res.parts).toEqual([parts[0]!.uid]);
-    expect(res.meshes).toHaveLength(7);
-    expect(v.ofKind('artMesh').every((m) => m.part === parts[0]!.uid)).toBe(true);
-    expect(v.project().root).toEqual([parts[0]!.uid]);
-    // With a parent given, the layers go there and no part is made.
-    const ctx2 = context();
-    await ctx2.fs.writeBytes('art/mochi.psd', examplePsd());
-    await run(ctx2, [
-      { name: 'part.create', args: { exportId: 'PartBody', name: 'Body' } },
-      { name: 'art.import', args: { path: 'art/mochi.psd', parent: '$0' } },
-    ]);
-    expect(ctx2.session.view.ofKind('part').map((p) => p.exportId)).toEqual(['PartBody']);
-  });
+  it(
+    'puts the layers of art without groups into one part named after the file',
+    { timeout: WORK },
+    async () => {
+      const ctx = context();
+      await ctx.fs.writeBytes('art/mochi.psd', examplePsd());
+      const r = await run(ctx, [{ name: 'art.import', args: { path: 'art/mochi.psd' } }]);
+      const res = r.itemResults[0] as { parts: string[]; meshes: string[] };
+      const v = ctx.session.view;
+      const parts = v.ofKind('part');
+      expect(parts.map((p) => [p.exportId, p.name, p.parent])).toEqual([
+        ['Part_mochi', 'mochi', null],
+      ]);
+      expect(res.parts).toEqual([parts[0]!.uid]);
+      expect(res.meshes).toHaveLength(7);
+      expect(v.ofKind('artMesh').every((m) => m.part === parts[0]!.uid)).toBe(true);
+      expect(v.project().root).toEqual([parts[0]!.uid]);
+      // With a parent given, the layers go there and no part is made.
+      const ctx2 = context();
+      await ctx2.fs.writeBytes('art/mochi.psd', examplePsd());
+      await run(ctx2, [
+        { name: 'part.create', args: { exportId: 'PartBody', name: 'Body' } },
+        { name: 'art.import', args: { path: 'art/mochi.psd', parent: '$0' } },
+      ]);
+      expect(ctx2.session.view.ofKind('part').map((p) => p.exportId)).toEqual(['PartBody']);
+    },
+  );
 
   it('imports OpenRaster and PNG folders; dry runs commit nothing; is deterministic', async () => {
     const ctx = context();
@@ -306,7 +316,7 @@ describe('mesh.generate and mesh.regenerate', () => {
       expect(moved!.positions[i]! - rest!.positions[i]!).toBeCloseTo(10, 4);
   });
 
-  it('explain failures with fixes', async () => {
+  it('explain failures with fixes', { timeout: WORK }, async () => {
     const ctx = context();
     await ctx.fs.writeBytes('big.png', encodePng(shape(600, 600, 'rect', [1, 1, 1])));
     await run(ctx, [{ name: 'art.import', args: { path: 'big.png', meshes: false } }]);

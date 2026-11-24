@@ -199,11 +199,12 @@ jobs:
   # (packages/desktop/release.mjs): the gate again, a draft pre-release with the four zips and the
   # notes, every file downloaded back and compared with what was built, the tag read again, then
   # published. The starts differ only in the tag rule: a pushed tag must point at the run's
-  # commit; by hand, no tag may exist yet. Nothing half-made is left: after a failure, the release
-  # this run created is deleted (draft or published), and a tag only if this run made it by
-  # publishing (by hand, at the run's commit). A tag made with the run's own token starts no
-  # workflow run, so publishing does not start this workflow again. A rehearsal takes the same
-  # steps with its throwaway tag (the rule of a run by hand), then removes the release and the tag.
+  # commit; by hand, no tag may exist yet. Nothing half-made is left: a failure before publishing
+  # deletes the draft this run created. Once published, a release is never deleted by the run: a
+  # check that still fails says «Published, but …» and a person decides. A tag made with the run's
+  # own token starts no workflow run, so publishing does not start this workflow again. A
+  # rehearsal takes the same steps with its throwaway tag (the rule of a run by hand), then
+  # removes its release and tag, even after a failed check.
   release:
     needs: [check, package]
     if: >-

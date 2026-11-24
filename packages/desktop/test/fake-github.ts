@@ -4,6 +4,7 @@
  * its state in memory, so a test can look at what is left after a step, change it between steps
  * (a person pushing a tag), or change it in the middle of one (`hooks`).
  */
+import { createHash } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 
 export interface FakeAsset {
@@ -36,6 +37,11 @@ export interface FakeHooks {
   afterPatch?: (state: FakeState, release: FakeRelease) => void;
   /** A file whose stored bytes differ from what was uploaded. */
   corrupt?: string;
+  /**
+   * How to answer the `count`th request (from 1) for `method path`: 'fail' answers 503 without
+   * doing anything; 'drop' does what was asked, then closes the connection without an answer.
+   */
+  answer?: (method: string, path: string, count: number) => 'fail' | 'drop' | undefined;
 }
 export interface Seen {
   method: string;
@@ -52,9 +58,15 @@ const body = (req: IncomingMessage) =>
     req.on('end', () => resolve(Buffer.concat(parts)));
   });
 
+// As GitHub answers: each file with its size and the SHA-256 of what is stored.
 const view = ({ assets, ...r }: FakeRelease) => ({
   ...r,
-  assets: assets.map(({ id, name, size }) => ({ id, name, size })),
+  assets: assets.map(({ id, name, data }) => ({
+    id,
+    name,
+    size: data.length,
+    digest: `sha256:${createHash('sha256').update(data).digest('hex')}`,
+  })),
 });
 
 export async function fakeGitHub(init: Partial<FakeState> = {}, hooks: FakeHooks = {}) {
@@ -66,6 +78,7 @@ export async function fakeGitHub(init: Partial<FakeState> = {}, hooks: FakeHooks
   const seen: Seen[] = [];
   let next = 1000;
   let url = '';
+  const counts = new Map<string, number>();
   const server: Server = createServer(async (req, res) => {
     const u = new URL(req.url!, url);
     const p = u.pathname;
@@ -76,10 +89,19 @@ export async function fakeGitHub(init: Partial<FakeState> = {}, hooks: FakeHooks
       contentLength: req.headers['content-length'],
       transferEncoding: req.headers['transfer-encoding'],
     });
+    const key = `${req.method} ${p}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+    const how = hooks.answer?.(req.method!, p, counts.get(key)!);
     const json = (status: number, value?: unknown) => {
+      if (how === 'drop') return void res.socket?.destroy();
       res.writeHead(status, { 'content-type': 'application/json' });
       res.end(value === undefined ? '' : JSON.stringify(value));
     };
+    if (how === 'fail') {
+      await body(req);
+      res.writeHead(503, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ message: 'Service Unavailable' }));
+    }
     const find = (id: string) => state.releases.find((r) => r.id === Number(id));
     let m: RegExpMatchArray | null;
     const repo = '/repos/o/r';

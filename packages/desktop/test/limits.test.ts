@@ -9,6 +9,11 @@ import { describe, expect, it } from 'vitest';
 import { LIMITS } from '@mochi-maker/core';
 import { CAPS, checkFileSize, readFolder } from '../src/projectfs.js';
 
+/**
+ * The limit for the tests here that build folders past a cap on disk: the longest took 0.32 s.
+ */
+const WORK = 30_000;
+
 const MiB = 2 ** 20;
 
 function folder(files: Record<string, number>) {
@@ -28,7 +33,7 @@ describe('desktop folder reads', () => {
     expect(CAPS.fileBytes).toBe(LIMITS.fileBytes);
   });
 
-  it('refuses a folder over a cap before reading it', async () => {
+  it('refuses a folder over a cap before reading it', { timeout: WORK }, async () => {
     const before = process.memoryUsage().arrayBuffers;
     await expect(readFolder(folder({ 'a.png': 100 * MiB }), CAPS.model)).rejects.toThrow(
       /a\.png is too large: 100 MiB, more than the 64 MiB/,

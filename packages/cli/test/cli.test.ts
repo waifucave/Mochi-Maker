@@ -7,6 +7,12 @@ import { main } from '../src/main.js';
 import { decodePng } from '@mochi-maker/art';
 import { reimportPsd, syntheticPsd } from '../../art/test/synthetic.js';
 
+/**
+ * The limit for the tests here that export models through the command line and load them in
+ * Mochi2D, or import art with previews: the longest took 1.0 s on two busy cores.
+ */
+const WORK = 30_000;
+
 let dir: string;
 
 async function cli(...args: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
@@ -189,7 +195,7 @@ describe('mochi-maker', () => {
     expect((await cli('describe')).stdout).toContain('keyform.set');
   });
 
-  it('re-imports changed art and reports what to re-fit', async () => {
+  it('re-imports changed art and reports what to re-fit', { timeout: WORK }, async () => {
     const p = join(dir, 'reimport.mochi');
     await cli('new', p);
     const art = join(dir, 'character.psd');
@@ -208,61 +214,67 @@ describe('mochi-maker', () => {
     expect(again.stdout).toMatch(/0 changed, 4 unchanged, 0 added, 1 removed/);
   });
 
-  it('imports art with previews, and runs operations from command files', async () => {
-    const p = join(dir, 'art.mochi');
-    await cli('new', p);
-    await writeFile(join(dir, 'char.psd'), syntheticPsd());
-    const dry = await cli('import', p, join(dir, 'char.psd'), '--dry-run', '--json');
-    expect(JSON.parse(dry.stdout).committed).toBe(false);
-    const r = await cli(
-      'import',
-      p,
-      join(dir, 'char.psd'),
-      '--spacing',
-      '12',
-      '--preview',
-      join(dir, 'import.png'),
-    );
-    expect(r.code).toBe(0);
-    expect(r.stdout).toMatch(/Imported 6 layer\(s\), 1 part\(s\), 5 mesh\(es\)/);
-    expect(r.stdout).toMatch(/note: Head\/Eye: blend mode multiply is not applied/);
-    expect(decodePng(new Uint8Array(await readFile(join(dir, 'import.png')))).width).toBe(200);
-    expect((await readdir(join(p, 'assets'))).length).toBe(6);
-    expect((await readdir(join(p, 'meshes'))).length).toBe(5);
+  it(
+    'imports art with previews, and runs operations from command files',
+    { timeout: WORK },
+    async () => {
+      const p = join(dir, 'art.mochi');
+      await cli('new', p);
+      await writeFile(join(dir, 'char.psd'), syntheticPsd());
+      const dry = await cli('import', p, join(dir, 'char.psd'), '--dry-run', '--json');
+      expect(JSON.parse(dry.stdout).committed).toBe(false);
+      const r = await cli(
+        'import',
+        p,
+        join(dir, 'char.psd'),
+        '--spacing',
+        '12',
+        '--preview',
+        join(dir, 'import.png'),
+      );
+      expect(r.code).toBe(0);
+      expect(r.stdout).toMatch(/Imported 6 layer\(s\), 1 part\(s\), 5 mesh\(es\)/);
+      expect(r.stdout).toMatch(/note: Head\/Eye: blend mode multiply is not applied/);
+      expect(decodePng(new Uint8Array(await readFile(join(dir, 'import.png')))).width).toBe(200);
+      expect((await readdir(join(p, 'assets'))).length).toBe(6);
+      expect((await readdir(join(p, 'meshes'))).length).toBe(5);
 
-    await writeFile(
-      join(dir, 'regen.jsonl'),
-      JSON.stringify({
-        name: 'mesh.regenerate',
-        args: { target: '@mesh:ArtMesh_Face', spacing: 8 },
-      }),
-    );
-    const rg = await cli(
-      'run',
-      p,
-      join(dir, 'regen.jsonl'),
-      '--preview',
-      join(dir, 'previews'),
-      '--json',
-    );
-    expect(rg.code).toBe(0);
-    expect(JSON.parse(rg.stdout).previews[0]).toMatch(/New mesh for/);
-    expect(await readdir(join(dir, 'previews'))).toEqual(['preview-1.png']);
-    // The project reloads cleanly and the history replays without the PSD.
-    expect((await cli('validate', p, '--json')).stdout).toContain('"violations": []');
-    const out = join(dir, 'art-replayed.mochi');
-    expect((await cli('replay', join(p, '.mochi-cache/history.jsonl'), '--out', out)).code).toBe(0);
-    expect(await readFile(join(out, 'parts.json'), 'utf8')).toBe(
-      await readFile(join(p, 'parts.json'), 'utf8'),
-    );
+      await writeFile(
+        join(dir, 'regen.jsonl'),
+        JSON.stringify({
+          name: 'mesh.regenerate',
+          args: { target: '@mesh:ArtMesh_Face', spacing: 8 },
+        }),
+      );
+      const rg = await cli(
+        'run',
+        p,
+        join(dir, 'regen.jsonl'),
+        '--preview',
+        join(dir, 'previews'),
+        '--json',
+      );
+      expect(rg.code).toBe(0);
+      expect(JSON.parse(rg.stdout).previews[0]).toMatch(/New mesh for/);
+      expect(await readdir(join(dir, 'previews'))).toEqual(['preview-1.png']);
+      // The project reloads cleanly and the history replays without the PSD.
+      expect((await cli('validate', p, '--json')).stdout).toContain('"violations": []');
+      const out = join(dir, 'art-replayed.mochi');
+      expect((await cli('replay', join(p, '.mochi-cache/history.jsonl'), '--out', out)).code).toBe(
+        0,
+      );
+      expect(await readFile(join(out, 'parts.json'), 'utf8')).toBe(
+        await readFile(join(p, 'parts.json'), 'utf8'),
+      );
 
-    const d = await cli('describe', '--json');
-    expect(JSON.parse(d.stdout)).toEqual(
-      expect.arrayContaining([
-        { name: 'art.import', kind: 'operation', summary: expect.any(String) },
-      ]),
-    );
-  });
+      const d = await cli('describe', '--json');
+      expect(JSON.parse(d.stdout)).toEqual(
+        expect.arrayContaining([
+          { name: 'art.import', kind: 'operation', summary: expect.any(String) },
+        ]),
+      );
+    },
+  );
 
   it('exports a model template and applies it', async () => {
     const golden = (n: string) =>
@@ -349,7 +361,7 @@ describe('mochi-maker', () => {
     ).toBe(2);
   }, 60_000);
 
-  it('exports a model folder or zip that Mochi2D loads from disk', async () => {
+  it('exports a model folder or zip that Mochi2D loads from disk', { timeout: WORK }, async () => {
     const p = join(dir, 'exp.mochi');
     await cli('new', p);
     await writeFile(join(dir, 'exp.psd'), syntheticPsd());

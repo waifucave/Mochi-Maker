@@ -12,6 +12,12 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+/**
+ * The limit for the tests here that read every file in the repository: the longest took 0.86 s on
+ * two busy cores.
+ */
+const WORK = 30_000;
+
 const ROOT = join(import.meta.dirname, '../../..');
 
 /** What must not appear, and why. */
@@ -101,7 +107,7 @@ function trackedFiles(): string[] {
 }
 
 describe('public text', () => {
-  it('has no private references outside the clean-room folder', () => {
+  it('has no private references outside the clean-room folder', { timeout: WORK }, () => {
     const found: string[] = [];
     for (const f of trackedFiles()) {
       let text: string;

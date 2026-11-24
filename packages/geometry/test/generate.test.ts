@@ -15,6 +15,12 @@ import {
   traceOutlines,
 } from '@mochi-maker/geometry';
 
+/**
+ * The limit for the tests here that generate meshes for whole images, many times over: the longest
+ * took 2.6 s on two busy cores (1.9 s alone).
+ */
+const WORK = 30_000;
+
 /** RGBA image of random overlapping discs (and optionally a hole punched in the first). */
 function blobs(seed: number, w: number, h: number, count: number, hole: boolean): Uint8Array {
   const rnd = seededRandom(seed);
@@ -79,7 +85,7 @@ describe('outlines', () => {
 });
 
 describe('mesh generation', () => {
-  it('covers every opaque pixel, with valid forward-facing triangles', () => {
+  it('covers every opaque pixel, with valid forward-facing triangles', { timeout: WORK }, () => {
     fc.assert(
       fc.property(
         fc.integer(),

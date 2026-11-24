@@ -25,6 +25,12 @@ import { golden13, golden3 } from '../../export/test/golden.js';
 
 import { LIE, LIE_PAST, PAST, honest } from './crafted.js';
 
+/**
+ * The limit for the tests here that build large images, model folders and zips, and export them:
+ * the longest took 1.4 s on two busy cores (0.73 s alone).
+ */
+const WORK = 30_000;
+
 const mkdir = (name: string) => mkdtempSync(join(tmpdir(), `mochi-${name}-`));
 
 // ---------------------------------------------------------------- a model from others
@@ -86,19 +92,23 @@ describe('model import', () => {
     await b.project.close();
   });
 
-  it('refuses a texture past the caps, and a lying one, from a folder and from a zip', async () => {
-    for (const [texture, expectation] of [
-      [PAST, expectPast],
-      [LIE, expectLie],
-      [LIE_PAST, expectLiePast],
-    ] as const) {
-      const { files } = await model(texture);
-      for (const from of [folderOf(files), zipOf(files)]) {
-        const e = await Project.importModel(from, mkdir('p'), { date: 'd' }).catch(refusal);
-        expectation(e as { code: string; message: string });
+  it(
+    'refuses a texture past the caps, and a lying one, from a folder and from a zip',
+    { timeout: WORK },
+    async () => {
+      for (const [texture, expectation] of [
+        [PAST, expectPast],
+        [LIE, expectLie],
+        [LIE_PAST, expectLiePast],
+      ] as const) {
+        const { files } = await model(texture);
+        for (const from of [folderOf(files), zipOf(files)]) {
+          const e = await Project.importModel(from, mkdir('p'), { date: 'd' }).catch(refusal);
+          expectation(e as { code: string; message: string });
+        }
       }
-    }
-  });
+    },
+  );
 
   it('refuses them through the command line and the MCP server', async () => {
     const quiet = [
@@ -132,16 +142,22 @@ describe('model import', () => {
     await server.close();
   });
 
-  it('refuses an oversized file in a model folder or a model zip, before reading it', async () => {
-    const { files } = await model();
-    const big = new Uint8Array(LIMITS.model.maxEntryBytes + 1);
-    files.set('motions/big.motion3.json', big);
-    for (const from of [folderOf(files), zipOf(files)]) {
-      const e = await Project.importModel(from, mkdir('p'), { date: 'd' }).catch(refusal);
-      expect(e).toMatchObject({ code: 'E_TOO_LARGE' });
-      expect((e as { message: string }).message).toMatch(/big\.motion3\.json is too large: 64 MiB/);
-    }
-  });
+  it(
+    'refuses an oversized file in a model folder or a model zip, before reading it',
+    { timeout: WORK },
+    async () => {
+      const { files } = await model();
+      const big = new Uint8Array(LIMITS.model.maxEntryBytes + 1);
+      files.set('motions/big.motion3.json', big);
+      for (const from of [folderOf(files), zipOf(files)]) {
+        const e = await Project.importModel(from, mkdir('p'), { date: 'd' }).catch(refusal);
+        expect(e).toMatchObject({ code: 'E_TOO_LARGE' });
+        expect((e as { message: string }).message).toMatch(
+          /big\.motion3\.json is too large: 64 MiB/,
+        );
+      }
+    },
+  );
 
   it('leaves out a compressed motion sound, saying what it is', async () => {
     const g = await golden13();
@@ -212,24 +228,28 @@ describe('the caps Mochi Maker passes Mochi2D', () => {
     expect(BUILD_TEXTURES).toEqual({ maxSide: 16384, maxPixels: 2 ** 27, maxTotalPixels: 2 ** 30 });
   });
 
-  it('an export never holds a texture Mochi2D refuses by default, and warns past the caps for others', () => {
-    const pages = (n: number) => {
-      const files = new Map<string, Uint8Array>();
-      const page = honest(8192, 8192);
-      for (let i = 0; i < n; i++) files.set(`t/${i}.png`, page);
-      return files;
-    };
-    const run = (files: Map<string, Uint8Array>) => {
-      const problems: ExportProblem[] = [];
-      checkTextures([...files.keys()], files, problems);
-      return problems.map((p) => [p.severity, p.code]);
-    };
-    expect(run(pages(4))).toEqual([]); // 2^28 pixels: within the caps for models from others
-    expect(run(pages(5))).toEqual([['warning', 'textures-past-caps-for-others']]);
-    expect(run(pages(17))).toEqual([['error', 'textures-too-large']]); // past 2^30
-    const one = new Map([['t/a.png', LIE]]);
-    expect(run(one)).toEqual([['error', 'texture-refused']]); // Mochi2D: too short to hold it
-  });
+  it(
+    'an export never holds a texture Mochi2D refuses by default, and warns past the caps for others',
+    { timeout: WORK },
+    () => {
+      const pages = (n: number) => {
+        const files = new Map<string, Uint8Array>();
+        const page = honest(8192, 8192);
+        for (let i = 0; i < n; i++) files.set(`t/${i}.png`, page);
+        return files;
+      };
+      const run = (files: Map<string, Uint8Array>) => {
+        const problems: ExportProblem[] = [];
+        checkTextures([...files.keys()], files, problems);
+        return problems.map((p) => [p.severity, p.code]);
+      };
+      expect(run(pages(4))).toEqual([]); // 2^28 pixels: within the caps for models from others
+      expect(run(pages(5))).toEqual([['warning', 'textures-past-caps-for-others']]);
+      expect(run(pages(17))).toEqual([['error', 'textures-too-large']]); // past 2^30
+      const one = new Map([['t/a.png', LIE]]);
+      expect(run(one)).toEqual([['error', 'texture-refused']]); // Mochi2D: too short to hold it
+    },
+  );
 });
 
 // ---------------------------------------------------------------- pictures in other formats

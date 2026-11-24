@@ -15,6 +15,12 @@ import {
 import { ART_OPERATIONS, decodePng, type ReimportResult } from '@mochi-maker/art';
 import { reimportPsd } from './synthetic.js';
 
+/**
+ * The limit for the tests here that import art and re-import a changed copy: the longest took 0.35
+ * s on two busy cores.
+ */
+const WORK = 30_000;
+
 const PATH = 'art/character.psd';
 
 async function imported() {
@@ -40,7 +46,7 @@ async function imported() {
 }
 
 describe('art.reimport', () => {
-  it('reports without changing anything on a dry run', async () => {
+  it('reports without changing anything on a dry run', { timeout: WORK }, async () => {
     const p = await imported();
     const hash = documentHash(p.session.doc);
     const rev = p.session.revision;

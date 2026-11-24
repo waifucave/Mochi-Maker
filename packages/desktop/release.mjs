@@ -7,7 +7,9 @@
 //   node release.mjs files     downloads every file of the draft back; each must be one of the
 //                              four, byte for byte (SHA-256)
 //   node release.mjs publish   reads the tag again, then publishes the draft
-//   node release.mjs verify    the tag points at the run's commit; a published pre-release
+//   node release.mjs verify    the tag points at the run's commit; a published pre-release with
+//                              the four files as built (it reads again a few times before it
+//                              concludes; a problem then is "Published, but …")
 //   node release.mjs remove    a rehearsal's end: the cleanup, then a check that nothing is left
 //   node release.mjs cleanup   after a failure: deletes what this run made, and nothing else
 //
@@ -22,10 +24,12 @@
 // its tag must be `rehearsal-<run number>`: every step refuses any other tag for it, so a
 // rehearsal can never create, replace or delete `v<version>` or its release.
 //
-// **The cleanup rule** (cleanupPlan): it deletes only the release this run created (by its id,
-// draft or published, and only if it still carries this run's tag), and a tag only if the run was
-// started by hand or is a rehearsal, this run published the release, and the tag points at this
-// run's commit. A tag pushed by a person is never deleted.
+// **The cleanup rule** (cleanupPlan): it deletes only the release this run created (by its id, and
+// only if it still carries this run's tag), and only while it is a draft. Once a real release is
+// published, the run never deletes it, nor its tag: if a check fails after that, the job fails
+// with "Published, but …" and a person decides. A rehearsal keeps its own rule, since nothing of
+// it may stay: its release, published or not, and its tag if this run published it at this run's
+// commit.
 import { createHash } from 'node:crypto';
 import { appendFileSync, createReadStream, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -72,12 +76,9 @@ export function cleanupPlan({ start, tag, sha, release, tagSha }) {
   if (start === 'rehearsal' && !REHEARSAL_TAG.test(tag ?? ''))
     return { release: false, tag: false };
   const ours = release !== null && release.tag_name === tag;
+  if (start !== 'rehearsal') return { release: ours && release.draft === true, tag: false };
   const publishedByRun = ours && release.draft === false;
-  const madeTag = start === 'dispatch' || start === 'rehearsal';
-  return {
-    release: ours,
-    tag: madeTag && publishedByRun && tagSha !== null && tagSha === sha,
-  };
+  return { release: ours, tag: publishedByRun && tagSha !== null && tagSha === sha };
 }
 
 /** The release's title: a rehearsal's says so. */
@@ -148,6 +149,63 @@ async function checkTag(gh, env) {
   if (problems.length) throw new Error(problems.join('\n'));
 }
 
+const wait = (ms) => new Promise((r) => setTimeout(r, Number(ms)));
+
+/** `read`, tried again a few times when it fails. */
+async function again(env, read) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await read();
+    } catch (e) {
+      if (attempt === 3) throw e;
+      await wait(env.VERIFY_WAIT_MS ?? 5000);
+    }
+  }
+}
+
+/**
+ * What differs between the published release and what this run built (none when right), and the
+ * release as read.
+ */
+async function published(gh, env, files) {
+  const problems = [];
+  const tagSha = await gh.tagCommit(env.TAG);
+  if (tagSha === null) problems.push(`the tag ${env.TAG} does not exist`);
+  else if (tagSha !== env.GITHUB_SHA)
+    problems.push(`the tag ${env.TAG} is at ${tagSha}, not at this run's commit ${env.GITHUB_SHA}`);
+  const r = await gh.call('GET', `/releases/${env.RELEASE_ID}`);
+  if (!r) return { problems: [...problems, `the release ${env.RELEASE_ID} cannot be found`] };
+  if (r.tag_name !== env.TAG) problems.push(`the release is for ${r.tag_name}, not ${env.TAG}`);
+  if (r.draft) problems.push('the release is still a draft');
+  if (!r.prerelease) problems.push('the release is not marked as a pre-release');
+  for (const f of files) {
+    const a = (r.assets ?? []).find((x) => x.name === f.name);
+    if (!a) problems.push(`${f.name} is missing`);
+    else if (a.size !== f.size) problems.push(`${f.name} has ${a.size} bytes, not ${f.size}`);
+    else if (a.digest && a.digest !== `sha256:${f.sha256}`)
+      problems.push(`${f.name} has the digest ${a.digest}, not the built sha256:${f.sha256}`);
+  }
+  for (const a of r.assets ?? [])
+    if (!RELEASE_FILES.includes(a.name)) problems.push(`the release also holds ${a.name}`);
+  return { problems, release: r };
+}
+
+/** A rehearsal's end: no release or draft for its tag, and no tag; it reads again a few times. */
+async function nothingLeft(gh, env, log) {
+  let left;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    if (attempt) await wait(env.REMOVE_WAIT_MS ?? 3000);
+    const releases = (await gh.releases()).filter((r) => r.tag_name === env.TAG);
+    const tagSha = await gh.tagCommit(env.TAG);
+    left = [
+      ...releases.map((r) => `the ${r.draft ? 'draft' : 'release'} ${r.id}`),
+      ...(tagSha ? [`the tag ${env.TAG} at ${tagSha}`] : []),
+    ];
+    if (left.length === 0) return log(`nothing left of ${env.TAG}: no release, no draft, no tag`);
+  }
+  throw new Error(`The rehearsal could not clean up: ${left.join(', ')} is left.`);
+}
+
 /** The steps, by name; each throws on a problem. `log` prints a line. */
 export const steps = {
   async draft(env, log) {
@@ -215,22 +273,51 @@ export const steps = {
     guard(env);
     const gh = github(env);
     await checkTag(gh, env);
-    await gh.call('PATCH', `/releases/${env.RELEASE_ID}`, { json: { draft: false } });
-    log(`published ${env.TAG}`);
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await gh.call('PATCH', `/releases/${env.RELEASE_ID}`, { json: { draft: false } });
+        return log(`published ${env.TAG}`);
+      } catch (e) {
+        // No answer, or the server's own error: the call may have taken effect. Read the release
+        // again; send the call again only if it is still a draft.
+        if ((e.status !== undefined && e.status < 500) || attempt === 3) throw e;
+        log(`the publishing call got no answer (${e.message}); reading the release again`);
+        const r = await again(env, () => gh.call('GET', `/releases/${env.RELEASE_ID}`));
+        if (r?.draft === false)
+          return log(`published ${env.TAG} (the call took effect; its answer was lost)`);
+        if (!r) throw new Error(`The release ${env.RELEASE_ID} is gone after the publishing call.`);
+        log('still a draft: sending the publishing call again');
+      }
+    }
   },
 
   async verify(env, log) {
     need(env, 'TAG', 'RELEASE_ID', 'GITHUB_SHA');
     const gh = github(env);
-    const tagSha = await gh.tagCommit(env.TAG);
-    if (tagSha !== env.GITHUB_SHA)
-      throw new Error(`The tag ${env.TAG} is at ${tagSha ?? 'nothing'}, not ${env.GITHUB_SHA}.`);
-    const r = await gh.call('GET', `/releases/${env.RELEASE_ID}`);
-    if (!r || r.draft || !r.prerelease || r.tag_name !== env.TAG)
-      throw new Error(`The release is not a published pre-release of ${env.TAG}.`);
-    log(
-      JSON.stringify({ name: r.name, tag: r.tag_name, draft: r.draft, prerelease: r.prerelease }),
-    );
+    const files = await built(env.DIST || 'dist');
+    const attempts = Number(env.VERIFY_ATTEMPTS ?? 5);
+    let problems = [];
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      if (attempt > 1) await wait(env.VERIFY_WAIT_MS ?? 5000);
+      let r;
+      try {
+        ({ problems, release: r } = await published(gh, env, files));
+      } catch (e) {
+        problems = [`a read failed (${e.message})`];
+      }
+      if (problems.length === 0) {
+        return log(
+          JSON.stringify({
+            name: r.name,
+            tag: r.tag_name,
+            draft: r.draft,
+            prerelease: r.prerelease,
+          }),
+        );
+      }
+      log(`check ${attempt} of ${attempts}: ${problems.join('; ')}`);
+    }
+    throw new Error(`Published, but ${problems.join('; ')}.`);
   },
 
   async remove(env, log) {
@@ -238,24 +325,12 @@ export const steps = {
     if (env.START !== 'rehearsal') throw new Error("remove is a rehearsal's last step only.");
     guard(env);
     await steps.cleanup(env, log);
-    // Nothing of the rehearsal may be left: no release or draft for its tag, and no tag.
-    const gh = github(env);
-    let left;
-    for (let attempt = 0; attempt < 5; attempt++) {
-      if (attempt) await new Promise((r) => setTimeout(r, Number(env.REMOVE_WAIT_MS ?? 3000)));
-      const releases = (await gh.releases()).filter((r) => r.tag_name === env.TAG);
-      const tagSha = await gh.tagCommit(env.TAG);
-      left = [
-        ...releases.map((r) => `the ${r.draft ? 'draft' : 'release'} ${r.id}`),
-        ...(tagSha ? [`the tag ${env.TAG} at ${tagSha}`] : []),
-      ];
-      if (left.length === 0) return log(`nothing left of ${env.TAG}: no release, no draft, no tag`);
-    }
-    throw new Error(`The rehearsal could not clean up: ${left.join(', ')} is left.`);
   },
 
   async cleanup(env, log) {
     if (!env.TAG || !env.RELEASE_ID) return log('nothing to clean: this run created no release');
+    if (env.START === 'rehearsal' && !REHEARSAL_TAG.test(env.TAG))
+      return log(`nothing to clean: a rehearsal never touches ${env.TAG}`);
     const gh = github(env);
     const release = await gh.call('GET', `/releases/${env.RELEASE_ID}`);
     const tagSha = await gh.tagCommit(env.TAG);
@@ -266,16 +341,20 @@ export const steps = {
       release,
       tagSha,
     });
-    if (release !== null && !plan.release)
-      log(`kept the release ${env.RELEASE_ID}: its tag is ${release.tag_name}, not ${env.TAG}`);
     if (plan.release) {
       await gh.call('DELETE', `/releases/${env.RELEASE_ID}`);
       log(`deleted the ${release.draft ? 'draft' : 'release'} ${env.RELEASE_ID}`);
-    }
+    } else if (release !== null && release.tag_name !== env.TAG)
+      log(`kept the release ${env.RELEASE_ID}: its tag is ${release.tag_name}, not ${env.TAG}`);
+    else if (release !== null)
+      log(
+        `kept the published release ${env.RELEASE_ID}: once published, a release is never deleted by the run; a person decides`,
+      );
     if (plan.tag) {
       await gh.call('DELETE', `/git/refs/tags/${encodeURIComponent(env.TAG)}`);
       log(`deleted the tag ${env.TAG}, made by this run at ${tagSha}`);
     } else if (tagSha !== null) log(`kept the tag ${env.TAG} (at ${tagSha})`);
+    if (env.START === 'rehearsal') await nothingLeft(gh, env, log);
   },
 };
 

@@ -26,6 +26,12 @@ import { ModelInstance, loadMoc, readMoc, writeMoc, type MocData } from 'mochi2d
 import { exportModel, importModel, invertF32, MODEL_IMPORT_NOTICE } from '../src/index.js';
 import { GOLDENS, golden1, golden12, golden2, golden5, golden8 } from './golden.js';
 
+/**
+ * The limit for the tests here that export the sample model and import it again: the longest took
+ * 0.35 s on two busy cores.
+ */
+const WORK = 30_000;
+
 const DATE = '2026-11-20T12:00:00.000Z';
 const POSES = 300;
 
@@ -153,24 +159,28 @@ describe('model import: the round trip', () => {
       }
     }, 120_000);
 
-  it('the sample model (samples/mochi) exports again byte for byte', async () => {
-    const dir = join(import.meta.dirname, '../../../samples/mochi');
-    const files = new Map<string, Uint8Array>();
-    for (const f of await readdir(dir, { recursive: true, withFileTypes: true }))
-      if (f.isFile())
-        files.set(
-          relative(dir, join(f.parentPath, f.name)).split('\\').join('/'),
-          await readFile(join(f.parentPath, f.name)),
-        );
-    const assets = new MemoryAssetStore();
-    const r = await importModel(files, 'mochi.model3.json', assets, { date: DATE });
-    expect(r.report.skipped).toEqual([]);
-    expect(r.report.features).toMatchObject({ glue: false, blendShapes: false });
-    const again = await exportModel(r.document, assets, { features: NO_FEATURES });
-    expect([...again.files.keys()].sort()).toEqual([...files.keys()].sort());
-    for (const [path, bytes] of files)
-      expect(Buffer.from(again.files.get(path)!).equals(Buffer.from(bytes)), path).toBe(true);
-  });
+  it(
+    'the sample model (samples/mochi) exports again byte for byte',
+    { timeout: WORK },
+    async () => {
+      const dir = join(import.meta.dirname, '../../../samples/mochi');
+      const files = new Map<string, Uint8Array>();
+      for (const f of await readdir(dir, { recursive: true, withFileTypes: true }))
+        if (f.isFile())
+          files.set(
+            relative(dir, join(f.parentPath, f.name)).split('\\').join('/'),
+            await readFile(join(f.parentPath, f.name)),
+          );
+      const assets = new MemoryAssetStore();
+      const r = await importModel(files, 'mochi.model3.json', assets, { date: DATE });
+      expect(r.report.skipped).toEqual([]);
+      expect(r.report.features).toMatchObject({ glue: false, blendShapes: false });
+      const again = await exportModel(r.document, assets, { features: NO_FEATURES });
+      expect([...again.files.keys()].sort()).toEqual([...files.keys()].sort());
+      for (const [path, bytes] of files)
+        expect(Buffer.from(again.files.get(path)!).equals(Buffer.from(bytes)), path).toBe(true);
+    },
+  );
 
   it('records which re-exported .moc3 files are byte-identical', () => {
     expect(table.filter((t) => !t.mocBytes)).toEqual([]);

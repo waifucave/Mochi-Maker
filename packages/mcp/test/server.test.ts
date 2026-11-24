@@ -7,6 +7,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { MochiMcpServer, MAX_CALLS_PER_SECOND, serveStdio } from '@mochi-maker/mcp';
 import { syntheticPsd } from '../../art/test/synthetic.js';
 
+/**
+ * The limit for the tests here that take a project through a whole session (art, runs, save,
+ * export): the longest took 0.38 s on two busy cores.
+ */
+const WORK = 30_000;
+
 let root: string;
 let outside: string;
 beforeAll(async () => {
@@ -78,105 +84,109 @@ describe('MCP server', () => {
     expect((await rpc('nope/method')).error.code).toBe(-32601);
   });
 
-  it('creates a project, runs, dry-runs, undoes, diffs, imports art, saves and exports', async () => {
-    const { tool } = client();
-    expect((await tool('mochi_query', { kind: 'parameter' })).error).toMatchObject({
-      category: 'no_project',
-      code: 'E_NO_PROJECT',
-    });
-    const path = join(root, 'new.mochi');
-    const created = await tool('mochi_project', {
-      action: 'new',
-      path,
-      canvas: { width: 512, height: 512 },
-    });
-    expect(created.data).toMatchObject({ open: true, revision: 0, dirty: false });
+  it(
+    'creates a project, runs, dry-runs, undoes, diffs, imports art, saves and exports',
+    { timeout: WORK },
+    async () => {
+      const { tool } = client();
+      expect((await tool('mochi_query', { kind: 'parameter' })).error).toMatchObject({
+        category: 'no_project',
+        code: 'E_NO_PROJECT',
+      });
+      const path = join(root, 'new.mochi');
+      const created = await tool('mochi_project', {
+        action: 'new',
+        path,
+        canvas: { width: 512, height: 512 },
+      });
+      expect(created.data).toMatchObject({ open: true, revision: 0, dirty: false });
 
-    const run = await tool('mochi_run', {
-      label: 'Params',
-      commands: [
-        { name: 'param.create', args: { exportId: 'ParamA', min: 0, max: 1, default: 0 } },
-        { name: 'part.create', args: { exportId: 'PartA' } },
-      ],
-    });
-    expect(run.data).toMatchObject({ committed: true, revision: 1 });
-    expect(run.data.diff.added.map((x: Json) => x.kind).sort()).toEqual(['parameter', 'part']);
+      const run = await tool('mochi_run', {
+        label: 'Params',
+        commands: [
+          { name: 'param.create', args: { exportId: 'ParamA', min: 0, max: 1, default: 0 } },
+          { name: 'part.create', args: { exportId: 'PartA' } },
+        ],
+      });
+      expect(run.data).toMatchObject({ committed: true, revision: 1 });
+      expect(run.data.diff.added.map((x: Json) => x.kind).sort()).toEqual(['parameter', 'part']);
 
-    const dry = await tool('mochi_run', {
-      label: 'Try',
-      dryRun: true,
-      commands: [{ name: 'part.create', args: { exportId: 'PartB' } }],
-    });
-    expect(dry.data.committed).toBe(false);
-    expect((await tool('mochi_query', { kind: 'part' })).data.total).toBe(1);
+      const dry = await tool('mochi_run', {
+        label: 'Try',
+        dryRun: true,
+        commands: [{ name: 'part.create', args: { exportId: 'PartB' } }],
+      });
+      expect(dry.data.committed).toBe(false);
+      expect((await tool('mochi_query', { kind: 'part' })).data.total).toBe(1);
 
-    const stale = await tool('mochi_run', {
-      label: 'Stale',
-      expectRevision: 0,
-      commands: [{ name: 'part.create', args: {} }],
-    });
-    expect(stale.error).toMatchObject({ category: 'failed', code: 'E_REVISION_MISMATCH' });
+      const stale = await tool('mochi_run', {
+        label: 'Stale',
+        expectRevision: 0,
+        commands: [{ name: 'part.create', args: {} }],
+      });
+      expect(stale.error).toMatchObject({ category: 'failed', code: 'E_REVISION_MISMATCH' });
 
-    const bad = await tool('mochi_run', {
-      label: 'Bad',
-      commands: [
-        {
-          name: 'rig.addBinding',
-          args: { target: '@part:PartA', parameter: '@param:ParamA', keys: [0.5] },
-        },
-      ],
-    });
-    expect(bad.error).toMatchObject({
-      code: 'E_KEY_NOT_ON_PARAMETER',
-      command: 'rig.addBinding',
-      at: 0,
-    });
-    expect(bad.error.fixes.length).toBeGreaterThan(0);
+      const bad = await tool('mochi_run', {
+        label: 'Bad',
+        commands: [
+          {
+            name: 'rig.addBinding',
+            args: { target: '@part:PartA', parameter: '@param:ParamA', keys: [0.5] },
+          },
+        ],
+      });
+      expect(bad.error).toMatchObject({
+        code: 'E_KEY_NOT_ON_PARAMETER',
+        command: 'rig.addBinding',
+        at: 0,
+      });
+      expect(bad.error.fixes.length).toBeGreaterThan(0);
 
-    const imported = await tool('mochi_import_art', { path: join(root, 'art.psd') });
-    expect(imported.error).toBeUndefined();
-    expect(imported.data.committed).toBe(true);
-    const undo = await tool('mochi_undo');
-    expect(undo.data.diff.removed.length).toBeGreaterThan(0);
-    await tool('mochi_redo');
-    expect((await tool('mochi_history')).data.history.map((h: Json) => h.author)).toEqual([
-      'agent:test',
-      'agent:test',
-    ]);
-    expect((await tool('mochi_diff', { from: 0 })).data.added.length).toBeGreaterThan(2);
+      const imported = await tool('mochi_import_art', { path: join(root, 'art.psd') });
+      expect(imported.error).toBeUndefined();
+      expect(imported.data.committed).toBe(true);
+      const undo = await tool('mochi_undo');
+      expect(undo.data.diff.removed.length).toBeGreaterThan(0);
+      await tool('mochi_redo');
+      expect((await tool('mochi_history')).data.history.map((h: Json) => h.author)).toEqual([
+        'agent:test',
+        'agent:test',
+      ]);
+      expect((await tool('mochi_diff', { from: 0 })).data.added.length).toBeGreaterThan(2);
 
-    const motion = await tool('mochi_run', {
-      label: 'Wave',
-      commands: [
-        { name: 'motion.create', args: { name: 'wave', group: 'TapBody', duration: 1, fps: 30 } },
-        {
-          name: 'motion.setCurve',
-          args: {
-            target: '$0',
-            curve: {
-              target: 'parameter',
-              object: '@param:ParamA',
-              segments: [0, 0, 1, 0.25, 1, 0.75, 1, 1, 0],
+      const motion = await tool('mochi_run', {
+        label: 'Wave',
+        commands: [
+          { name: 'motion.create', args: { name: 'wave', group: 'TapBody', duration: 1, fps: 30 } },
+          {
+            name: 'motion.setCurve',
+            args: {
+              target: '$0',
+              curve: {
+                target: 'parameter',
+                object: '@param:ParamA',
+                segments: [0, 0, 1, 0.25, 1, 0.75, 1, 1, 0],
+              },
             },
           },
-        },
-        { name: 'motion.reorder', args: { target: '$0', index: 0 } },
-      ],
-    });
-    expect(motion.error).toBeUndefined();
-    const validate = await tool('mochi_validate', { targetVersion: 'auto' });
-    expect(validate.data.violations).toEqual([]);
-    expect(validate.data.export).toMatchObject({ ok: true, mocVersion: 5 });
-    const saved = await tool('mochi_project', { action: 'save' });
-    expect(saved.data.dirty).toBe(false);
-    const out = join(root, 'export');
-    const exp = await tool('mochi_export', { out });
-    expect(exp.data.mocVersion).toBe(5);
-    expect(exp.data.files.map((f: Json) => f.path)).toContain('motions/wave.motion3.json');
-    expect(
-      JSON.parse(await readFile(join(out, 'mochi-export.json'), 'utf8')).files.length,
-    ).toBeGreaterThan(2);
-  });
+          { name: 'motion.reorder', args: { target: '$0', index: 0 } },
+        ],
+      });
+      expect(motion.error).toBeUndefined();
+      const validate = await tool('mochi_validate', { targetVersion: 'auto' });
+      expect(validate.data.violations).toEqual([]);
+      expect(validate.data.export).toMatchObject({ ok: true, mocVersion: 5 });
+      const saved = await tool('mochi_project', { action: 'save' });
+      expect(saved.data.dirty).toBe(false);
+      const out = join(root, 'export');
+      const exp = await tool('mochi_export', { out });
+      expect(exp.data.mocVersion).toBe(5);
+      expect(exp.data.files.map((f: Json) => f.path)).toContain('motions/wave.motion3.json');
+      expect(
+        JSON.parse(await readFile(join(out, 'mochi-export.json'), 'utf8')).files.length,
+      ).toBeGreaterThan(2);
+    },
+  );
 
   it('authors expressions and the pose with commands, and validates and exports them', async () => {
     const { tool } = client();

@@ -8,6 +8,12 @@ import { decodePng } from '@mochi-maker/art';
 import { Project } from '@mochi-maker/api';
 import { golden1, golden4 } from '../../export/test/golden.js';
 
+/**
+ * The limit for the tests here that render several poses through Mochi2D: the longest took 0.76 s
+ * on two busy cores.
+ */
+const WORK = 30_000;
+
 const projects: Project[] = [];
 afterAll(async () => {
   for (const p of projects) await p.close();
@@ -69,7 +75,7 @@ describe.runIf(canRender || required)('rendering', () => {
     // Room for a machine shared with other suites.
   }, 60_000);
 
-  it('sweeps a parameter as a contact sheet or frames', async () => {
+  it('sweeps a parameter as a contact sheet or frames', { timeout: WORK }, async () => {
     const p = await open(golden1);
     const sheet = await p.sweep('@param:ParamA', { steps: 3, width: 64, height: 48 });
     expect(sheet.values).toEqual([0, 0.5, 1]);
@@ -87,7 +93,7 @@ describe.runIf(canRender || required)('rendering', () => {
     ).not.toBe(0);
   });
 
-  it('diffs two revisions visually', async () => {
+  it('diffs two revisions visually', { timeout: WORK }, async () => {
     const p = await open(golden1);
     const r0 = p.revision;
     const same = await p.visualDiff(r0, r0, { width: 100, height: 75 });

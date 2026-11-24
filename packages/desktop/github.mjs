@@ -27,12 +27,19 @@ export function github(env = process.env) {
     });
   }
 
-  /** The JSON answer; null for a 404 (and for an empty answer, as a DELETE gives). */
+  /**
+   * The JSON answer, or null for an empty one (as a DELETE gives). A read that gets a 404 gives
+   * null too (the thing is not there); a write that gets a 404 is an error, where it happens.
+   * An error carries the answer's `status` (none when no answer came).
+   */
   async function call(method, path, options) {
     const res = await request(method, path, options);
-    if (res.status === 404) return null;
+    if (res.status === 404 && method === 'GET') return null;
     const text = await res.text();
-    if (!res.ok) throw new Error(`GitHub ${method} ${path}: ${res.status} ${text}`);
+    if (!res.ok)
+      throw Object.assign(new Error(`GitHub ${method} ${path}: ${res.status} ${text}`), {
+        status: res.status,
+      });
     return text ? JSON.parse(text) : null;
   }
 

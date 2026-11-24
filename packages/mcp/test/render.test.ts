@@ -9,6 +9,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { decodePng } from '@mochi-maker/art';
 import { MochiMcpServer } from '@mochi-maker/mcp';
 
+/**
+ * The limit for the tests here that render, sweep and diff through Mochi2D: the longest took 0.52
+ * s on two busy cores.
+ */
+const WORK = 30_000;
+
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 let root: string;
@@ -51,7 +57,7 @@ afterAll(async () => {
 const required = process.env.MOCHI_MAKER_REQUIRE_RENDER === '1';
 
 describe('MCP rendering', () => {
-  it('renders, sweeps, diffs visually and previews runs', async ({ skip }) => {
+  it('renders, sweeps, diffs visually and previews runs', { timeout: WORK }, async ({ skip }) => {
     if (!canRender && !required) skip();
     expect(canRender, 'rendering needs Playwright and Chromium').toBe(true);
     const r = await tool('mochi_render', { width: 120, height: 90, parameters: { ParamA: 1 } });

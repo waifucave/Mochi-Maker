@@ -10,6 +10,12 @@ import { describe, expect, it } from 'vitest';
 import { decode } from 'fast-png';
 import { ICON_SOURCE, buildIcons, rasterize, readShapes } from '../icons.mjs';
 
+/**
+ * The limit for the tests here that rasterize the icon at every size, twice: the longest took 1.2
+ * s on two busy cores.
+ */
+const WORK = 30_000;
+
 const ROOT = join(import.meta.dirname, '../../..');
 const svg = readFileSync(ICON_SOURCE, 'utf8');
 
@@ -39,27 +45,31 @@ describe('the app icon', () => {
     expect(cols).toBeGreaterThan(rows);
   });
 
-  it('builds PNGs, an .ico and an .icns, the same bytes every time', async () => {
-    const a = await buildIcons(mkdtempSync(join(tmpdir(), 'icons-')));
-    const dir = mkdtempSync(join(tmpdir(), 'icons-'));
-    const b = await buildIcons(dir);
-    expect(b).toEqual(a);
-    const png = decode(readFileSync(join(dir, 'icon-256.png')));
-    expect([png.width, png.height, png.channels]).toEqual([256, 256, 4]);
-    // The .ico: seven PNG images, 16 to 256.
-    const ico = readFileSync(join(dir, 'mochi-maker.ico'));
-    expect([ico.readUInt16LE(2), ico.readUInt16LE(4)]).toEqual([1, 7]);
-    const offset = ico.readUInt32LE(6 + 16 * 6 + 12);
-    expect(ico.subarray(offset + 1, offset + 4).toString('latin1')).toBe('PNG');
-    // The .icns: its length, then the types macOS reads, 16@2x to 512@2x.
-    const icns = readFileSync(join(dir, 'mochi-maker.icns'));
-    expect(icns.subarray(0, 4).toString('latin1')).toBe('icns');
-    expect(icns.readUInt32BE(4)).toBe(icns.length);
-    const types: string[] = [];
-    for (let o = 8; o < icns.length; o += icns.readUInt32BE(o + 4))
-      types.push(icns.subarray(o, o + 4).toString('latin1'));
-    expect(types).toEqual(['ic11', 'ic12', 'ic07', 'ic13', 'ic08', 'ic14', 'ic09', 'ic10']);
-  });
+  it(
+    'builds PNGs, an .ico and an .icns, the same bytes every time',
+    { timeout: WORK },
+    async () => {
+      const a = await buildIcons(mkdtempSync(join(tmpdir(), 'icons-')));
+      const dir = mkdtempSync(join(tmpdir(), 'icons-'));
+      const b = await buildIcons(dir);
+      expect(b).toEqual(a);
+      const png = decode(readFileSync(join(dir, 'icon-256.png')));
+      expect([png.width, png.height, png.channels]).toEqual([256, 256, 4]);
+      // The .ico: seven PNG images, 16 to 256.
+      const ico = readFileSync(join(dir, 'mochi-maker.ico'));
+      expect([ico.readUInt16LE(2), ico.readUInt16LE(4)]).toEqual([1, 7]);
+      const offset = ico.readUInt32LE(6 + 16 * 6 + 12);
+      expect(ico.subarray(offset + 1, offset + 4).toString('latin1')).toBe('PNG');
+      // The .icns: its length, then the types macOS reads, 16@2x to 512@2x.
+      const icns = readFileSync(join(dir, 'mochi-maker.icns'));
+      expect(icns.subarray(0, 4).toString('latin1')).toBe('icns');
+      expect(icns.readUInt32BE(4)).toBe(icns.length);
+      const types: string[] = [];
+      for (let o = 8; o < icns.length; o += icns.readUInt32BE(o + 4))
+        types.push(icns.subarray(o, o + 4).toString('latin1'));
+      expect(types).toEqual(['ic11', 'ic12', 'ic07', 'ic13', 'ic08', 'ic14', 'ic09', 'ic10']);
+    },
+  );
 
   it('is the editor’s favicon, and the packager and the window use what the build makes', () => {
     expect(readFileSync(join(ROOT, 'packages/editor/index.html'), 'utf8')).toContain(

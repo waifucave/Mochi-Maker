@@ -97,9 +97,11 @@ runs the same gate again, then the steps in `packages/desktop/release.mjs`:
 2. `files`: downloads every file of the draft back and compares it, by SHA-256, with what was
    built;
 3. `publish`: reads the tag again, then publishes the draft (a pre-release, while the apps are
-   unsigned);
-4. `verify`: checks that the tag points at the run's commit and that the release is a published
-   pre-release.
+   unsigned). If the call gets no answer, it reads the release again: published, it goes on;
+   still a draft, it sends the call again;
+4. `verify`: checks that the tag points at the run's commit, that the release is a published
+   pre-release, and that it holds the four files with the sizes and digests that were built. It
+   reads again a few times, some seconds apart, before it concludes anything.
 
 **The tag rule** is the one difference between the two starts; every call is the same. On a
 pushed tag, the tag must point at the run's commit. By hand, no tag may exist yet: publishing
@@ -107,12 +109,14 @@ creates it, at the run's commit. If a person pushes the tag while a run by hand 
 stops before publishing.
 
 **Nothing half-made.** Until step 3 the release is a draft, which only people with write access
-see, and by hand no tag exists yet. If any step fails, `release.mjs cleanup` deletes only what
-this run made:
+see, and by hand no tag exists yet. If a step before publishing fails, `release.mjs cleanup`
+deletes the draft this run created (by its id), and nothing else.
 
-- the release this run created, by its id, a draft or published;
-- a tag only if the run was started by hand, this run published the release, and the tag points
-  at the run's commit. A tag that a person pushed is never deleted.
+**A published release is never taken down by the run.** If `verify` still finds a problem after
+publishing, the job fails with a message that starts «Published, but …» and says what differs
+(the tag at another commit, a file missing or with another digest), and deletes nothing: neither
+the release nor its tag. A person decides what to do with it. A tag that a person pushed is never
+deleted either.
 
 Two release runs never overlap: the second waits, then stops at the gate.
 
@@ -120,7 +124,8 @@ Two release runs never overlap: the second waits, then stops at the gate.
 not) rehearses the whole release path without touching a version: the same jobs, and the same
 steps of `release.mjs` in the same order, with a throwaway tag `rehearsal-<run number>` at the
 run's commit and a title that says REHEARSAL. Its last step, `remove`, deletes the release and the
-tag with the cleanup's own rule, and fails unless nothing of the rehearsal is left. The gate
+tag with the cleanup's own rule, and fails unless nothing of the rehearsal is left. Unlike a real
+release, a rehearsal is removed even when a check fails after publishing: nothing of it may stay. The gate
 refuses it in a public repository, with «release» checked as well, or while its tag or a release
 for it exists. It never looks at `v<version>`, and every step refuses any other tag for it, so it
 cannot create, replace or delete the real release.

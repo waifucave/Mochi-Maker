@@ -21,16 +21,23 @@ const hex = (s: string): RGBA => [
 const inEllipse = (x: number, y: number, cx: number, cy: number, rx: number, ry: number) =>
   ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
 
+// The colors, parsed once: the paints are called 16 times a pixel, for every layer.
 const SKIN = hex('#f6d7c3');
+const HAIR_BACK = hex('#4a3a6a');
+const SHIRT = hex('#7fb3d5');
+const EYE_LIGHT = hex('#ffffff');
+const EYE = hex('#2c2340');
+const MOUTH = hex('#c85a6a');
+const HAIR_FRONT = hex('#5b4a80');
 const LAYERS: [string, Paint][] = [
-  ['Hair back', (x, y) => (inEllipse(x, y, 300, 310, 178, 215) ? hex('#4a3a6a') : null)],
+  ['Hair back', (x, y) => (inEllipse(x, y, 300, 310, 178, 215) ? HAIR_BACK : null)],
   [
     'Body',
     (x, y) =>
       x >= 268 && x <= 332 && y >= 420 && y <= 560
         ? SKIN
         : inEllipse(x, y, 300, 700, 165, 175) && y <= 790
-          ? hex('#7fb3d5')
+          ? SHIRT
           : null,
   ],
   ['Face', (x, y) => (inEllipse(x, y, 300, 300, 140, 160) ? SKIN : null)],
@@ -43,19 +50,19 @@ const LAYERS: [string, Paint][] = [
     name,
     (x, y) =>
       inEllipse(x, y, cx + 7, 292, 7, 7)
-        ? hex('#ffffff')
+        ? EYE_LIGHT
         : inEllipse(x, y, cx, 305, 22, 30)
-          ? hex('#2c2340')
+          ? EYE
           : null,
   ]),
-  ['Mouth', (x, y) => (inEllipse(x, y, 300, 388, 30, 11) ? hex('#c85a6a') : null)],
+  ['Mouth', (x, y) => (inEllipse(x, y, 300, 388, 30, 11) ? MOUTH : null)],
   [
     'Hair front',
     (x, y) => {
       if (!inEllipse(x, y, 300, 265, 162, 150)) return null;
       // Bangs: a scalloped lower edge.
       const edge = 215 + 28 * Math.abs(Math.sin(((x - 138) / 54) * Math.PI));
-      return y <= edge ? hex('#5b4a80') : null;
+      return y <= edge ? HAIR_FRONT : null;
     },
   ],
 ];
@@ -69,7 +76,10 @@ function rasterize(paint: Paint): {
   let [x0, y0, x1, y1] = [W, H, -1, -1];
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) {
-      let [r, g, b, a] = [0, 0, 0, 0];
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      let a = 0;
       for (let j = 0; j < 4; j++)
         for (let i = 0; i < 4; i++) {
           const c = paint(x + (i + 0.5) / 4, y + (j + 0.5) / 4);
@@ -99,8 +109,15 @@ const imageData = (
   data = new Uint8ClampedArray(width * height * 4),
 ) => ({ width, height, data, colorSpace: 'srgb' }) as unknown as ImageData;
 
-/** The example PSD's bytes (deterministic). */
+let built: Uint8Array | undefined;
+
+/** The example PSD's bytes (deterministic: built once, a fresh copy each call). */
 export function examplePsd(): Uint8Array {
+  built ??= buildPsd();
+  return built.slice();
+}
+
+function buildPsd(): Uint8Array {
   initializeCanvas(
     () => {
       throw new Error('no canvas');

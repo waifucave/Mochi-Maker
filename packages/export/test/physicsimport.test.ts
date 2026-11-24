@@ -7,6 +7,12 @@ import { Session, runItems, type Document } from '@mochi-maker/core';
 import { OPERATIONS, exportModel } from '@mochi-maker/export';
 import { GOLDENS, golden1, golden11 } from './golden.js';
 
+/**
+ * The limit for the tests here that export, import and export again every golden with physics: the
+ * longest took 0.82 s on two busy cores.
+ */
+const WORK = 30_000;
+
 const physicsOf = (files: Map<string, Uint8Array>) =>
   [...files].find(([p]) => p.endsWith('.physics3.json'))?.[1];
 
@@ -31,23 +37,27 @@ const run = (
   });
 
 describe('physics.import', () => {
-  it('round-trips every golden with physics: export, import into a copy without, export again', async () => {
-    let checked = 0;
-    for (const make of GOLDENS) {
-      const g = await make();
-      const first = physicsOf((await exportModel(g.session.doc, g.assets)).files);
-      if (!first) continue;
-      const copy = withoutPhysics(g.session.doc);
-      expect(physicsOf((await exportModel(copy.doc, g.assets)).files)).toBeUndefined();
-      const r = await run(copy, g.assets, { text: new TextDecoder().decode(first) });
-      expect(r.itemResults[0]).toMatchObject({ replaced: [], unmatched: [] });
-      const again = physicsOf((await exportModel(copy.doc, g.assets)).files)!;
-      expect(new TextDecoder().decode(again), g.name).toBe(new TextDecoder().decode(first));
-      expect(Buffer.from(again).equals(Buffer.from(first))).toBe(true);
-      checked++;
-    }
-    expect(checked).toBeGreaterThan(0);
-  });
+  it(
+    'round-trips every golden with physics: export, import into a copy without, export again',
+    { timeout: WORK },
+    async () => {
+      let checked = 0;
+      for (const make of GOLDENS) {
+        const g = await make();
+        const first = physicsOf((await exportModel(g.session.doc, g.assets)).files);
+        if (!first) continue;
+        const copy = withoutPhysics(g.session.doc);
+        expect(physicsOf((await exportModel(copy.doc, g.assets)).files)).toBeUndefined();
+        const r = await run(copy, g.assets, { text: new TextDecoder().decode(first) });
+        expect(r.itemResults[0]).toMatchObject({ replaced: [], unmatched: [] });
+        const again = physicsOf((await exportModel(copy.doc, g.assets)).files)!;
+        expect(new TextDecoder().decode(again), g.name).toBe(new TextDecoder().decode(first));
+        expect(Buffer.from(again).equals(Buffer.from(first))).toBe(true);
+        checked++;
+      }
+      expect(checked).toBeGreaterThan(0);
+    },
+  );
 
   it('replaces settings of the same name, reports unmatched parameters, and dry runs', async () => {
     const g = await golden11();

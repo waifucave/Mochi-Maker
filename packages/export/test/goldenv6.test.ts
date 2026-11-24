@@ -17,6 +17,12 @@ import {
 import { PreviewBuilder, exportModel, importModel } from '../src/index.js';
 import { GOLDENS_V6, goldenOffscreens } from './goldenv6.js';
 
+/**
+ * The limit for the tests here that export at version 6 and check it in Mochi2D: the longest took
+ * 0.34 s on two busy cores.
+ */
+const WORK = 30_000;
+
 /** Model data as JSON, typed arrays as lists: for hashing and comparing. */
 const json = (d: MocData) =>
   JSON.stringify(d, (_k, v: unknown) => (ArrayBuffer.isView(v) ? Array.from(v as never) : v));
@@ -38,7 +44,7 @@ function at(data: MocData, pose: Record<string, number>) {
 }
 
 describe.each(GOLDENS_V6.map((g) => [g.name, g] as const))('%s', (_name, make) => {
-  it('exports at version 6, which Mochi2D checks at both levels', async () => {
+  it('exports at version 6, which Mochi2D checks at both levels', { timeout: WORK }, async () => {
     const { g, data, build } = await built(make);
     expect(build.version).toBe(6);
     expect(validateMoc(data, { version: 6, level: 'official' }).valid).toBe(true);

@@ -16,6 +16,12 @@ import {
 } from 'mochi2d/headless';
 import { golden17 } from './golden.js';
 
+/**
+ * The limit for the tests here that run Mochi2D's sound analysis: the longest took 0.42 s on two
+ * busy cores.
+ */
+const WORK = 30_000;
+
 /** Mono 16-bit PCM WAV bytes. */
 function wav(samples: Float32Array, rate: number): Uint8Array {
   const out = new Uint8Array(44 + 2 * samples.length);
@@ -96,7 +102,7 @@ describe('motion sync in the export', () => {
     expect([soft.blendRatio, soft.smoothing, soft.sampleRate]).toEqual([1, 40, 60]);
   });
 
-  it('opens the mouth for an «a» through Mochi2D’s analysis', async () => {
+  it('opens the mouth for an «a» through Mochi2D’s analysis', { timeout: WORK }, async () => {
     const g = await golden17();
     const r = await exportModel(g.session.doc, g.assets);
     const rt = await ModelRuntime.load(

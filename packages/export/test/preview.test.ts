@@ -5,8 +5,14 @@ import { PreviewBuilder, exportModel } from '../src/index.js';
 import { GOLDENS } from './golden.js';
 import { syntheticProject } from './synthetic.js';
 
+/**
+ * The limit for the tests here that export every golden with its textures: the longest took 1.1 s
+ * on two busy cores.
+ */
+const WORK = 30_000;
+
 describe('preview builds', () => {
-  it('writes the export’s .moc3 and textures for every golden', async () => {
+  it('writes the export’s .moc3 and textures for every golden', { timeout: WORK }, async () => {
     for (const make of GOLDENS) {
       const g = await make();
       const builder = new PreviewBuilder(g.assets);
